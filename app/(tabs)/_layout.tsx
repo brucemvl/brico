@@ -1,35 +1,29 @@
-import { Tabs } from 'expo-router';
-import React from 'react';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { useContext } from 'react';
+import { AuthContext } from '../../context/AuthContext';
+import HomeClient from '../homeClient';
+import HomePro from '../homePro';
 
-import { HapticTab } from '@/components/haptic-tab';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+const Tab = createBottomTabNavigator();
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
+  const context = useContext(AuthContext);
+
+  if (!context) throw new Error("AuthContext non fourni"); // TypeScript sûr
+
+  const { user, loading } = context;
+
+  if (loading) return null; // loader si tu veux
+
+  if (!user) return null; // ou router.replace('/welcome')
 
   return (
-    <Tabs
-      screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        headerShown: false,
-        tabBarButton: HapticTab,
-      }}>
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="explore"
-        options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
-        }}
-      />
-    </Tabs>
+    <Tab.Navigator>
+      {user.role === 'client' ? (
+        <Tab.Screen name="HomeClient" component={HomeClient} />
+      ) : (
+        <Tab.Screen name="HomePro" component={HomePro} />
+      )}
+    </Tab.Navigator>
   );
 }
