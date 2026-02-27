@@ -52,6 +52,22 @@ router.delete("/:id", auth, async (req, res) => {
   }
 });
 
+// GET /requests/pro
+router.get("/pro", auth, async (req, res) => {
+  try {
+    const requests = await Request.find({ status: "open" }); // toutes les demandes ouvertes
+    const user = await User.findById(req.user.id);
+
+    res.json({
+      requests,
+      skills: user.skills || [],
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // =======================
 // 1️⃣ CRÉER UNE DEMANDE (CLIENT)
 // =======================

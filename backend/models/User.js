@@ -8,7 +8,10 @@ const ratingSchema = new mongoose.Schema({
 });
 
 const notificationSchema = new mongoose.Schema({
-  type: { type: String }, // new_request, new_offer, message, validation
+  type: {
+    type: String,
+    enum: ["new_request", "new_offer", "message", "validation"]
+  },
   content: String,
   relatedRequest: { type: mongoose.Schema.Types.ObjectId, ref: "Request" },
   read: { type: Boolean, default: false },
@@ -16,21 +19,40 @@ const notificationSchema = new mongoose.Schema({
 });
 
 const userSchema = new mongoose.Schema({
+
   // Infos générales
-  name: { type: String, required: true },
-  email: { type: String, required: true, unique: true },
+  name: { type: String, required: true, trim: true },
+  email: { type: String, required: true, unique: true, lowercase: true, trim: true },
   password: { type: String, required: true },
   phone: String,
 
   role: { type: String, enum: ["client", "pro"], required: true },
 
-  // Infos pro
-  siret: String,
+  // 🔹 Infos PRO
+  siret: {
+    type: String,
+    validate: {
+      validator: function (value) {
+        if (!value) return true;
+        return /^\d{14}$/.test(value);
+      },
+      message: "Le SIRET doit contenir 14 chiffres"
+    }
+  },
+  location: { type: String, trim: true },
+description: { type: String, trim: true },
+equipment: { type: String, trim: true },
+
+  // 🔥 Badge automatique
+  proBadge: {
+    type: Boolean,
+    default: false
+  },
+
   insured: { type: Boolean, default: false },
   verified: { type: Boolean, default: false },
 
-  // 🔥 IMPORTANT pour matching compétences
-  skills: [{ type: String }],
+  skills: [{ type: String, trim: true }],
 
   subscriptionActive: { type: Boolean, default: false },
   subscriptionStart: Date,
@@ -41,13 +63,26 @@ const userSchema = new mongoose.Schema({
 
   completedRequests: [{ type: mongoose.Schema.Types.ObjectId, ref: "Request" }],
 
-  // 🔔 Notifications
-  notifications: [notificationSchema],
+  notifications: [notificationSchema]
 
-  createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now }
+}, { timestamps: true });
+
+
+//
+// ⭐ Auto activation du badge si SIRET présent
+//
+userSchema.pre("save", async function () {
+  if (this.role === "pro" && this.siret) {
+    this.proBadge = true;
+  } else {
+    this.proBadge = false;
+  }
 });
 
+
+//
+// ⭐ Recalcul moyenne
+//
 userSchema.methods.updateAverageRating = function () {
   if (!this.ratings.length) {
     this.averageRating = 0;
@@ -56,10 +91,5 @@ userSchema.methods.updateAverageRating = function () {
   const sum = this.ratings.reduce((acc, r) => acc + r.score, 0);
   this.averageRating = sum / this.ratings.length;
 };
-
-userSchema.pre("save", function (next) {
-  this.updatedAt = Date.now();
-  next();
-});
 
 module.exports = mongoose.model("User", userSchema);
