@@ -18,6 +18,40 @@ router.get("/", auth, async (req, res) => {
   }
 });
 
+// GET /requests/client - récupère les demandes du client connecté
+router.get("/client", auth, async (req, res) => {
+  try {
+    if (!req.user || req.user.role !== "client") {
+      return res.status(403).json({ error: "Accès réservé aux clients" });
+    }
+
+    const requests = await Request.find({ client: req.user.id });
+    return res.json(requests);
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// =======================
+// 🔹 SUPPRIMER UNE DEMANDE
+// =======================
+router.delete("/:id", auth, async (req, res) => {
+  try {
+    const request = await Request.findById(req.params.id);
+    if (!request) return res.status(404).json({ error: "Demande introuvable" });
+
+    // Seul le client qui a créé la demande peut la supprimer
+    if (request.client.toString() !== req.user.id) {
+      return res.status(403).json({ error: "Non autorisé" });
+    }
+
+    await request.deleteOne(); // <-- c'est ici
+    return res.json({ message: "Demande supprimée" });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
 // =======================
 // 1️⃣ CRÉER UNE DEMANDE (CLIENT)
 // =======================

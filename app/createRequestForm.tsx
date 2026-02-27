@@ -1,10 +1,12 @@
 import { Picker } from "@react-native-picker/picker";
+import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import { Alert, Button, Text, TextInput, View } from "react-native";
 import { useApi } from "../services/api";
 
 export default function CreateRequestForm() {
   const { apiFetch } = useApi();
+  const router = useRouter();
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -19,9 +21,8 @@ export default function CreateRequestForm() {
     }
 
     try {
-      console.log("Token envoyé via apiFetch");
-
-      const res = await apiFetch("/requests", {
+      // 🔹 Création de la demande via API
+      const newRequest = await apiFetch("/requests", {
         method: "POST",
         body: JSON.stringify({
           title,
@@ -32,18 +33,23 @@ export default function CreateRequestForm() {
         }),
       });
 
-      console.log("Data reçue:", res);
+      // Succès
       Alert.alert("Succès", "Demande créée !");
 
-      // Reset form
+      // Reset du formulaire
       setTitle("");
       setDescription("");
       setLocation("");
       setBudget("");
       setCategory("plomberie");
+
+      // 🔹 Redirection vers HomeClient
+      router.replace("/homeClient"); // Retour vers l'accueil client
+
     } catch (err: any) {
-      console.error("Erreur API:", err.message);
-      Alert.alert("Erreur API", err.message);
+      console.error("Erreur API:", err);
+      const message = err?.message || "Erreur inconnue";
+      Alert.alert("Erreur API", message);
     }
   };
 
@@ -75,6 +81,7 @@ export default function CreateRequestForm() {
         <Picker.Item label="Plomberie" value="plomberie" />
         <Picker.Item label="Peinture" value="peinture" />
         <Picker.Item label="Agencement" value="agencement" />
+        <Picker.Item label="Electricité" value="électricité" />
         <Picker.Item label="Divers" value="divers" />
       </Picker>
 
