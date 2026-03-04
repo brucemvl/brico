@@ -1,14 +1,16 @@
 import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
+  Image,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 import { useApi } from "../services/api";
+
 
 type RequestType = {
   _id: string;
@@ -24,6 +26,11 @@ const categories = ["plomberie", "peinture", "agencement", "électricité", "div
 export default function HomePro() {
   const router = useRouter();
   const { apiFetch } = useApi();
+const [profile, setProfile] = useState(null);
+
+  useEffect(() => {
+  apiFetch("/users/me").then(data => setProfile(data));
+}, []);
 
   const [requests, setRequests] = useState<RequestType[]>([]);
   const [skills, setSkills] = useState<string[]>([]);
@@ -55,6 +62,7 @@ export default function HomePro() {
     }, [])
   );
 
+
   // 🔹 Logique de filtrage
   const filteredRequests = (() => {
     switch (activeFilter) {
@@ -67,6 +75,8 @@ export default function HomePro() {
     }
   })();
 
+  
+
   if (loading) {
     return (
       <View style={styles.center}>
@@ -74,6 +84,8 @@ export default function HomePro() {
       </View>
     );
   }
+
+  
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -83,7 +95,8 @@ export default function HomePro() {
       >
         <Text>Mon Profil</Text>
       </TouchableOpacity>
-
+<Image source={{ uri: profile?.profileImage?.url }} style={styles.avatar} />
+<Text>{profile?.name}</Text>
       <Text style={styles.title}>Demandes disponibles</Text>
 
       {/* 🔹 Boutons filtres */}
@@ -153,6 +166,7 @@ const styles = StyleSheet.create({
   container: { paddingTop: 80, alignItems: "center" },
   center: { flex: 1, justifyContent: "center", alignItems: "center" },
   title: { fontSize: 22, fontWeight: "bold", marginBottom: 15 },
+  avatar: {height: 70, width: 70, resizeMode: "contain"},
   filterButton: {
     paddingHorizontal: 15,
     paddingVertical: 8,

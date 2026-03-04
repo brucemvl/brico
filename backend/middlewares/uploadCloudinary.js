@@ -14,4 +14,12 @@ const storage = new CloudinaryStorage({
   }
 });
 
-module.exports = multer({ storage });
+// Limite à 10 Mo par fichier (tu peux ajuster)
+const upload = multer({
+  storage,
+  limits: {
+    fileSize: 10 * 1024 * 1024 // 10 Mo
+  }
+});
+
+module.exports = upload;

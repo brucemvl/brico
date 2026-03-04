@@ -27,13 +27,14 @@ router.put(
   ]),
   async (req, res) => {
     try {
-      console.log("BODY:", req.body);
-      console.log("FILES:", req.files);
+      
 
       const user = await User.findById(req.user.id);
       if (!user) return res.status(404).json({ error: "Utilisateur introuvable" });
 
+      
       // Texte
+      user.name = req.body.name ?? user.name;
       user.phone = req.body.phone ?? user.phone;
       user.siret = req.body.siret ?? user.siret;
       user.location = req.body.location ?? user.location;
@@ -62,12 +63,14 @@ router.put(
 
       // Portfolio
       if (req.files?.portfolio?.length) {
-        const newImages = req.files.portfolio.map((file) => ({
-          url: file.path,
-          public_id: file.filename,
-        }));
-        user.portfolio.push(...newImages);
-      }
+  const newImages = req.files.portfolio.map((file) => ({
+    url: file.path,       // ou file.secure_url selon ta config Cloudinary
+    public_id: file.filename || file.public_id,
+  }));
+
+  // Limiter le portfolio à 10 images
+  user.portfolio = [...user.portfolio, ...newImages].slice(0, 10);
+}
 
       await user.save();
       return res.status(200).json(user);
@@ -88,18 +91,18 @@ router.delete("/profile/pro/portfolio/:imageId", auth, async (req, res) => {
     const user = await User.findById(req.user.id);
     if (!user) return res.status(404).json({ error: "Utilisateur introuvable" });
 
-    const image = user.portfolio.id(req.params.imageId);
-    if (!image) return res.status(404).json({ error: "Image introuvable" });
+    const image = user.portfolio.find(img => img._id.toString() === req.params.imageId);
+if (!image) return res.status(404).json({ error: "Image introuvable" });
 
-    // Supprime de Cloudinary
-    await cloudinary.uploader.destroy(image.public_id);
+// Supprime de Cloudinary
+await cloudinary.uploader.destroy(image.public_id);
 
-    // Supprime du tableau
-    image.remove();
+// Supprime du tableau
+user.portfolio = user.portfolio.filter(img => img._id.toString() !== req.params.imageId);
 
-    await user.save();
+await user.save();
 
-    res.json({ message: "Image supprimée", portfolio: user.portfolio });
+res.json({ message: "Image supprimée", portfolio: user.portfolio });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: err.message });
