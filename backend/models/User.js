@@ -63,6 +63,19 @@ equipment: { type: String, trim: true },
 
   completedRequests: [{ type: mongoose.Schema.Types.ObjectId, ref: "Request" }],
 
+  profileImage: {
+  url: String,
+  public_id: String
+},
+
+portfolio: [
+  {
+    _id: { type: mongoose.Schema.Types.ObjectId, auto: true },
+    url: String,
+    public_id: String
+  }
+],
+
   notifications: [notificationSchema]
 
 }, { timestamps: true });

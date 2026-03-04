@@ -32,17 +32,22 @@ export default function HomePro() {
 
   // 🔹 Fetch demandes + compétences du pro
   const fetchRequests = async () => {
-    setLoading(true);
-    try {
-      const data = await apiFetch("/requests/pro");
-      setRequests(data.requests || []);
-      setSkills(data.skills || []);
-    } catch (err) {
-      console.error("Erreur fetch pro:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  console.log("🔄 Fetch start");
+  setLoading(true);
+
+  try {
+    const data = await apiFetch("/requests/pro");
+    console.log("✅ Data reçue:", data);
+
+    setRequests(data.requests || []);
+    setSkills(data.skills || []);
+  } catch (err) {
+    console.error("❌ Erreur fetch pro:", err);
+  } finally {
+    console.log("🏁 Fin fetch");
+    setLoading(false);
+  }
+};
 
   useFocusEffect(
     useCallback(() => {
@@ -74,6 +79,7 @@ export default function HomePro() {
     <ScrollView contentContainerStyle={styles.container}>
       <TouchableOpacity
         onPress={() => router.push({ pathname: "/profilePro" })}
+        style={{alignSelf: "flex-end", margin: 20, borderWidth: 1, backgroundColor: "green", padding: 5, borderRadius: 10}}
       >
         <Text>Mon Profil</Text>
       </TouchableOpacity>
@@ -81,7 +87,7 @@ export default function HomePro() {
       <Text style={styles.title}>Demandes disponibles</Text>
 
       {/* 🔹 Boutons filtres */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 15 }}>
+      <View style={{ marginBottom: 15, flexWrap: "wrap", flexDirection: "row", gap: 6, justifyContent: "center" }}>
         <TouchableOpacity
           style={[styles.filterButton, activeFilter === "skills" && styles.activeFilter]}
           onPress={() => setActiveFilter("skills")}
@@ -105,8 +111,9 @@ export default function HomePro() {
             <Text>{cat}</Text>
           </TouchableOpacity>
         ))}
-      </ScrollView>
+      </View>
 
+<View style={{ width: "100%", padding: 20}}>
       {/* 🔹 Liste des demandes */}
       {filteredRequests.length === 0 ? (
         <Text>Aucune demande disponible</Text>
@@ -137,12 +144,13 @@ export default function HomePro() {
           );
         })
       )}
+      </View>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { paddingTop: 100, alignItems: "center" },
+  container: { paddingTop: 80, alignItems: "center" },
   center: { flex: 1, justifyContent: "center", alignItems: "center" },
   title: { fontSize: 22, fontWeight: "bold", marginBottom: 15 },
   filterButton: {
@@ -150,8 +158,9 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderWidth: 1,
     borderRadius: 20,
-    marginRight: 8,
     height: 40,
+    alignItems: "center",
+    justifyContent: "center"
   },
   activeFilter: {
     backgroundColor: "#ddd",

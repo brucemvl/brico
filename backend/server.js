@@ -20,6 +20,7 @@ mongoose.connect(process.env.MONGO_URI)
 app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/requests", require("./routes/requestRoutes"));
 app.use("/api/users", usersRouter)
+app.use("/uploads", express.static("uploads"));
 
 // Port
 const PORT = process.env.PORT || 5000;
