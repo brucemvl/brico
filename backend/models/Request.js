@@ -3,7 +3,8 @@ const mongoose = require("mongoose");
 const messageSchema = new mongoose.Schema({
   from: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   content: { type: String, required: true },
-  createdAt: { type: Date, default: Date.now }
+  createdAt: { type: Date, default: Date.now },
+  readByClient: { type: Boolean, default: false }, // 🔹 nouveau champ
 });
 
 const offerSchema = new mongoose.Schema({
@@ -43,7 +44,6 @@ const requestSchema = new mongoose.Schema({
   },
 
   offers: [offerSchema],
-  messages: [messageSchema],
 
   clientValidated: { type: Boolean, default: false },
   proValidated: { type: Boolean, default: false },
@@ -59,4 +59,4 @@ requestSchema.pre("save", async function (next) {
   this.updatedAt = Date.now();
 });
 
-module.exports = mongoose.model("Request", requestSchema);
+module.exports = mongoose.models.Request || mongoose.model("Request", requestSchema);

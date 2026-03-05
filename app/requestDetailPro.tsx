@@ -1,7 +1,21 @@
-import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
-import { Button, FlatList, Image, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { useLocalSearchParams } from "expo-router";
+import React, { useEffect, useRef, useState } from "react";
+import {
+    Button,
+    FlatList,
+    Image,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    View,
+} from "react-native";
 import { useApi } from "../services/api";
+
+type MessageType = {
+  from: { _id: string; name: string; profileImage?: { url: string } };
+  content: string;
+};
 
 type RequestType = {
   _id: string;
@@ -14,19 +28,21 @@ type RequestType = {
   images?: { url: string }[];
   client: { name: string; profileImage?: { url: string } };
   pro?: { name: string; profileImage?: { url: string } };
-  messages?: { from: string; content: string }[];
+  messages: MessageType[];
+  conversationId?: string;
 };
 
 export default function RequestDetailPro() {
   const { apiFetch } = useApi();
-  const router = useRouter();
   const params = useLocalSearchParams<{ id: string }>();
   const id = params.id;
 
   const [request, setRequest] = useState<RequestType | null>(null);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
+  const scrollViewRef = useRef<ScrollView>(null);
 
+  // 🔹 Fetch request + messages
   useEffect(() => {
     if (!id) return;
 
@@ -44,6 +60,7 @@ export default function RequestDetailPro() {
     fetchRequest();
   }, [id]);
 
+  // 🔹 Send message
   const sendMessage = async () => {
     if (!message.trim() || !request) return;
 
@@ -52,8 +69,14 @@ export default function RequestDetailPro() {
         method: "POST",
         body: JSON.stringify({ content: message }),
       });
-      setRequest(prev => prev ? { ...prev, messages: res.messages } : prev);
+
+      setRequest(prev =>
+        prev ? { ...prev, messages: res.messages } : prev
+      );
+
       setMessage("");
+
+      scrollViewRef.current?.scrollToEnd({ animated: true });
     } catch (err) {
       console.error("Erreur envoi message:", err);
     }
@@ -63,34 +86,48 @@ export default function RequestDetailPro() {
   if (!request) return <Text>Demande introuvable</Text>;
 
   return (
-    <ScrollView style={{ padding: 20 }}>
+    <ScrollView
+      style={{ padding: 20 }}
+      ref={scrollViewRef}
+      onContentSizeChange={() =>
+        scrollViewRef.current?.scrollToEnd({ animated: true })
+      }
+    >
       <Text style={styles.title}>{request.title}</Text>
       <Text>Catégorie: {request.category}</Text>
       <Text>Lieu: {request.location}</Text>
       <Text>Budget: {request.budget}€</Text>
       <Text>Description: {request.description || "Pas de description"}</Text>
 
-      {/* 🔹 Images */}
-      {request.images && request.images.length > 0 && (
+      {/* Images */}
+      {request.images?.length > 0 && (
         <FlatList
           horizontal
           data={request.images}
-          keyExtractor={(item, i) => `${i}`}
+          keyExtractor={(_, i) => `${i}`}
           renderItem={({ item }) => (
             <Image source={{ uri: item.url }} style={styles.image} />
           )}
+          style={{ marginVertical: 10 }}
         />
       )}
 
-      {/* 🔹 Messages */}
-      <Text style={{ marginTop: 20, fontWeight: "bold" }}>Messages:</Text>
-      {request.messages?.map((msg, i) => (
-        <View key={i} style={{ marginBottom: 5 }}>
-          <Text>{msg.from}: {msg.content}</Text>
-        </View>
-      ))}
+      {/* Messages */}
+      <Text style={{ marginTop: 20, fontWeight: "bold", marginBottom: 5 }}>
+        Messages :
+      </Text>
+      {request.messages?.length > 0 ? (
+        request.messages.map((msg, i) => (
+          <View key={i} style={styles.messageBubble}>
+            <Text style={styles.messageAuthor}>{msg.from.name} :</Text>
+            <Text>{msg.content}</Text>
+          </View>
+        ))
+      ) : (
+        <Text>Aucun message pour l'instant</Text>
+      )}
 
-      {/* 🔹 Envoyer un message */}
+      {/* Envoyer un message */}
       <TextInput
         value={message}
         onChangeText={setMessage}
@@ -104,6 +141,25 @@ export default function RequestDetailPro() {
 
 const styles = StyleSheet.create({
   title: { fontSize: 22, fontWeight: "bold", marginBottom: 10 },
-  image: { width: 150, height: 150, marginRight: 10, borderRadius: 8, resizeMode: "contain" },
-  input: { borderWidth: 1, borderColor: "#ccc", padding: 8, marginVertical: 10, borderRadius: 5 },
+  image: {
+    width: 150,
+    height: 150,
+    marginRight: 10,
+    borderRadius: 8,
+    resizeMode: "contain",
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    padding: 8,
+    marginVertical: 10,
+    borderRadius: 5,
+  },
+  messageBubble: {
+    backgroundColor: "#f0f0f0",
+    padding: 8,
+    borderRadius: 5,
+    marginBottom: 5,
+  },
+  messageAuthor: { fontWeight: "bold", marginBottom: 2 },
 });

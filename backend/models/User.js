@@ -105,4 +105,4 @@ userSchema.methods.updateAverageRating = function () {
   this.averageRating = sum / this.ratings.length;
 };
 
-module.exports = mongoose.model("User", userSchema);
+module.exports = mongoose.models.User || mongoose.model("User", userSchema);

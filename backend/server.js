@@ -3,6 +3,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const usersRouter = require("./routes/users");
+const conversationRoutes = require("./routes/conversations");
 
 const app = express();
 
@@ -21,6 +22,7 @@ app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/requests", require("./routes/requestRoutes"));
 app.use("/api/users", usersRouter);
 app.use("/uploads", express.static("uploads"));
+app.use("/api/conversations", conversationRoutes);
 
 // 🔥 Gestion erreurs Multer
 app.use((err, req, res, next) => {

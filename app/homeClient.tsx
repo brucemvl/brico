@@ -11,6 +11,7 @@ type RequestType = {
   status: string;
   client: string;
   title: string;
+  hasUnread: boolean;
   // ajoute d'autres champs selon ton modèle
 };
 
@@ -90,17 +91,22 @@ export default function HomeClient() {
         <Text>Aucune demande pour le moment</Text>
       ) : (
         requests.map((item) => (
-          <View key={item._id} style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-            <View style={styles.card}>
+<TouchableOpacity
+    key={item._id}
+    style={{ flexDirection: "row", alignItems: "center", gap: 10 }}
+    onPress={() => router.push(`/requestDetailClient?id=${item._id}`)}
+  >
+                <View style={styles.card}>
               <Text style={{ fontWeight: "bold" }}>{item.title}</Text>
               <Text>Catégorie: {item.category}</Text>
               <Text>Statut: {item.status}</Text>
               {/* ajoute d'autres infos si besoin */}
+              {item.hasUnread && <View style={styles.redDot} />}
             </View>
             <TouchableOpacity onPress={() => handleDelete(item._id)}>
               <Text style={{ color: "red" }}>Supprimer</Text>
             </TouchableOpacity>
-          </View>
+          </TouchableOpacity>
         ))
       )}
 
@@ -118,4 +124,13 @@ const styles = StyleSheet.create({
   container: { flexGrow: 1, justifyContent: 'center', alignItems: 'center', padding: 16 },
   title: { fontSize: 24, fontWeight: 'bold', marginBottom: 20, textAlign: 'center' },
   card: { padding: 12, marginBottom: 10, borderWidth: 1, borderRadius: 8, flex: 1 },
+  redDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: "red",
+    position: "absolute",
+    top: 8,
+    right: 8,
+  },
 });
