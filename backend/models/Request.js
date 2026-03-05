@@ -29,6 +29,13 @@ const requestSchema = new mongoose.Schema({
   location: { type: String, required: true },
   budget: Number,
 
+  images: [
+    {
+      url: String,
+      public_id: String
+    }
+  ],
+
   status: {
     type: String,
     enum: ["open", "accepted", "in_progress", "completed", "cancelled"],

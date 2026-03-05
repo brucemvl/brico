@@ -1,7 +1,18 @@
 import { Picker } from "@react-native-picker/picker";
+import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
-import { Alert, Button, Text, TextInput, View } from "react-native";
+import {
+  ActivityIndicator,
+  Alert,
+  Button,
+  Image,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { useApi } from "../services/api";
 
 export default function CreateRequestForm() {
@@ -13,71 +24,75 @@ export default function CreateRequestForm() {
   const [category, setCategory] = useState("plomberie");
   const [location, setLocation] = useState("");
   const [budget, setBudget] = useState("");
+  const [images, setImages] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const pickImages = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+  mediaTypes: ImagePicker.MediaTypeOptions.Images, // uniquement images
+  allowsEditing: true,  // permet de recadrer
+  quality: 0.8,         // compression
+  base64: false,         // inutile si tu uploades le fichier
+  exif: false,
+  allowsMultipleSelection: true, // si tu veux sélectionner plusieurs
+});
+
+    if (!result.canceled) {
+      setImages(result.assets);
+    }
+  };
 
   const handleSubmit = async () => {
     if (!title || !location || !category) {
-      Alert.alert("Erreur", "Veuillez remplir tous les champs obligatoires.");
+      Alert.alert("Erreur", "Champs obligatoires manquants.");
       return;
     }
 
+    setLoading(true);
+
     try {
-      // 🔹 Création de la demande via API
-      const newRequest = await apiFetch("/requests", {
-        method: "POST",
-        body: JSON.stringify({
-          title,
-          description,
-          category,
-          location,
-          budget: Number(budget) || 0,
-        }),
+      const formData = new FormData();
+
+      formData.append("title", title);
+      formData.append("description", description);
+      formData.append("category", category);
+      formData.append("location", location);
+      formData.append("budget", budget);
+
+      images.forEach((img, index) => {
+        formData.append("images", {
+          uri: img.uri,
+          name: `photo_${index}.jpg`,
+          type: "image/jpeg",
+        } as any);
       });
 
-      // Succès
+      await apiFetch("/requests", {
+        method: "POST",
+        body: formData,
+        
+      });
+
       Alert.alert("Succès", "Demande créée !");
-
-      // Reset du formulaire
-      setTitle("");
-      setDescription("");
-      setLocation("");
-      setBudget("");
-      setCategory("plomberie");
-
-      // 🔹 Redirection vers HomeClient
-      router.replace("/homeClient"); // Retour vers l'accueil client
+      router.replace("/homeClient");
 
     } catch (err: any) {
-      console.error("Erreur API:", err);
-      const message = err?.message || "Erreur inconnue";
-      Alert.alert("Erreur API", message);
+      Alert.alert("Erreur", err?.message || "Erreur inconnue");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <View style={{ padding: 16, flex: 1, paddingTop: 100 }}>
+    <ScrollView style={{ padding: 20, paddingTop: 80 }}>
       <Text>Titre*</Text>
-      <TextInput
-        placeholder="Ex: Fuite évier"
-        value={title}
-        onChangeText={setTitle}
-        style={{ borderWidth: 1, marginBottom: 12, padding: 8 }}
-      />
+      <TextInput value={title} onChangeText={setTitle} style={{ borderWidth: 1, marginBottom: 10 }} />
 
       <Text>Description</Text>
-      <TextInput
-        placeholder="Détaillez votre problème"
-        value={description}
-        onChangeText={setDescription}
-        multiline
-        style={{ borderWidth: 1, marginBottom: 12, padding: 8, height: 80 }}
-      />
+      <TextInput value={description} onChangeText={setDescription} multiline style={{ borderWidth: 1, marginBottom: 10 }} />
 
       <Text>Catégorie*</Text>
-      <Picker
-        selectedValue={category}
-        onValueChange={(itemValue) => setCategory(itemValue)}
-        style={{ marginBottom: 12 }}
-      >
+      <Picker selectedValue={category} onValueChange={setCategory}>
         <Picker.Item label="Plomberie" value="plomberie" />
         <Picker.Item label="Peinture" value="peinture" />
         <Picker.Item label="Agencement" value="agencement" />
@@ -86,23 +101,22 @@ export default function CreateRequestForm() {
       </Picker>
 
       <Text>Lieu*</Text>
-      <TextInput
-        placeholder="Ex: Paris"
-        value={location}
-        onChangeText={setLocation}
-        style={{ borderWidth: 1, marginBottom: 12, padding: 8 }}
-      />
+      <TextInput value={location} onChangeText={setLocation} style={{ borderWidth: 1, marginBottom: 10 }} />
 
-      <Text>Budget (€)</Text>
-      <TextInput
-        placeholder="Ex: 200"
-        value={budget}
-        onChangeText={setBudget}
-        keyboardType="numeric"
-        style={{ borderWidth: 1, marginBottom: 12, padding: 8 }}
-      />
+      <Text>Budget</Text>
+      <TextInput value={budget} onChangeText={setBudget} keyboardType="numeric" style={{ borderWidth: 1, marginBottom: 10 }} />
 
-      <Button title="Créer la demande" onPress={handleSubmit} />
-    </View>
+      <TouchableOpacity onPress={pickImages} style={{ backgroundColor: "#ddd", padding: 10, marginBottom: 10 }}>
+        <Text>Ajouter des images</Text>
+      </TouchableOpacity>
+
+      <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
+        {images.map((img, index) => (
+          <Image key={index} source={{ uri: img.uri }} style={{ width: 80, height: 80, margin: 5 }} />
+        ))}
+      </View>
+
+      {loading ? <ActivityIndicator size="large" /> : <Button title="Créer la demande" onPress={handleSubmit} />}
+    </ScrollView>
   );
 }

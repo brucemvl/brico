@@ -4,6 +4,12 @@ const auth = require("../middlewares/auth");
 const Request = require("../models/Request");
 const User = require("../models/User");
 const { createNotification } = require("../services/notificationService");
+const upload = require("../middlewares/uploadCloudinary");
+const cloudinary = require("../config/cloudinary");
+    const streamifier = require("streamifier");
+    const sharp = require("sharp")
+    const fetch = require("node-fetch");
+
 
 // =======================
 // 🔹 Récupérer toutes les demandes (test)
@@ -68,33 +74,65 @@ router.get("/pro", auth, async (req, res) => {
   }
 });
 
+// GET /requests/:id - détail d'une demande
+router.get("/:id", auth, async (req, res) => {
+  try {
+    const request = await Request.findById(req.params.id).populate("client").populate("pro");
+    console.log(request); // 🔹 Vérifie que request.images contient bien des URLs
+    return res.json(request);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
 // =======================
 // 1️⃣ CRÉER UNE DEMANDE (CLIENT)
 // =======================
-router.post("/", auth, async (req, res) => {
-  try {
-    if (!req.user) return res.status(401).json({ error: "Utilisateur non authentifié" });
-    if (req.user.role !== "client") return res.status(403).json({ error: "Seulement pour les clients" });
+router.post("/", auth, upload.array("images"), async (req, res) => {
+  console.log("FILES:", req.files);
+  console.log("BODY:", req.body);
 
-    const request = await Request.create({
+  try {
+    if (!req.user || req.user.role !== "client")
+      return res.status(403).json({ error: "Seulement clients" });
+
+    const newRequest = new Request({
       ...req.body,
       client: req.user.id,
     });
 
-    const matchedPros = await User.find({ role: "pro", skills: request.category });
-    for (const pro of matchedPros) {
-      await createNotification({
-        userId: pro._id,
-        type: "new_request",
-        content: `Nouveau projet (${request.category})`,
-        relatedRequest: request._id,
-      });
-    }
 
-    return res.status(201).json(request);
+if (req.files && req.files.length > 0) {
+  newRequest.images = [];
+
+  for (const file of req.files) {
+  // Télécharge le fichier depuis son URL temporaire (path)
+  const response = await fetch(file.path);
+  const arrayBuffer = await response.arrayBuffer();
+  const buffer = Buffer.from(arrayBuffer);
+
+  // Convertir en JPEG avec Sharp
+  const jpegBuffer = await sharp(buffer).jpeg({ quality: 80 }).toBuffer();
+
+  // Upload Cloudinary
+  const uploadResult = await new Promise((resolve, reject) => {
+    const uploadStream = cloudinary.uploader.upload_stream(
+      { folder: "requests", resource_type: "image" },
+      (err, result) => (err ? reject(err) : resolve(result))
+    );
+    streamifier.createReadStream(jpegBuffer).pipe(uploadStream);
+  });
+
+  newRequest.images.push({ url: uploadResult.secure_url, public_id: uploadResult.public_id });
+}
+}
+
+    await newRequest.save();
+    res.status(201).json(newRequest);
   } catch (err) {
     console.error("Erreur POST /requests:", err.message);
-    return res.status(500).json({ error: "Erreur serveur" });
+    res.status(500).json({ error: "Erreur serveur" });
   }
 });
 
