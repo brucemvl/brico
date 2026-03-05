@@ -24,9 +24,16 @@ type RequestType = {
 const categories = ["plomberie", "peinture", "agencement", "électricité", "divers"];
 
 export default function HomePro() {
+  type ProfileType = {
+  name: string;
+  profileImage?: {
+    url: string;
+  };
+};
+
   const router = useRouter();
-  const { apiFetch } = useApi();
-const [profile, setProfile] = useState(null);
+  const { apiFetch, logout } = useApi();
+const [profile, setProfile] = useState<ProfileType | null>(null);
 
   useEffect(() => {
   apiFetch("/users/me").then(data => setProfile(data));
@@ -126,7 +133,7 @@ const [profile, setProfile] = useState(null);
         ))}
       </View>
 
-<View style={{ width: "100%", padding: 20}}>
+<View style={{ width: "100%", padding: 20, justifyContent: "center", alignItems: "center"}}>
       {/* 🔹 Liste des demandes */}
       {filteredRequests.length === 0 ? (
         <Text>Aucune demande disponible</Text>
@@ -140,6 +147,8 @@ const [profile, setProfile] = useState(null);
               onPress={() =>
                 router.push({ pathname: "/requestDetailPro", params: { id: item._id } })
               }
+                              style={{width: "100%"}}
+
             >
               <View style={styles.card}>
                 <Text style={styles.cardTitle}>{item.title}</Text>
@@ -158,6 +167,15 @@ const [profile, setProfile] = useState(null);
         })
       )}
       </View>
+
+      <TouchableOpacity
+  onPress={async () => {
+    await logout();
+    router.replace("/");
+  }}
+>
+  <Text>Logout</Text>
+</TouchableOpacity>
     </ScrollView>
   );
 }

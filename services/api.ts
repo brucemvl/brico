@@ -1,3 +1,4 @@
+import { useRouter } from "expo-router";
 import { useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 
@@ -5,8 +6,11 @@ export const useApi = () => {
   const context = useContext(AuthContext);
   if (!context) throw new Error("useApi must be used within AuthProvider");
 
-  const { user } = context;
+const { user, logout } = context;
+const router = useRouter()
   const token = user?.token ?? null;
+
+
 
   const apiFetch = async (url: string, options: RequestInit = {}) => {
     try {
@@ -26,6 +30,12 @@ export const useApi = () => {
         data = { error: "Réponse non JSON" };
       }
 
+      if (res.status === 401) {
+        await logout();
+        router.replace("/login");
+        throw new Error("Session expirée");
+      }
+
       if (!res.ok) {
         throw new Error(data.error || data.message || "Erreur API");
       }
@@ -37,5 +47,5 @@ export const useApi = () => {
     }
   };
 
-  return { apiFetch };
+  return { apiFetch, logout };
 };

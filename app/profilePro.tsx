@@ -198,6 +198,15 @@ export default function ProfilePro() {
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>Mon Profil Professionnel</Text>
 
+      <Text>Photo</Text>
+      {profileImage && (
+        <Image
+          source={{ uri: profileImage.url || profileImage.uri }}
+          style={styles.profileImage}
+        />
+      )}
+      <Button title="Choisir une photo" onPress={handlePickProfileImage} />
+
       <Text>Nom</Text>
       <TextInput style={styles.input} value={name} onChangeText={setName} />
 
@@ -232,15 +241,6 @@ export default function ProfilePro() {
         ))}
       </View>
 
-
-      <Text>Photo</Text>
-      {profileImage && (
-        <Image
-          source={{ uri: profileImage.url || profileImage.uri }}
-          style={styles.profileImage}
-        />
-      )}
-      <Button title="Choisir une photo" onPress={handlePickProfileImage} />
 
       <Text style={{ marginTop: 20 }}>Mes réalisations</Text>
 
