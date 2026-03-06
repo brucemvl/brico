@@ -71,36 +71,60 @@ router.get("/pro", auth, async (req, res) => {
 });
 
 // =======================
-// 🔹 GET détail d’une demande + messages
+// 🔹 GET détail d’une demande + conversations
 // =======================
 router.get("/:id", auth, async (req, res) => {
   try {
     const request = await Request.findById(req.params.id)
-      .populate("client", "name profileImage")
-      .populate("pro", "name profileImage");
+      .populate("client", "name profileImage");
 
-    if (!request) return res.status(404).json({ error: "Demande introuvable" });
+    if (!request) {
+      return res.status(404).json({ error: "Demande introuvable" });
+    }
 
-let conversation = await Conversation.findOne({
-  request: req.params.id,
-  $or: [
-    { pro: req.user.id },
-    { client: req.user.id }
-  ]
-}).populate("messages.from", "name profileImage");
+    // 👤 CLIENT → voir toutes les conversations avec les pros
+    if (req.user.role === "client") {
+      const conversations = await Conversation.find({
+        request: req.params.id,
+        client: req.user.id
+      })
+        .populate("pro", "name profileImage")
+        .populate("messages.from", "name profileImage")
+        .sort({ updatedAt: -1 });
 
-const conversations = await Conversation.find({
-  request: req.params.id,
-})
-.populate("pro", "name profileImage")
-.populate("messages.from", "name profileImage")
-.sort({ updatedAt: -1 });
-      
+      return res.json({
+        ...request.toObject(),
+        conversations
+      });
+    }
 
-    res.json({
-  ...request.toObject(),
-  conversations
-});
+    // 👷 PRO → voir uniquement sa conversation avec le client
+    if (req.user.role === "pro") {
+  let conversation = await Conversation.findOne({
+    request: req.params.id,
+    pro: req.user.id
+  })
+  .populate("client", "name profileImage")
+  .populate("messages.from", "name profileImage");
+
+  // 🔹 Si pas de conversation existante, on en crée une vide
+  if (!conversation) {
+    const requestObj = await Request.findById(req.params.id);
+    conversation = new Conversation({
+      request: requestObj._id,
+      client: requestObj.client,
+      pro: req.user.id,
+      messages: []
+    });
+    await conversation.save();
+    await conversation.populate("client", "name profileImage");
+  }
+
+  return res.json({
+    ...request.toObject(),
+    conversation
+  });
+}
   } catch (err) {
     console.error("GET /requests/:id error:", err);
     res.status(500).json({ error: err.message });

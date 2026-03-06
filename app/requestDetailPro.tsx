@@ -2,8 +2,6 @@ import { useLocalSearchParams } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
     Button,
-    FlatList,
-    Image,
     ScrollView,
     StyleSheet,
     Text,
@@ -15,6 +13,14 @@ import { useApi } from "../services/api";
 type MessageType = {
   from: { _id: string; name: string; profileImage?: { url: string } };
   content: string;
+  createdAt: string;
+};
+
+type ConversationType = {
+  _id: string;
+  messages: MessageType[];
+  client: { name: string; profileImage?: { url: string } };
+  pro: { _id: string; name: string; profileImage?: { url: string } };
 };
 
 type RequestType = {
@@ -27,36 +33,34 @@ type RequestType = {
   status: string;
   images?: { url: string }[];
   client: { name: string; profileImage?: { url: string } };
-  pro?: { name: string; profileImage?: { url: string } };
-  messages: MessageType[];
-  conversationId?: string;
+  conversation?: ConversationType; // conversation du pro
 };
 
 export default function RequestDetailPro() {
   const { apiFetch } = useApi();
   const params = useLocalSearchParams<{ id: string }>();
   const id = params.id;
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   const [request, setRequest] = useState<RequestType | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
-  const scrollViewRef = useRef<ScrollView>(null);
+  const scrollRef = useRef<ScrollView>(null);
 
+  // 🔹 Charger l'utilisateur connecté
   useEffect(() => {
-  const fetchMe = async () => {
-    try {
-      const me = await apiFetch("/users/me");
-      setCurrentUserId(me._id);
-    } catch (err) {
-      console.log("Erreur user", err);
-    }
-  };
+    const fetchMe = async () => {
+      try {
+        const me = await apiFetch("/users/me");
+        setCurrentUserId(me._id);
+      } catch (err) {
+        console.error("Erreur fetch user:", err);
+      }
+    };
+    fetchMe();
+  }, []);
 
-  fetchMe();
-}, []);
-
-  // 🔹 Fetch request + messages
+  // 🔹 Charger la demande + conversation du pro
   useEffect(() => {
     if (!id) return;
 
@@ -65,7 +69,7 @@ export default function RequestDetailPro() {
         const data = await apiFetch(`/requests/${id}`);
         setRequest(data);
       } catch (err) {
-        console.error("Erreur fetch request detail:", err);
+        console.error("Erreur fetch request:", err);
       } finally {
         setLoading(false);
       }
@@ -74,24 +78,30 @@ export default function RequestDetailPro() {
     fetchRequest();
   }, [id]);
 
-  // 🔹 Send message
+  // 🔹 Envoyer un message
   const sendMessage = async () => {
-    if (!message.trim() || !request) return;
+    if (!message.trim() || !request?.conversation) return;
 
     try {
       const res = await apiFetch(`/requests/${request._id}/message`, {
         method: "POST",
-body: JSON.stringify({
-  content: message
-})      });
+        body: JSON.stringify({ content: message }),
+      });
 
-      setRequest(prev =>
-        prev ? { ...prev, messages: res.messages } : prev
+      setRequest((prev) =>
+        prev && prev.conversation
+          ? {
+              ...prev,
+              conversation: {
+                ...prev.conversation,
+                messages: res.messages,
+              },
+            }
+          : prev
       );
 
       setMessage("");
-
-      scrollViewRef.current?.scrollToEnd({ animated: true });
+      scrollRef.current?.scrollToEnd({ animated: true });
     } catch (err) {
       console.error("Erreur envoi message:", err);
     }
@@ -99,13 +109,14 @@ body: JSON.stringify({
 
   if (loading) return <Text>Chargement...</Text>;
   if (!request) return <Text>Demande introuvable</Text>;
+  if (!request.conversation) return <Text>Aucune conversation disponible</Text>;
 
   return (
     <ScrollView
       style={{ padding: 20 }}
-      ref={scrollViewRef}
+      ref={scrollRef}
       onContentSizeChange={() =>
-        scrollViewRef.current?.scrollToEnd({ animated: true })
+        scrollRef.current?.scrollToEnd({ animated: true })
       }
     >
       <Text style={styles.title}>{request.title}</Text>
@@ -114,40 +125,29 @@ body: JSON.stringify({
       <Text>Budget: {request.budget}€</Text>
       <Text>Description: {request.description || "Pas de description"}</Text>
 
-      {/* Images */}
-      {request.images?.length > 0 && (
-        <FlatList
-          horizontal
-          data={request.images}
-          keyExtractor={(_, i) => `${i}`}
-          renderItem={({ item }) => (
-            <Image source={{ uri: item.url }} style={styles.image} />
-          )}
-          style={{ marginVertical: 10 }}
-        />
-      )}
-
       {/* Messages */}
       <Text style={{ marginTop: 20, fontWeight: "bold", marginBottom: 5 }}>
-        Messages :
+        Conversation avec {request.client.name} :
       </Text>
-      {request.messages?.map((msg, i) => {
-  const isMe = msg.from._id === currentUserId;
 
-  return (
-    <View
-      key={i}
-      style={[
-        styles.messageBubble,
-        isMe ? styles.myMessage : styles.otherMessage
-      ]}
-    >
-      <Text>{msg.content}</Text>
-    </View>
-  );
-})}
+      {request.conversation.messages.map((msg, i) => {
+        const isMe = msg.from._id === currentUserId;
 
-      {/* Envoyer un message */}
+        return (
+          <View
+            key={i}
+            style={[
+              styles.messageBubble,
+              isMe ? styles.myMessage : styles.otherMessage,
+            ]}
+          >
+            {!isMe && <Text style={styles.author}>{msg.from.name}</Text>}
+            <Text>{msg.content}</Text>
+          </View>
+        );
+      })}
+
+      {/* Input */}
       <TextInput
         value={message}
         onChangeText={setMessage}
@@ -161,34 +161,29 @@ body: JSON.stringify({
 
 const styles = StyleSheet.create({
   title: { fontSize: 22, fontWeight: "bold", marginBottom: 10 },
-  image: {
-    width: 150,
-    height: 150,
-    marginRight: 10,
-    borderRadius: 8,
-    resizeMode: "contain",
+  messageBubble: {
+    padding: 10,
+    borderRadius: 10,
+    marginBottom: 8,
+    maxWidth: "80%",
+  },
+  myMessage: {
+    alignSelf: "flex-end",
+    backgroundColor: "#DCF8C6",
+  },
+  otherMessage: {
+    alignSelf: "flex-start",
+    backgroundColor: "#eee",
+  },
+  author: {
+    fontWeight: "bold",
+    marginBottom: 3,
   },
   input: {
     borderWidth: 1,
     borderColor: "#ccc",
-    padding: 8,
-    marginVertical: 10,
-    borderRadius: 5,
+    padding: 10,
+    marginTop: 10,
+    borderRadius: 8,
   },
-  messageBubble: {
-    backgroundColor: "#f0f0f0",
-    padding: 8,
-    borderRadius: 5,
-    marginBottom: 5,
-  },
-  messageAuthor: { fontWeight: "bold", marginBottom: 2 },
-  myMessage: {
-  alignSelf: "flex-end",
-  backgroundColor: "#DCF8C6",
-},
-
-otherMessage: {
-  alignSelf: "flex-start",
-  backgroundColor: "#f0f0f0",
-},
 });
