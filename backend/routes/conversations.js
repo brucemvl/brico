@@ -217,5 +217,24 @@ router.get("/", auth, async (req, res) => {
   }
 });
 
+// 🔹 MARQUER LES MESSAGES COMME LUS
+router.post("/:id/mark-read", auth, async (req, res) => {
+  try {
+    const conversation = await Conversation.findById(req.params.id);
+    if (!conversation) return res.status(404).json({ error: "Conversation introuvable" });
+
+    conversation.messages.forEach(msg => {
+      if (!msg.readBy.includes(req.user.id)) {
+        msg.readBy.push(req.user.id);
+      }
+    });
+
+    await conversation.save();
+    res.json({ success: true });
+  } catch (err) {
+    console.error("POST /conversations/:id/mark-read error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
 
 module.exports = router;
