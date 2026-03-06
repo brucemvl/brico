@@ -13,6 +13,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import Autocomplete from "react-native-autocomplete-input";
 import { useApi } from "../services/api";
 
 export default function CreateRequestForm() {
@@ -22,10 +23,13 @@ export default function CreateRequestForm() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("plomberie");
-  const [location, setLocation] = useState("");
   const [budget, setBudget] = useState("");
   const [images, setImages] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+
+  const [locationQuery, setLocationQuery] = useState("");
+const [cities, setCities] = useState([]);
+const [location, setLocation] = useState("");
 
   const pickImages = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -41,6 +45,27 @@ export default function CreateRequestForm() {
       setImages(result.assets);
     }
   };
+
+
+  const searchCities = async (text) => {
+  setLocationQuery(text);
+
+  if (text.length < 2) {
+    setCities([]);
+    return;
+  }
+
+  try {
+    const res = await fetch(
+      `https://geo.api.gouv.fr/communes?nom=${text}&fields=departement&limit=5`
+    );
+
+    const data = await res.json();
+    setCities(data);
+  } catch (err) {
+    console.log("Erreur villes:", err);
+  }
+};
 
   const handleSubmit = async () => {
     if (!title || !location || !category) {
@@ -100,9 +125,32 @@ export default function CreateRequestForm() {
         <Picker.Item label="Divers" value="divers" />
       </Picker>
 
-      <Text>Lieu*</Text>
-      <TextInput value={location} onChangeText={setLocation} style={{ borderWidth: 1, marginBottom: 10 }} />
+      <Text>Ville*</Text>
 
+<Autocomplete
+  data={cities}
+  value={locationQuery}
+  onChangeText={searchCities}
+  placeholder="Tapez une ville..."
+
+  flatListProps={{
+    keyExtractor: (item) => item.code,
+    renderItem: ({ item }) => (
+      <TouchableOpacity
+        onPress={() => {
+          const selected = `${item.nom} (${item.departement.code})`;
+          setLocation(selected);
+          setLocationQuery(selected);
+          setCities([]);
+        }}
+      >
+        <Text style={{ padding: 10 }}>
+          {item.nom} ({item.departement.code})
+        </Text>
+      </TouchableOpacity>
+    ),
+  }}
+/>
       <Text>Budget</Text>
       <TextInput value={budget} onChangeText={setBudget} keyboardType="numeric" style={{ borderWidth: 1, marginBottom: 10 }} />
 

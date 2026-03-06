@@ -52,29 +52,29 @@ router.post("/start", auth, async (req, res) => {
 // 2️⃣ RECUPERER UNE CONVERSATION
 // ==============================
 
-router.get("/:requestId", auth, async (req, res) => {
+router.get("/:id", auth, async (req, res) => {
   try {
 
-    const conversation = await Conversation.findOne({
-  request: req.params.requestId,
-  $or: [{ client: req.user.id }, { pro: req.user.id }]
-})
-.populate("client", "name profileImage")
-.populate("pro", "name profileImage")
-.populate({ path: "messages.from", select: "name profileImage", strictPopulate: false });
+    const conversation = await Conversation.findById(req.params.id)
+      .populate("client", "name profileImage")
+      .populate("pro", "name profileImage")
+      .populate({
+        path: "messages.from",
+        select: "name profileImage",
+        strictPopulate: false
+      });
 
     if (!conversation)
       return res.status(404).json({ error: "Conversation introuvable" });
 
+    // marquer messages comme lus
     conversation.messages.forEach(msg => {
+      if (!msg.readBy.includes(req.user.id)) {
+        msg.readBy.push(req.user.id);
+      }
+    });
 
-  if (!msg.readBy.includes(req.user.id)) {
-    msg.readBy.push(req.user.id);
-  }
-
-});
-
-await conversation.save();
+    await conversation.save();
 
     res.json(conversation);
 
@@ -82,7 +82,6 @@ await conversation.save();
     res.status(500).json({ error: err.message });
   }
 });
-
 
 
 // ==============================
@@ -160,6 +159,63 @@ router.get("/unread/count", auth, async (req, res) => {
 
 });
 
+
+
+router.get("/request/:requestId", auth, async (req, res) => {
+  try {
+
+    const conversation = await Conversation.findOne({
+      request: req.params.requestId,
+      $or: [{ client: req.user.id }, { pro: req.user.id }]
+    })
+      .populate("client", "name profileImage")
+      .populate("pro", "name profileImage")
+      .populate("messages.from", "name profileImage");
+
+    if (!conversation)
+      return res.status(404).json({ error: "Conversation introuvable" });
+
+    res.json(conversation);
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
+router.get("/", auth, async (req, res) => {
+  try {
+
+    const conversations = await Conversation.find({
+      $or: [
+        { client: req.user.id },
+        { pro: req.user.id }
+      ]
+    })
+    .populate("client", "name profileImage")
+    .populate("pro", "name profileImage")
+    .sort({ updatedAt: -1 });
+
+    const formatted = conversations.map(conv => {
+
+      const unread = conv.messages.filter(msg =>
+        msg.from.toString() !== req.user.id &&
+        !msg.readBy.includes(req.user.id)
+      ).length;
+
+      return {
+        ...conv.toObject(),
+        unreadCount: unread
+      };
+
+    });
+
+    res.json(formatted);
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 
 module.exports = router;

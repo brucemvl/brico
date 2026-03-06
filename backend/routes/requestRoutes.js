@@ -81,13 +81,26 @@ router.get("/:id", auth, async (req, res) => {
 
     if (!request) return res.status(404).json({ error: "Demande introuvable" });
 
-    const conversation = await Conversation.findOne({ request: req.params.id })
-      .populate("messages.from", "name profileImage");
+let conversation = await Conversation.findOne({
+  request: req.params.id,
+  $or: [
+    { pro: req.user.id },
+    { client: req.user.id }
+  ]
+}).populate("messages.from", "name profileImage");
+
+const conversations = await Conversation.find({
+  request: req.params.id,
+})
+.populate("pro", "name profileImage")
+.populate("messages.from", "name profileImage")
+.sort({ updatedAt: -1 });
+      
 
     res.json({
-      ...request.toObject(),
-      messages: conversation?.messages || [],
-    });
+  ...request.toObject(),
+  conversations
+});
   } catch (err) {
     console.error("GET /requests/:id error:", err);
     res.status(500).json({ error: err.message });
@@ -228,12 +241,19 @@ router.post("/:id/message", auth, async (req, res) => {
     const request = await Request.findById(req.params.id);
     if (!request) return res.status(404).json({ error: "Demande introuvable" });
 
-    let conversation = await Conversation.findOne({ request: req.params.id });
+let conversation = await Conversation.findOne({
+  request: req.params.id,
+  $or: [
+    { pro: req.user.id },
+    { client: req.user.id }
+  ]
+});
+
     if (!conversation) {
       conversation = new Conversation({
         request: request._id,
         client: request.client,
-        pro: req.user.role === "pro" ? req.user.id : null,
+        pro: req.user.role === "pro" ? req.user.id : req.body.proId,
         messages: [],
       });
     }

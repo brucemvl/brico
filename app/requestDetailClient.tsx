@@ -1,13 +1,12 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
-    Button,
     FlatList,
     Image,
     ScrollView,
     StyleSheet,
     Text,
-    TextInput,
+    TouchableOpacity,
     View
 } from "react-native";
 import { useApi } from "../services/api";
@@ -25,6 +24,16 @@ type MessageType = {
   createdAt: string;
 };
 
+type ConversationType = {
+  _id: string;
+  pro: {
+    _id: string;
+    name: string;
+    profileImage?: { url: string };
+  };
+  messages: MessageType[];
+};
+
 type RequestType = {
   _id: string;
   title: string;
@@ -38,6 +47,7 @@ type RequestType = {
   pro?: UserType;
   messages?: MessageType[];
   prosInConversation?: UserType[];
+  conversations: ConversationType[];
 };
 
 export default function RequestDetailClient() {
@@ -73,7 +83,10 @@ export default function RequestDetailClient() {
     try {
       const res = await apiFetch(`/requests/${request._id}/message`, {
         method: "POST",
-        body: JSON.stringify({ content: message }),
+body: JSON.stringify({
+  content: message,
+  proId: request.pro?._id
+})
       });
       setRequest(prev => prev ? { ...prev, messages: res.messages } : prev);
       setMessage("");
@@ -117,31 +130,39 @@ export default function RequestDetailClient() {
         />
       )}
 
-      {/* 🔹 Messages */}
-      <Text style={{ fontWeight: "bold", marginTop: 20 }}>Messages :</Text>
-      {request.messages?.map((msg, i) => (
-        <View key={i} style={{ flexDirection: "row", marginBottom: 5, alignItems: "center" }}>
-          {msg.from.profileImage?.url && (
-            <Image source={{ uri: msg.from.profileImage.url }} style={styles.avatar} />
-          )}
-          <View style={{ marginLeft: 8 }}>
-            <Text style={{ fontWeight: "bold" }}>{msg.from.name}</Text>
-            <Text>{msg.content}</Text>
-            {!msg.readByClient && msg.from._id !== request.client._id && (
-              <View style={styles.redDot} />
-            )}
-          </View>
-        </View>
-      ))}
+      <Text style={{ marginTop: 20, fontWeight: "bold" }}>
+Conversations avec les pros
+</Text>
 
-      {/* 🔹 Envoyer un message */}
-      <TextInput
-        value={message}
-        onChangeText={setMessage}
-        placeholder="Votre message..."
-        style={styles.input}
+{request.conversations?.map(conv => (
+  <TouchableOpacity
+    key={conv._id}
+    style={styles.conversationCard}
+    onPress={() =>
+      router.push({
+        pathname: "/conversation",
+        params: { id: conv._id }
+      })
+    }
+  >
+    {conv.pro.profileImage?.url && (
+      <Image
+        source={{ uri: conv.pro.profileImage.url }}
+        style={styles.avatar}
       />
-      <Button title="Envoyer" onPress={sendMessage} />
+    )}
+
+    <View>
+      <Text style={{ fontWeight: "bold" }}>{conv.pro.name}</Text>
+
+      {conv.messages?.length > 0 && (
+        <Text numberOfLines={1}>
+          {conv.messages[conv.messages.length - 1].content}
+        </Text>
+      )}
+    </View>
+  </TouchableOpacity>
+))}
     </ScrollView>
   );
 }
@@ -150,7 +171,6 @@ const styles = StyleSheet.create({
   title: { fontSize: 22, fontWeight: "bold" },
   image: { width: 150, height: 150, marginRight: 10, borderRadius: 8, resizeMode: "contain" },
   input: { borderWidth: 1, borderColor: "#ccc", padding: 8, marginVertical: 10, borderRadius: 5 },
-  avatar: { width: 40, height: 40, borderRadius: 20 },
   redDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: "red", marginTop: 2 },
   unreadBadge: {
     backgroundColor: "red",
@@ -161,5 +181,20 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginLeft: 8
   },
-  unreadText: { color: "white", fontSize: 12, fontWeight: "bold" }
+  unreadText: { color: "white", fontSize: 12, fontWeight: "bold" },
+  conversationCard: {
+  flexDirection: "row",
+  alignItems: "center",
+  gap: 10,
+  padding: 10,
+  borderWidth: 1,
+  borderRadius: 10,
+  marginTop: 10
+},
+
+avatar: {
+  width: 40,
+  height: 40,
+  borderRadius: 20
+}
 });

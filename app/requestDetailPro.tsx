@@ -36,11 +36,25 @@ export default function RequestDetailPro() {
   const { apiFetch } = useApi();
   const params = useLocalSearchParams<{ id: string }>();
   const id = params.id;
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   const [request, setRequest] = useState<RequestType | null>(null);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
   const scrollViewRef = useRef<ScrollView>(null);
+
+  useEffect(() => {
+  const fetchMe = async () => {
+    try {
+      const me = await apiFetch("/users/me");
+      setCurrentUserId(me._id);
+    } catch (err) {
+      console.log("Erreur user", err);
+    }
+  };
+
+  fetchMe();
+}, []);
 
   // 🔹 Fetch request + messages
   useEffect(() => {
@@ -67,8 +81,9 @@ export default function RequestDetailPro() {
     try {
       const res = await apiFetch(`/requests/${request._id}/message`, {
         method: "POST",
-        body: JSON.stringify({ content: message }),
-      });
+body: JSON.stringify({
+  content: message
+})      });
 
       setRequest(prev =>
         prev ? { ...prev, messages: res.messages } : prev
@@ -116,16 +131,21 @@ export default function RequestDetailPro() {
       <Text style={{ marginTop: 20, fontWeight: "bold", marginBottom: 5 }}>
         Messages :
       </Text>
-      {request.messages?.length > 0 ? (
-        request.messages.map((msg, i) => (
-          <View key={i} style={styles.messageBubble}>
-            <Text style={styles.messageAuthor}>{msg.from.name} :</Text>
-            <Text>{msg.content}</Text>
-          </View>
-        ))
-      ) : (
-        <Text>Aucun message pour l'instant</Text>
-      )}
+      {request.messages?.map((msg, i) => {
+  const isMe = msg.from._id === currentUserId;
+
+  return (
+    <View
+      key={i}
+      style={[
+        styles.messageBubble,
+        isMe ? styles.myMessage : styles.otherMessage
+      ]}
+    >
+      <Text>{msg.content}</Text>
+    </View>
+  );
+})}
 
       {/* Envoyer un message */}
       <TextInput
@@ -162,4 +182,13 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   messageAuthor: { fontWeight: "bold", marginBottom: 2 },
+  myMessage: {
+  alignSelf: "flex-end",
+  backgroundColor: "#DCF8C6",
+},
+
+otherMessage: {
+  alignSelf: "flex-start",
+  backgroundColor: "#f0f0f0",
+},
 });
