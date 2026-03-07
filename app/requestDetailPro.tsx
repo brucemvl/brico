@@ -11,16 +11,18 @@ import {
 import { useApi } from "../services/api";
 
 type MessageType = {
-  from: { _id: string; name: string; profileImage?: { url: string } };
+  from: {
+    _id: string;
+    name: string;
+  };
   content: string;
   createdAt: string;
+  readBy: string[];
 };
 
 type ConversationType = {
   _id: string;
   messages: MessageType[];
-  client: { name: string; profileImage?: { url: string } };
-  pro: { _id: string; name: string; profileImage?: { url: string } };
 };
 
 type RequestType = {
@@ -30,70 +32,79 @@ type RequestType = {
   category: string;
   location: string;
   budget: number;
-  status: string;
-  images?: { url: string }[];
-  client: { name: string; profileImage?: { url: string } };
-  conversation?: ConversationType; // conversation du pro
+  client: {
+    name: string;
+  };
+  conversation?: ConversationType;
 };
 
 export default function RequestDetailPro() {
   const { apiFetch } = useApi();
   const params = useLocalSearchParams<{ id: string }>();
-  const id = params.id;
+
+  const requestId = params.id;
 
   const [request, setRequest] = useState<RequestType | null>(null);
-  const [currentUserId, setCurrentUserId] = useState<string>("");
-  const [loading, setLoading] = useState(true);
+  const [currentUserId, setCurrentUserId] = useState("");
   const [message, setMessage] = useState("");
   const scrollRef = useRef<ScrollView>(null);
 
-  // 🔹 Charger l'utilisateur connecté
+  // 🔹 Charger utilisateur
   useEffect(() => {
     const fetchMe = async () => {
-      try {
-        const me = await apiFetch("/users/me");
-        setCurrentUserId(me._id);
-      } catch (err) {
-        console.error("Erreur fetch user:", err);
-      }
+      const me = await apiFetch("/users/me");
+      setCurrentUserId(me._id);
     };
+
     fetchMe();
   }, []);
 
-  // 🔹 Charger la demande + conversation du pro
-  useEffect(() => {
-    if (!id) return;
+  // 🔹 Charger demande
+  const fetchRequest = async () => {
+    try {
+      const data = await apiFetch(`/requests/${requestId}`);
+      setRequest(data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
-    const fetchRequest = async () => {
+  useEffect(() => {
+    if (!requestId) return;
+    fetchRequest();
+  }, [requestId]);
+
+  // 🔹 Marquer messages comme lus
+  useEffect(() => {
+    const markAsRead = async () => {
+      if (!request?.conversation?._id) return;
+
       try {
-        const data = await apiFetch(`/requests/${id}`);
-        setRequest(data);
-      } catch (err) {
-        console.error("Erreur fetch request:", err);
-      } finally {
-        setLoading(false);
-      }
+        await apiFetch(`/conversations/${request.conversation._id}/read`, {
+          method: "POST",
+        });
+      } catch {}
     };
 
-    fetchRequest();
-  }, [id]);
+    markAsRead();
+  }, [request?.conversation?._id]);
 
-  // 🔹 Envoyer un message
+  // 🔹 Envoyer message
   const sendMessage = async () => {
-    if (!message.trim() || !request?.conversation) return;
+    if (!message.trim()) return;
 
     try {
-      const res = await apiFetch(`/requests/${request._id}/message`, {
+      const res = await apiFetch(`/requests/${requestId}/message`, {
         method: "POST",
         body: JSON.stringify({ content: message }),
       });
 
       setRequest((prev) =>
-        prev && prev.conversation
+        prev
           ? {
               ...prev,
               conversation: {
-                ...prev.conversation,
+                ...prev.conversation!,
                 messages: res.messages,
               },
             }
@@ -101,37 +112,49 @@ export default function RequestDetailPro() {
       );
 
       setMessage("");
+
       scrollRef.current?.scrollToEnd({ animated: true });
     } catch (err) {
-      console.error("Erreur envoi message:", err);
+      console.error(err);
     }
   };
 
-  if (loading) return <Text>Chargement...</Text>;
-  if (!request) return <Text>Demande introuvable</Text>;
-  if (!request.conversation) return <Text>Aucune conversation disponible</Text>;
+  if (!request) return <Text>Chargement...</Text>;
+
+  const messages = request.conversation?.messages || [];
 
   return (
     <ScrollView
-      style={{ padding: 20 }}
+      style={styles.container}
       ref={scrollRef}
       onContentSizeChange={() =>
         scrollRef.current?.scrollToEnd({ animated: true })
       }
     >
       <Text style={styles.title}>{request.title}</Text>
+
       <Text>Catégorie: {request.category}</Text>
       <Text>Lieu: {request.location}</Text>
       <Text>Budget: {request.budget}€</Text>
-      <Text>Description: {request.description || "Pas de description"}</Text>
 
-      {/* Messages */}
-      <Text style={{ marginTop: 20, fontWeight: "bold", marginBottom: 5 }}>
-        Conversation avec {request.client.name} :
+      <Text style={styles.chatTitle}>
+        Conversation avec {request.client.name}
       </Text>
 
-      {request.conversation.messages.map((msg, i) => {
+      {messages.map((msg, i) => {
         const isMe = msg.from._id === currentUserId;
+
+        let status = "";
+
+        if (isMe) {
+          if (msg.readBy.length === 1) {
+            status = "✓ envoyé";
+          }
+
+          if (msg.readBy.length >= 2) {
+            status = "✓✓ lu";
+          }
+        }
 
         return (
           <View
@@ -141,44 +164,77 @@ export default function RequestDetailPro() {
               isMe ? styles.myMessage : styles.otherMessage,
             ]}
           >
-            {!isMe && <Text style={styles.author}>{msg.from.name}</Text>}
+            {!isMe && (
+              <Text style={styles.author}>{msg.from.name}</Text>
+            )}
+
             <Text>{msg.content}</Text>
+
+            {isMe && (
+              <Text style={styles.readStatus}>{status}</Text>
+            )}
           </View>
         );
       })}
 
-      {/* Input */}
       <TextInput
         value={message}
         onChangeText={setMessage}
         placeholder="Votre message..."
         style={styles.input}
       />
+
       <Button title="Envoyer" onPress={sendMessage} />
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  title: { fontSize: 22, fontWeight: "bold", marginBottom: 10 },
+  container: {
+    padding: 20,
+  },
+
+  title: {
+    fontSize: 22,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+
+  chatTitle: {
+    marginTop: 20,
+    marginBottom: 10,
+    fontWeight: "bold",
+  },
+
   messageBubble: {
     padding: 10,
     borderRadius: 10,
     marginBottom: 8,
     maxWidth: "80%",
   },
+
   myMessage: {
     alignSelf: "flex-end",
     backgroundColor: "#DCF8C6",
   },
+
   otherMessage: {
     alignSelf: "flex-start",
     backgroundColor: "#eee",
   },
+
   author: {
     fontWeight: "bold",
     marginBottom: 3,
   },
+
+  readStatus: {
+    fontSize: 10,
+    marginTop: 4,
+    color: "#777",
+    alignSelf: "flex-end",
+  },
+
   input: {
     borderWidth: 1,
     borderColor: "#ccc",

@@ -4,7 +4,7 @@ const messageSchema = new mongoose.Schema({
   from: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   content: { type: String, required: true },
   createdAt: { type: Date, default: Date.now },
-  readByClient: { type: Boolean, default: false }, // 🔹 nouveau champ
+  readBy: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }], // ✅ liste des IDs qui ont lu
 });
 
 const offerSchema = new mongoose.Schema({
@@ -44,7 +44,7 @@ const requestSchema = new mongoose.Schema({
   },
 
   offers: [offerSchema],
-
+messages: [messageSchema], // ✅ ajouter ici
   clientValidated: { type: Boolean, default: false },
   proValidated: { type: Boolean, default: false },
   ratingGiven: { type: Boolean, default: false },

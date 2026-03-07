@@ -10,12 +10,28 @@ const ratingSchema = new mongoose.Schema({
 const notificationSchema = new mongoose.Schema({
   type: {
     type: String,
-    enum: ["new_request", "new_offer", "message", "validation"]
+    enum: ["new_request", "new_offer", "new_message", "request_accepted"]
   },
-  content: String,
-  relatedRequest: { type: mongoose.Schema.Types.ObjectId, ref: "Request" },
-  read: { type: Boolean, default: false },
-  createdAt: { type: Date, default: Date.now }
+
+  request: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Request"
+  },
+
+  conversation: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Conversation"
+  },
+
+  read: {
+    type: Boolean,
+    default: false
+  },
+
+  createdAt: {
+    type: Date,
+    default: Date.now
+  }
 });
 
 const userSchema = new mongoose.Schema({

@@ -19,6 +19,7 @@ type MessageType = {
   };
   content: string;
   createdAt?: string;
+  readBy: string[]; // ✅ ajout
 };
 
 type ConversationType = {
@@ -74,6 +75,28 @@ export default function Conversation() {
     fetchConversation();
   }, [conversationId]);
 
+  // 🔹 Marquer messages comme lus
+  useEffect(() => {
+  if (!conversation?._id) return;
+
+  const markRead = async () => {
+    try {
+      await apiFetch(`/conversations/${conversation._id}/read`, {
+        method: "POST",
+      });
+
+      // 🔹 Recharger la conversation pour avoir les readBy à jour
+      const updated = await apiFetch(`/conversations/${conversation._id}`);
+      setConversation(updated);
+
+    } catch (err) {
+      console.error("Erreur mark read:", err);
+    }
+  };
+
+  markRead();
+}, [conversation?._id]);
+
   // 🔹 Envoyer message
   const sendMessage = async () => {
     if (!message.trim() || !conversation) return;
@@ -111,6 +134,18 @@ export default function Conversation() {
       {conversation.messages?.map((msg, i) => {
         const isMe = msg.from._id === currentUserId;
 
+        let status = "";
+
+        if (isMe) {
+          if (msg.readBy?.length === 1) {
+            status = "✓ envoyé";
+          }
+
+          if (msg.readBy?.length >= 2) {
+            status = "✓✓ lu";
+          }
+        }
+
         return (
           <View
             key={i}
@@ -124,6 +159,10 @@ export default function Conversation() {
             )}
 
             <Text>{msg.content}</Text>
+
+            {isMe && (
+              <Text style={styles.readStatus}>{status}</Text>
+            )}
           </View>
         );
       })}
@@ -166,6 +205,13 @@ const styles = StyleSheet.create({
   author: {
     fontWeight: "bold",
     marginBottom: 3,
+  },
+
+  readStatus: {
+    fontSize: 10,
+    marginTop: 4,
+    color: "#777",
+    alignSelf: "flex-end",
   },
 
   input: {

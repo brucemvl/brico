@@ -57,16 +57,44 @@ router.get("/client", auth, async (req, res) => {
 // =======================
 router.get("/pro", auth, async (req, res) => {
   try {
+    const proId = req.user.id;
+
     const requests = await Request.find({ status: "open" });
-    const user = await User.findById(req.user.id);
+
+    const conversations = await Conversation.find({ pro: proId });
+
+    const requestsWithUnread = requests.map(r => {
+
+      const conv = conversations.find(
+        c => c.request.toString() === r._id.toString()
+      );
+
+      const hasUnread =
+  conv?.messages?.some(
+    msg =>
+      msg.from.toString() !== proId &&
+      !msg.readBy.includes(proId)
+  ) || false;
+
+      return {
+        _id: r._id,
+        title: r.title,
+        category: r.category,
+        location: r.location,
+        budget: r.budget,
+        status: r.status,
+        hasUnread
+      };
+    });
 
     res.json({
-      requests,
-      skills: user.skills || [],
+      requests: requestsWithUnread,
+      skills: req.user.skills
     });
+
   } catch (err) {
-    console.error("GET /requests/pro error:", err);
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ message: "Erreur serveur" });
   }
 });
 
@@ -267,30 +295,26 @@ router.post("/:id/message", auth, async (req, res) => {
 
 let conversation = await Conversation.findOne({
   request: req.params.id,
-  $or: [
-    { pro: req.user.id },
-    { client: req.user.id }
-  ]
+  $or: [{ client: req.user.id }, { pro: req.user.id }]
 });
 
-    if (!conversation) {
-      conversation = new Conversation({
-        request: request._id,
-        client: request.client,
-        pro: req.user.role === "pro" ? req.user.id : req.body.proId,
-        messages: [],
-      });
-    }
+if (!conversation) {
+  conversation = new Conversation({
+    request: req.params.id,
+    client: request.client,
+    pro: req.user.role === "pro" ? req.user.id : req.body.proId,
+    messages: []
+  });
+}
 
-    const newMessage = {
-      from: req.user.id,
-      content,
-      readBy: [req.user.id],
-      createdAt: new Date(),
-    };
+conversation.messages.push({
+  from: req.user.id,
+  content,
+  readBy: [req.user.id],
+  createdAt: new Date()
+});
 
-    conversation.messages.push(newMessage);
-    await conversation.save();
+await conversation.save();
     await conversation.populate("messages.from", "name profileImage");
 
     res.json({ messages: conversation.messages });
@@ -299,5 +323,7 @@ let conversation = await Conversation.findOne({
     res.status(500).json({ error: err.message });
   }
 });
+
+
 
 module.exports = router;

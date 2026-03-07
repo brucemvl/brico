@@ -15,7 +15,9 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import Autocomplete from "react-native-autocomplete-input";
 import { useApi } from "../services/api";
+
 
 const categories = ["plomberie", "électricité", "peinture", "agencement", "divers"];
 
@@ -36,6 +38,9 @@ export default function ProfilePro() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploadingIndex, setUploadingIndex] = useState<number | null>(null);
+
+  const [locationQuery, setLocationQuery] = useState("");
+  const [cities, setCities] = useState([]);
 
   // 🔹 Fetch profil
   const fetchProfile = async () => {
@@ -127,6 +132,26 @@ export default function ProfilePro() {
     else setSkills([...skills, skill]);
   };
 
+  const searchCities = async (text) => {
+  setLocationQuery(text);
+
+  if (text.length < 2) {
+    setCities([]);
+    return;
+  }
+
+  try {
+    const res = await fetch(
+      `https://geo.api.gouv.fr/communes?nom=${text}&fields=departement&limit=5`
+    );
+
+    const data = await res.json();
+    setCities(data);
+  } catch (err) {
+    console.log("Erreur villes:", err);
+  }
+};
+
   // 🔹 Save profil
   const handleSave = async () => {
     try {
@@ -217,8 +242,31 @@ export default function ProfilePro() {
       <Text>Téléphone</Text>
       <TextInput style={styles.input} value={phone} onChangeText={setPhone} />
 
-      <Text>Localisation</Text>
-      <TextInput style={styles.input} value={location} onChangeText={setLocation} />
+      <Autocomplete
+        data={cities}
+        value={locationQuery}
+        onChangeText={searchCities}
+        placeholder="Tapez une ville..."
+        style={{width: 300}}
+      
+        flatListProps={{
+          keyExtractor: (item) => item.code,
+          renderItem: ({ item }) => (
+            <TouchableOpacity
+              onPress={() => {
+                const selected = `${item.nom} (${item.departement.code})`;
+                setLocation(selected);
+                setLocationQuery(selected);
+                setCities([]);
+              }}
+            >
+              <Text style={{ padding: 10 }}>
+                {item.nom} ({item.departement.code})
+              </Text>
+            </TouchableOpacity>
+          ),
+        }}
+      />
 
       <Text>SIRET</Text>
       <TextInput style={styles.input} value={siret} onChangeText={setSiret} keyboardType="numeric" maxLength={14} />
