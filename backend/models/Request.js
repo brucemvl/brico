@@ -4,7 +4,7 @@ const messageSchema = new mongoose.Schema({
   from: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   content: { type: String, required: true },
   createdAt: { type: Date, default: Date.now },
-  readBy: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }], // ✅ liste des IDs qui ont lu
+  readBy: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }], // liste des IDs qui ont lu
 });
 
 const offerSchema = new mongoose.Schema({
@@ -12,13 +12,16 @@ const offerSchema = new mongoose.Schema({
   price: { type: Number, required: true },
   proposedDate: Date,
   message: String,
-  accepted: { type: Boolean, default: false },
+  accepted: { type: Boolean, default: false }, // marque si cette offre a été acceptée
   createdAt: { type: Date, default: Date.now }
 });
 
 const requestSchema = new mongoose.Schema({
   client: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-  pro: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+
+  // 🔹 PRO choisi et offre acceptée
+  proAssigned: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+  acceptedOffer: offerSchema, // copie de l'offre acceptée
 
   title: { type: String, required: true },
   description: String,
@@ -29,33 +32,32 @@ const requestSchema = new mongoose.Schema({
   },
   location: { type: String, required: true },
   budget: Number,
+  images: [{ url: String, public_id: String }],
 
-  images: [
-    {
-      url: String,
-      public_id: String
-    }
-  ],
-
+  // 🔹 Statut global de la demande
   status: {
     type: String,
-    enum: ["open", "accepted", "in_progress", "completed", "cancelled"],
+    enum: ["open", "in_progress", "completed", "cancelled"],
     default: "open"
   },
 
   offers: [offerSchema],
-messages: [messageSchema], // ✅ ajouter ici
+  messages: [messageSchema],
+
+  // 🔹 Validation du deal par les deux parties
   clientValidated: { type: Boolean, default: false },
   proValidated: { type: Boolean, default: false },
-  ratingGiven: { type: Boolean, default: false },
 
+  // 🔹 Suivi des notes et planification
+  ratingGiven: { type: Boolean, default: false },
   scheduledDate: Date,
 
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
 });
 
-requestSchema.pre("save", async function (next) {
+// 🔹 Mise à jour de `updatedAt` automatiquement
+requestSchema.pre("save", function () {
   this.updatedAt = Date.now();
 });
 

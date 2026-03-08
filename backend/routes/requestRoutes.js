@@ -2,7 +2,6 @@ const express = require("express");
 const router = express.Router();
 const auth = require("../middlewares/auth");
 const Request = require("../models/Request");
-const User = require("../models/User");
 const Conversation = require("../models/Conversation");
 const { createNotification } = require("../services/notificationService");
 const upload = require("../middlewares/uploadCloudinary");
@@ -10,19 +9,6 @@ const cloudinary = require("../config/cloudinary");
 const streamifier = require("streamifier");
 const sharp = require("sharp");
 const fetch = require("node-fetch");
-
-// =======================
-// 🔹 GET toutes les demandes (test/debug)
-// =======================
-router.get("/", auth, async (req, res) => {
-  try {
-    const requests = await Request.find();
-    res.json(requests);
-  } catch (err) {
-    console.error("GET /requests error:", err);
-    res.status(500).json({ error: "Erreur serveur" });
-  }
-});
 
 // =======================
 // 🔹 GET demandes du client connecté
@@ -35,14 +21,14 @@ router.get("/client", auth, async (req, res) => {
 
     const requests = await Request.find({ client: req.user.id })
       .populate("client", "name profileImage")
-      .populate("pro", "name profileImage");
+      .populate("proAssigned", "name profileImage");
 
     const conversations = await Conversation.find({ client: req.user.id });
 
-    const formatted = requests.map(reqItem => {
-      const conv = conversations.find(c => c.request.toString() === reqItem._id.toString());
+    const formatted = requests.map(r => {
+      const conv = conversations.find(c => c.request.toString() === r._id.toString());
       const hasUnread = conv?.messages?.some(msg => !msg.readBy.includes(req.user.id)) || false;
-      return { ...reqItem.toObject(), hasUnread };
+      return { ...r.toObject(), hasUnread };
     });
 
     res.json(formatted);
@@ -53,28 +39,31 @@ router.get("/client", auth, async (req, res) => {
 });
 
 // =======================
-// 🔹 GET demandes ouvertes pour les pros
+// 🔹 GET demandes pour pros
 // =======================
 router.get("/pro", auth, async (req, res) => {
   try {
     const proId = req.user.id;
 
-    const requests = await Request.find({ status: "open" });
+    // 🔹 Toutes les demandes ouvertes
+    const openRequests = await Request.find({ status: "open" });
 
+    // 🔹 Mes demandes en cours (in_progress) uniquement si je suis assigné
+    const myInProgress = await Request.find({
+      status: "in_progress",
+      proAssigned: proId
+    });
+
+    // 🔹 Concaténer
+    const allRequests = [...openRequests, ...myInProgress];
+
+    // 🔹 Récupérer les conversations pour marquer unread
     const conversations = await Conversation.find({ pro: proId });
 
-    const requestsWithUnread = requests.map(r => {
-
-      const conv = conversations.find(
-        c => c.request.toString() === r._id.toString()
-      );
-
+    const requestsWithUnread = allRequests.map(r => {
+      const conv = conversations.find(c => c.request.toString() === r._id.toString());
       const hasUnread =
-  conv?.messages?.some(
-    msg =>
-      msg.from.toString() !== proId &&
-      !msg.readBy.includes(proId)
-  ) || false;
+        conv?.messages?.some(msg => msg.from.toString() !== proId && !msg.readBy.includes(proId)) || false;
 
       return {
         _id: r._id,
@@ -93,7 +82,7 @@ router.get("/pro", auth, async (req, res) => {
     });
 
   } catch (err) {
-    console.error(err);
+    console.error("GET /requests/pro error:", err);
     res.status(500).json({ message: "Erreur serveur" });
   }
 });
@@ -104,13 +93,11 @@ router.get("/pro", auth, async (req, res) => {
 router.get("/:id", auth, async (req, res) => {
   try {
     const request = await Request.findById(req.params.id)
-      .populate("client", "name profileImage");
+      .populate("client", "name profileImage")
+      .populate("proAssigned", "name profileImage");
 
-    if (!request) {
-      return res.status(404).json({ error: "Demande introuvable" });
-    }
+    if (!request) return res.status(404).json({ error: "Demande introuvable" });
 
-    // 👤 CLIENT → voir toutes les conversations avec les pros
     if (req.user.role === "client") {
       const conversations = await Conversation.find({
         request: req.params.id,
@@ -120,39 +107,33 @@ router.get("/:id", auth, async (req, res) => {
         .populate("messages.from", "name profileImage")
         .sort({ updatedAt: -1 });
 
-      return res.json({
-        ...request.toObject(),
-        conversations
-      });
+      return res.json({ ...request.toObject(), conversations });
     }
 
-    // 👷 PRO → voir uniquement sa conversation avec le client
     if (req.user.role === "pro") {
-  let conversation = await Conversation.findOne({
-    request: req.params.id,
-    pro: req.user.id
-  })
-  .populate("client", "name profileImage")
-  .populate("messages.from", "name profileImage");
+      // 🔹 Cherche si le pro a déjà une conversation pour cette demande
+      let conversation = await Conversation.findOne({
+        request: req.params.id,
+        pro: req.user.id
+      })
+        .populate("client", "name profileImage")
+        .populate("messages.from", "name profileImage");
 
-  // 🔹 Si pas de conversation existante, on en crée une vide
-  if (!conversation) {
-    const requestObj = await Request.findById(req.params.id);
-    conversation = new Conversation({
-      request: requestObj._id,
-      client: requestObj.client,
-      pro: req.user.id,
-      messages: []
-    });
-    await conversation.save();
-    await conversation.populate("client", "name profileImage");
-  }
-
-  return res.json({
-    ...request.toObject(),
-    conversation
+      // 🔹 Si aucune conversation, on la crée
+      if (!conversation) {
+  conversation = new Conversation({
+    request: request._id,
+    client: request.client,       // ok
+    pro: req.user.id,             // <-- obligatoire !
+    messages: [],                 // vide pour l'instant
   });
+  await conversation.save();
+  await conversation.populate("client", "name profileImage");
+  await conversation.populate("messages.from", "name profileImage");
 }
+
+      return res.json({ ...request.toObject(), conversation });
+    }
   } catch (err) {
     console.error("GET /requests/:id error:", err);
     res.status(500).json({ error: err.message });
@@ -168,13 +149,25 @@ router.post("/", auth, upload.array("images"), async (req, res) => {
       return res.status(403).json({ error: "Seulement clients" });
     }
 
-    const newRequest = new Request({
-      ...req.body,
-      client: req.user.id,
-    });
+    const { title, description, category, location, budget } = req.body;
 
-    if (req.files && req.files.length > 0) {
-      newRequest.images = [];
+    // 🔹 Construire l'objet explicitement
+    const newRequest = new Request({
+  client: req.user.id,
+  title,
+  description,
+  category,
+  location,
+  budget,
+  images: [],
+  offers: [],
+  messages: [],
+  clientValidated: false,
+  proValidated: false
+});
+
+    // 🔹 Upload des images
+    if (req.files?.length) {
       for (const file of req.files) {
         const response = await fetch(file.path);
         const buffer = Buffer.from(await response.arrayBuffer());
@@ -188,7 +181,10 @@ router.post("/", auth, upload.array("images"), async (req, res) => {
           streamifier.createReadStream(jpegBuffer).pipe(uploadStream);
         });
 
-        newRequest.images.push({ url: uploadResult.secure_url, public_id: uploadResult.public_id });
+        newRequest.images.push({
+          url: uploadResult.secure_url,
+          public_id: uploadResult.public_id
+        });
       }
     }
 
@@ -207,14 +203,81 @@ router.delete("/:id", auth, async (req, res) => {
   try {
     const request = await Request.findById(req.params.id);
     if (!request) return res.status(404).json({ error: "Demande introuvable" });
-    if (request.client.toString() !== req.user.id) {
-      return res.status(403).json({ error: "Non autorisé" });
-    }
+    if (request.client.toString() !== req.user.id) return res.status(403).json({ error: "Non autorisé" });
 
     await request.deleteOne();
     res.json({ message: "Demande supprimée" });
   } catch (err) {
     console.error("DELETE /requests/:id error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+//MESSAGES COTE PRO
+
+router.post("/:id/message", auth, async (req, res) => {
+  try {
+    const { content } = req.body;
+    if (!content || !content.trim()) return res.status(400).json({ error: "Message vide" });
+
+    const request = await Request.findById(req.params.id);
+    if (!request) return res.status(404).json({ error: "Demande introuvable" });
+
+    let conversation;
+
+    if (req.user.role === "pro") {
+      // 🔹 Le pro envoie un message
+      conversation = await Conversation.findOne({
+        request: request._id,
+        pro: req.user.id,
+      });
+
+      if (!conversation) {
+        // ⚠️ créer une nouvelle conversation côté pro
+        conversation = new Conversation({
+          request: request._id,
+          client: request.client,
+          pro: req.user.id,
+          messages: [],
+        });
+      }
+
+    } else if (req.user.role === "client") {
+      // 🔹 Le client envoie un message
+      if (!request.proAssigned) {
+        return res.status(400).json({ error: "Aucun pro assigné pour cette demande" });
+      }
+
+      conversation = await Conversation.findOne({
+        request: request._id,
+        pro: request.proAssigned,
+        client: req.user.id,
+      });
+
+      if (!conversation) {
+        conversation = new Conversation({
+          request: request._id,
+          client: req.user.id,
+          pro: request.proAssigned,
+          messages: [],
+        });
+      }
+    }
+
+    // Ajouter le message
+    conversation.messages.push({
+      from: req.user.id,
+      content,
+      readBy: [req.user.id],
+      createdAt: new Date(),
+    });
+
+    await conversation.save();
+    await conversation.populate("messages.from", "name profileImage");
+
+    res.json(conversation);
+  } catch (err) {
+    console.error(err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -255,7 +318,8 @@ router.post("/:id/offer", auth, async (req, res) => {
 // =======================
 router.post("/:id/accept/:offerId", auth, async (req, res) => {
   try {
-    if (!req.user || req.user.role !== "client") return res.status(403).json({ error: "Seulement pour les clients" });
+    if (!req.user || req.user.role !== "client") 
+      return res.status(403).json({ error: "Seulement pour les clients" });
 
     const request = await Request.findById(req.params.id);
     if (!request) return res.status(404).json({ error: "Demande introuvable" });
@@ -263,11 +327,21 @@ router.post("/:id/accept/:offerId", auth, async (req, res) => {
     const offer = request.offers.id(req.params.offerId);
     if (!offer) return res.status(404).json({ error: "Offre introuvable" });
 
+    if (offer.accepted) return res.status(400).json({ error: "Offre déjà acceptée" });
+
+    // 🔹 Marquer cette offre comme acceptée
     offer.accepted = true;
-    request.pro = offer.pro;
-    request.status = "accepted";
+
+    // 🔹 Assigner le pro et stocker l'offre acceptée
+    request.proAssigned = offer.pro;
+    request.acceptedOffer = offer.toObject();
+
+    // 🔹 Changer le statut uniquement pour le client et le pro assigné
+    request.status = "in_progress";
+
     await request.save();
 
+    // 🔹 Notification au pro choisi
     await createNotification({
       userId: offer.pro,
       type: "offer_accepted",
@@ -275,7 +349,7 @@ router.post("/:id/accept/:offerId", auth, async (req, res) => {
       relatedRequest: request._id,
     });
 
-    res.json({ message: "Offre acceptée" });
+    res.json({ message: "Offre acceptée", proAssigned: request.proAssigned });
   } catch (err) {
     console.error("POST /requests/:id/accept/:offerId error:", err);
     res.status(500).json({ error: err.message });
@@ -283,47 +357,61 @@ router.post("/:id/accept/:offerId", auth, async (req, res) => {
 });
 
 // =======================
-// 🔹 POST envoyer un message (client/pro)
+// 🔹 Obtenir les coordonnées pour une demande
 // =======================
-router.post("/:id/message", auth, async (req, res) => {
+router.get("/:id/contact", auth, async (req, res) => {
   try {
-    const { content } = req.body;
-    if (!content || !content.trim()) return res.status(400).json({ error: "Message vide" });
+    const request = await Request.findById(req.params.id)
+      .populate("client", "email phone name")
+      .populate("proAssigned", "email phone name");
 
-    const request = await Request.findById(req.params.id);
     if (!request) return res.status(404).json({ error: "Demande introuvable" });
 
-let conversation = await Conversation.findOne({
-  request: req.params.id,
-  $or: [{ client: req.user.id }, { pro: req.user.id }]
-});
+    // 🔹 Déterminer le pro à utiliser pour la conversation
+    let conversationProId;
+    if (req.user.role === "client") {
+      // côté client : toujours la conversation avec le pro assigné
+      conversationProId = request.proAssigned;
+      if (!conversationProId) {
+        return res.status(400).json({ error: "Aucun pro assigné pour cette demande" });
+      }
+    } else if (req.user.role === "pro") {
+      // côté pro : utiliser son propre ID pour retrouver la conversation
+      conversationProId = req.user.id;
+    }
 
-if (!conversation) {
-  conversation = new Conversation({
-    request: req.params.id,
-    client: request.client,
-    pro: req.user.role === "pro" ? req.user.id : req.body.proId,
-    messages: []
-  });
-}
+    // 🔹 Chercher la conversation
+    const conversation = await Conversation.findOne({
+      request: request._id,
+      client: request.client,
+      pro: conversationProId,
+    })
+      .populate("client", "name email phone")
+      .populate("pro", "name email phone");
 
-conversation.messages.push({
-  from: req.user.id,
-  content,
-  readBy: [req.user.id],
-  createdAt: new Date()
-});
+    if (!conversation) return res.status(404).json({ error: "Conversation introuvable" });
 
-await conversation.save();
-    await conversation.populate("messages.from", "name profileImage");
+    // 🔹 Vérifier si le deal est accepté
+    const dealAccepted =
+      (conversation.dealProposedByClient && conversation.dealAcceptedByPro) ||
+      (conversation.dealProposedByPro && conversation.dealAcceptedByClient);
 
-    res.json({ messages: conversation.messages });
+    if (!dealAccepted) {
+      return res.status(403).json({ error: "Le deal n'a pas encore été accepté par les deux parties" });
+    }
+
+    // 🔹 Déterminer qui voit les coordonnées
+    let otherUser;
+    if (req.user.role === "client") {
+      otherUser = conversation.pro;
+    } else if (req.user.role === "pro") {
+      otherUser = conversation.client;
+    }
+
+    res.json({ phone: otherUser.phone, email: otherUser.email });
   } catch (err) {
-    console.error("POST /requests/:id/message error:", err);
-    res.status(500).json({ error: err.message });
+    console.error("GET /requests/:id/contact error:", err);
+    res.status(500).json({ error: "Erreur serveur" });
   }
 });
-
-
-
 module.exports = router;

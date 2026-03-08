@@ -13,6 +13,7 @@ const router = useRouter()
 
 
   const apiFetch = async (url: string, options: RequestInit = {}) => {
+    console.log("API CALL:", url);
     if (loading) {
     // attend que le contexte charge user
     await new Promise(resolve => setTimeout(resolve, 50));

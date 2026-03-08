@@ -1,6 +1,7 @@
 import { useLocalSearchParams } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
+    Alert,
     Button,
     Dimensions,
     Image,
@@ -10,7 +11,7 @@ import {
     Text,
     TextInput,
     TouchableOpacity,
-    View,
+    View
 } from "react-native";
 import { useApi } from "../services/api";
 
@@ -24,6 +25,10 @@ type MessageType = {
 type ConversationType = {
   _id: string;
   messages: MessageType[];
+  dealProposedByClient?: boolean;
+  dealProposedByPro?: boolean;
+  dealAcceptedByClient?: boolean;
+  dealAcceptedByPro?: boolean;
 };
 
 type RequestType = {
@@ -33,8 +38,14 @@ type RequestType = {
   category: string;
   location: string;
   budget: number;
+
   client: { name: string };
+
+  clientValidated?: boolean;
+  proValidated?: boolean;
+
   images?: { url: string }[];
+
   conversation?: ConversationType;
 };
 
@@ -80,13 +91,57 @@ export default function RequestDetailPro() {
     const markAsRead = async () => {
       if (!request?.conversation?._id) return;
       try {
-        await apiFetch(`/conversations/${request.conversation._id}/read`, {
-          method: "POST",
-        });
+        await apiFetch(`/conversations/${request.conversation._id}/mark-read`, {
+  method: "POST",
+});
       } catch {}
     };
     markAsRead();
   }, [request?.conversation?._id]);
+
+  const proposeDeal = async () => {
+          if (!request?.conversation?._id) return;
+
+  try {
+    await apiFetch(`/conversations/${request.conversation?._id}/propose-deal`, {
+  method: "POST",
+});
+
+    fetchRequest();
+
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+const acceptDeal = async () => {
+  if (!request?.conversation?._id) return;
+
+  try {
+    await apiFetch(`/conversations/${request.conversation._id}/accept-deal`, {
+      method: "POST",
+    });
+    Alert.alert("Accord accepté", "Vous avez accepté le deal");
+
+    // 🔹 recharger les flags
+    fetchRequest();
+  } catch (err) {
+    console.error(err);
+    Alert.alert("Erreur", "Impossible d'accepter le deal");
+  }
+};
+
+const getContact = async () => {
+  try {
+
+    const res = await apiFetch(`/requests/${requestId}/contact`);
+
+    alert(`Téléphone : ${res.phone}\nEmail : ${res.email}`);
+
+  } catch {
+    alert("Les deux utilisateurs doivent accepter l'accord");
+  }
+};
 
   // Envoyer message
   const sendMessage = async () => {
@@ -125,6 +180,18 @@ export default function RequestDetailPro() {
     setModalVisible(true);
   };
 
+  const dealAccepted =
+  (request?.conversation?.dealProposedByPro && request?.conversation?.dealAcceptedByClient) ||
+  (request?.conversation?.dealProposedByClient && request?.conversation?.dealAcceptedByPro);
+
+const clientProposed =
+  request?.conversation?.dealProposedByClient &&
+  !request?.conversation?.dealAcceptedByClient;
+
+const proProposed =
+  request?.conversation?.dealProposedByPro &&
+  !request?.conversation?.dealAcceptedByPro;
+
   return (
     <View style={{ flex: 1 }}>
       <ScrollView
@@ -152,6 +219,33 @@ export default function RequestDetailPro() {
             </ScrollView>
           </>
         )}
+
+        <View style={styles.dealBox}>
+
+  // Affichage des actions
+{!request?.conversation?.dealProposedByClient && !request?.conversation?.dealProposedByPro && !dealAccepted && (
+  <TouchableOpacity onPress={proposeDeal}>
+    <Text>Proposer un accord</Text>
+  </TouchableOpacity>
+)}
+
+{request?.conversation?.dealProposedByClient && !dealAccepted && (
+  <TouchableOpacity onPress={acceptDeal}>
+    <Text>Accepter l'accord proposé par le client</Text>
+  </TouchableOpacity>
+)}
+
+{request?.conversation?.dealProposedByPro && !dealAccepted && (
+  <Text>Vous avez proposé un accord — en attente du client</Text>
+)}
+
+{dealAccepted && (
+  <TouchableOpacity onPress={getContact}>
+    <Text>Voir coordonnées</Text>
+  </TouchableOpacity>
+)}
+
+</View>
 
         <Text style={styles.chatTitle}>Conversation avec {request.client.name}</Text>
         {messages.map((msg, i) => {
@@ -249,4 +343,16 @@ const styles = StyleSheet.create({
     height: height * 0.5,
     marginBottom: 10,
   },
+  dealBox: {
+  marginTop: 15,
+  marginBottom: 10,
+  padding: 10,
+  borderRadius: 8,
+  backgroundColor: "#f3f3f3",
+},
+
+dealStatus: {
+  marginTop: 5,
+  color: "#555",
+},
 });

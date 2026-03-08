@@ -32,6 +32,11 @@ const conversationSchema = new mongoose.Schema({
     required: true
   },
 
+  dealProposedByClient: { type: Boolean, default: false },
+dealProposedByPro: { type: Boolean, default: false },
+  dealAcceptedByClient: { type: Boolean, default: false },
+dealAcceptedByPro: { type: Boolean, default: false },
+
   messages: [messageSchema]
 
 }, { timestamps: true });

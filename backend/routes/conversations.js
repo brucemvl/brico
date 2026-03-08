@@ -4,8 +4,12 @@ const auth = require("../middlewares/auth");
 
 const Conversation = require("../models/Conversation");
 const Request = require("../models/Request");
+const { createNotification } = require("../services/notificationService");
+const User = require("../models/User");
 
+// =======================
 // 🔹 GET toutes les conversations ou par requestId
+// =======================
 router.get("/", auth, async (req, res) => {
   try {
     const { requestId } = req.query;
@@ -23,35 +27,9 @@ router.get("/", auth, async (req, res) => {
   }
 });
 
-// 🔹 Créer une conversation
-router.post("/start", auth, async (req, res) => {
-  try {
-    const { requestId } = req.body;
-    const request = await Request.findById(requestId);
-    if (!request) return res.status(404).json({ error: "Demande introuvable" });
-
-    let conversation = await Conversation.findOne({
-      request: requestId,
-      pro: req.user.id
-    });
-
-    if (!conversation) {
-      conversation = new Conversation({
-        request: requestId,
-        client: request.client,
-        pro: req.user.id,
-        messages: []
-      });
-      await conversation.save();
-    }
-
-    res.json(conversation);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// 🔹 Récupérer une conversation spécifique
+// =======================
+// 🔹 Récupérer une conversation spécifique et marquer comme lue
+// =======================
 router.get("/:id", auth, async (req, res) => {
   try {
     const conversation = await Conversation.findById(req.params.id)
@@ -61,7 +39,14 @@ router.get("/:id", auth, async (req, res) => {
 
     if (!conversation) return res.status(404).json({ error: "Conversation introuvable" });
 
-    // marquer messages comme lus
+    // 🔹 Vérification accès selon proAssigned
+    const request = await Request.findById(conversation.request);
+
+    if (req.user.role === "pro" && request.proAssigned?.toString() !== req.user.id && request.status === "accepted") {
+      return res.status(403).json({ error: "Vous n'êtes pas le pro assigné pour ce deal." });
+    }
+
+    // Marquer messages comme lus
     conversation.messages.forEach(msg => {
       if (!msg.readBy.includes(req.user.id)) msg.readBy.push(req.user.id);
     });
@@ -73,7 +58,9 @@ router.get("/:id", auth, async (req, res) => {
   }
 });
 
+// =======================
 // 🔹 Envoyer un message
+// =======================
 router.post("/:id/message", auth, async (req, res) => {
   try {
     const { content } = req.body;
@@ -81,6 +68,24 @@ router.post("/:id/message", auth, async (req, res) => {
 
     const conversation = await Conversation.findById(req.params.id);
     if (!conversation) return res.status(404).json({ error: "Conversation introuvable" });
+
+    const request = await Request.findById(conversation.request);
+
+    // 🔹 Si pro, vérifier qu'il peut envoyer un message
+    if (req.user.role === "pro" && request.status === "accepted" && request.proAssigned?.toString() !== req.user.id) {
+      return res.status(403).json({ error: "Vous n'êtes pas autorisé à envoyer des messages pour ce deal." });
+    }
+
+    // 🔹 Vérification coordonnées bloquées tant que deal non validé
+    const text = content;
+    const emailRegex = /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/i;
+    const phoneRegex = /(\+?\d[\d\s]{7,})/;
+
+    if ((emailRegex.test(text) || phoneRegex.test(text)) && !(request.clientValidated && request.proValidated)) {
+      return res.status(403).json({
+        error: "Les coordonnées sont bloquées tant que l'accord n'est pas validé.",
+      });
+    }
 
     conversation.messages.push({
       from: req.user.id,
@@ -98,7 +103,9 @@ router.post("/:id/message", auth, async (req, res) => {
   }
 });
 
+// =======================
 // 🔹 Marquer messages comme lus
+// =======================
 router.post("/:id/mark-read", auth, async (req, res) => {
   try {
     const conversation = await Conversation.findById(req.params.id);
@@ -115,4 +122,131 @@ router.post("/:id/mark-read", auth, async (req, res) => {
   }
 });
 
+// =======================
+// 🔹 Proposer un deal (client ou pro)
+// =======================
+router.post("/:id/propose-deal", auth, async (req, res) => {
+  try {
+    const conversation = await Conversation.findById(req.params.id);
+    if (!conversation) return res.status(404).json({ error: "Conversation introuvable" });
+
+    if (req.user.id === conversation.client.toString()) {
+      // 🔹 Client propose un deal
+      conversation.dealProposedByClient = true;
+      await conversation.save();
+
+      await createNotification({
+        userId: conversation.pro,
+        type: "new_offer",
+        content: "Le client propose un deal",
+        relatedRequest: conversation.request,
+        conversation: conversation._id
+      });
+
+      return res.json({ message: "Proposition envoyée au pro" });
+    }
+
+    if (req.user.id === conversation.pro.toString()) {
+      // 🔹 Propose un deal
+      conversation.dealProposedByPro = true;
+      await conversation.save();
+
+      await createNotification({
+        userId: conversation.client,
+        type: "new_offer",
+        content: "Le pro propose un deal",
+        relatedRequest: conversation.request,
+        conversation: conversation._id
+      });
+
+      return res.json({ message: "Proposition envoyée au client" });
+    }
+
+    return res.status(403).json({ error: "Non autorisé" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Erreur serveur" });
+  }
+});
+
+//ACCEPTER DEAL
+router.post("/:id/accept-deal", auth, async (req, res) => {
+  try {
+    const conversation = await Conversation.findById(req.params.id);
+    if (!conversation) return res.status(404).json({ error: "Conversation introuvable" });
+
+    let updated = false;
+
+    if (req.user.id === conversation.client.toString() && conversation.dealProposedByPro) {
+      conversation.dealAcceptedByClient = true;
+      updated = true;
+
+      await createNotification({
+        userId: conversation.pro,
+        type: "deal_accepted",
+        content: "Le client a accepté le deal",
+        relatedRequest: conversation.request,
+        conversation: conversation._id
+      });
+    }
+
+    if (req.user.id === conversation.pro.toString() && conversation.dealProposedByClient) {
+      conversation.dealAcceptedByPro = true;
+      updated = true;
+
+      await createNotification({
+        userId: conversation.client,
+        type: "deal_accepted",
+        content: "Le pro a accepté le deal",
+        relatedRequest: conversation.request,
+        conversation: conversation._id
+      });
+    }
+
+    if (!updated) return res.status(403).json({ error: "Aucune proposition à accepter" });
+
+    await conversation.save();
+
+    // 🔹 Populate correctement
+    await conversation.populate("client", "name email phone");
+    await conversation.populate("pro", "name email phone");
+    await conversation.populate("messages.from", "name profileImage");
+
+    return res.json(conversation);
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Erreur serveur" });
+  }
+});
+
+// =======================
+// 🔹 Finaliser le deal et obtenir coordonnées (client ou pro) - version conversation-safe
+// =======================
+router.get("/:id/contact", auth, async (req, res) => {
+  try {
+    const conversation = await Conversation.findById(req.params.id)
+      .populate("client", "email phone")
+      .populate("pro", "email phone");
+
+    if (!conversation) return res.status(404).json({ error: "Conversation introuvable" });
+
+    if (!(
+      (conversation.dealProposedByPro && conversation.dealAcceptedByClient) ||
+      (conversation.dealProposedByClient && conversation.dealAcceptedByPro)
+    )) {
+      return res.status(403).json({ error: "Le deal n'a pas encore été accepté" });
+    }
+
+    const otherUser = req.user.id === conversation.client._id.toString()
+      ? conversation.pro
+      : conversation.client;
+
+    res.json({ phone: otherUser.phone, email: otherUser.email });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Erreur serveur" });
+  }
+});
 module.exports = router;

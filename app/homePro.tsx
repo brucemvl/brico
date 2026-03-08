@@ -17,7 +17,7 @@ type RequestType = {
   category: string;
   location: string;
   budget: number;
-  status: string;
+  status: "open" | "accepted" | "completed" | "cancelled";
   hasUnread?: boolean;
 };
 
@@ -73,49 +73,48 @@ export default function HomePro() {
 
   // 🔹 Logique de filtrage
   const filteredRequests = (() => {
+    const validStatuses: RequestType["status"][] = ["open", "accepted"];
+    const filtered = requests.filter(r => validStatuses.includes(r.status));
     switch (activeFilter) {
       case "skills":
-        return requests.filter(r => skills.includes(r.category) && r.status === "open");
+        return filtered.filter(r => skills.includes(r.category));
       case "all":
-        return requests.filter(r => r.status === "open");
+        return filtered;
       default:
-        return requests.filter(r => r.category === activeFilter && r.status === "open");
+        return filtered.filter(r => r.category === activeFilter);
     }
   })();
 
   // 🔹 HasUnread par catégorie pour pastille rouge
   const hasUnreadByCategory = React.useMemo(() => {
-  return categories.reduce((acc, cat) => {
-    acc[cat] = requests.some(r => r.category === cat && r.hasUnread);
-    return acc;
-  }, {} as Record<string, boolean>);
-}, [requests]);
+    return categories.reduce((acc, cat) => {
+      acc[cat] = requests.some(r => r.category === cat && r.hasUnread);
+      return acc;
+    }, {} as Record<string, boolean>);
+  }, [requests]);
 
   // 🔹 Marquer conversation comme lue
   const openRequest = async (request: RequestType) => {
-  router.push({ pathname: "/requestDetailPro", params: { id: request._id } });
+    router.push({ pathname: "/requestDetailPro", params: { id: request._id } });
 
-  if (!request.hasUnread) return;
+    if (!request.hasUnread) return;
 
-  try {
-    // 🔹 Trouver la conversation correspondant à cette demande
-    const conversations = await apiFetch(`/conversations?requestId=${request._id}`);
-    const conversationId = conversations[0]?._id;
-    if (!conversationId) return;
+    try {
+      const conversations = await apiFetch(`/conversations?requestId=${request._id}`);
+      const conversationId = conversations[0]?._id;
+      if (!conversationId) return;
 
-    // 🔹 Marquer la conversation comme lue
-    await apiFetch(`/conversations/${conversationId}/mark-read`, {
-      method: "POST",
-    });
+      await apiFetch(`/conversations/${conversationId}/mark-read`, {
+        method: "POST",
+      });
 
-    // 🔹 Update local state
-    setRequests(prev =>
-      prev.map(r => (r._id === request._id ? { ...r, hasUnread: false } : r))
-    );
-  } catch (err) {
-    console.error("Erreur mark read:", err);
-  }
-};
+      setRequests(prev =>
+        prev.map(r => (r._id === request._id ? { ...r, hasUnread: false } : r))
+      );
+    } catch (err) {
+      console.error("Erreur mark read:", err);
+    }
+  };
 
   if (loading) {
     return (
@@ -129,17 +128,18 @@ export default function HomePro() {
     <ScrollView contentContainerStyle={styles.container}>
       <TouchableOpacity
         onPress={() => router.push({ pathname: "/profilePro" })}
-        style={{ alignSelf: "flex-end", margin: 20, borderWidth: 1, backgroundColor: "green", padding: 5, borderRadius: 10 }}
+        style={styles.profileButton}
       >
         <Text>Mon Profil</Text>
       </TouchableOpacity>
 
       {profile?.profileImage?.url && <Image source={{ uri: profile.profileImage.url }} style={styles.avatar} />}
-      <Text>{profile?.name}</Text>
+      <Text style={{ marginBottom: 10 }}>{profile?.name}</Text>
+
       <Text style={styles.title}>Demandes disponibles</Text>
 
       {/* 🔹 Boutons filtres */}
-      <View style={{ marginBottom: 15, flexWrap: "wrap", flexDirection: "row", gap: 6, justifyContent: "center" }}>
+      <View style={styles.filtersContainer}>
         <TouchableOpacity
           style={[styles.filterButton, activeFilter === "skills" && styles.activeFilter]}
           onPress={() => setActiveFilter("skills")}
@@ -169,19 +169,14 @@ export default function HomePro() {
       </View>
 
       {/* 🔹 Liste des demandes */}
-      <View style={{ width: "100%", padding: 20, justifyContent: "center", alignItems: "center" }}>
+      <View style={styles.requestsContainer}>
         {filteredRequests.length === 0 ? (
           <Text>Aucune demande disponible</Text>
         ) : (
           filteredRequests.map(item => {
             const isMatchingSkill = skills.includes(item.category);
-
             return (
-              <TouchableOpacity
-                key={item._id}
-                onPress={() => openRequest(item)}
-                style={{ width: "100%" }}
-              >
+              <TouchableOpacity key={item._id} onPress={() => openRequest(item)} style={{ width: "100%" }}>
                 <View style={styles.card}>
                   <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
                     <Text style={styles.cardTitle}>{item.title}</Text>
@@ -192,8 +187,14 @@ export default function HomePro() {
                   <Text>Lieu : {item.location}</Text>
                   <Text>Budget : {item.budget}€</Text>
 
+                  {item.status === "accepted" && (
+                    <View style={styles.acceptedBadge}>
+                      <Text style={{ fontSize: 12 }}>🤝 Accord conclu</Text>
+                    </View>
+                  )}
+
                   {isMatchingSkill && (
-                    <View style={styles.badge}>
+                    <View style={styles.skillBadge}>
                       <Text style={styles.badgeText}>Correspond à vos compétences</Text>
                     </View>
                   )}
@@ -204,12 +205,7 @@ export default function HomePro() {
         )}
       </View>
 
-      <TouchableOpacity
-        onPress={async () => {
-          await logout();
-          router.replace("/");
-        }}
-      >
+      <TouchableOpacity onPress={async () => { await logout(); router.replace("/"); }} style={{ marginTop: 20 }}>
         <Text>Logout</Text>
       </TouchableOpacity>
     </ScrollView>
@@ -217,10 +213,13 @@ export default function HomePro() {
 }
 
 const styles = StyleSheet.create({
-  container: { paddingTop: 80, alignItems: "center" },
+  container: { paddingTop: 80, alignItems: "center", paddingBottom: 60 },
   center: { flex: 1, justifyContent: "center", alignItems: "center" },
   title: { fontSize: 22, fontWeight: "bold", marginBottom: 15 },
-  avatar: { height: 70, width: 70, resizeMode: "contain" },
+  avatar: { height: 70, width: 70, resizeMode: "contain", borderRadius: 35, marginBottom: 5 },
+  profileButton: { alignSelf: "flex-end", margin: 20, borderWidth: 1, backgroundColor: "green", padding: 5, borderRadius: 10 },
+
+  filtersContainer: { marginBottom: 15, flexWrap: "wrap", flexDirection: "row", gap: 6, justifyContent: "center" },
   filterButton: {
     paddingHorizontal: 15,
     paddingVertical: 8,
@@ -231,15 +230,14 @@ const styles = StyleSheet.create({
     justifyContent: "center"
   },
   activeFilter: { backgroundColor: "#ddd" },
-  card: {
-    padding: 15,
-    borderWidth: 1,
-    borderRadius: 10,
-    marginBottom: 12
-  },
+
+  requestsContainer: { width: "100%", paddingHorizontal: 20, alignItems: "center" },
+  card: { padding: 15, borderWidth: 1, borderRadius: 10, marginBottom: 12, width: "100%" },
   cardTitle: { fontWeight: "bold", fontSize: 16, marginBottom: 5 },
-  badge: { marginTop: 8, backgroundColor: "#d4edda", padding: 5, borderRadius: 5 },
+  skillBadge: { marginTop: 8, backgroundColor: "#d4edda", padding: 5, borderRadius: 5 },
   badgeText: { fontSize: 12, color: "#155724" },
+  acceptedBadge: { marginTop: 8, backgroundColor: "#ffeeba", padding: 5, borderRadius: 5, alignItems: "center" },
+
   messageBadge: { width: 10, height: 10, borderRadius: 5, backgroundColor: "red", marginLeft: 6 },
-  categoryBadge: { width: 10, height: 10, borderRadius: 5, backgroundColor: "red", marginLeft: 4 }
+  categoryBadge: { width: 10, height: 10, borderRadius: 5, backgroundColor: "red", marginLeft: 4 },
 });
