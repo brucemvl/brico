@@ -4,6 +4,7 @@ const auth = require("../middlewares/auth");
 const User = require("../models/User");
 const upload = require("../middlewares/uploadCloudinary");
 const cloudinary = require("../config/cloudinary");
+const Conversation = require("../models/Conversation");
 
 // 🔹 GET /users/me → profil connecté
 router.get("/me", auth, async (req, res) => {
@@ -61,6 +62,15 @@ router.put(
         };
       }
 
+      if (!req.files?.profileImage?.[0]) {
+  if (!user.profileImage?.url) {
+    user.profileImage = {
+      url: "https://res.cloudinary.com/dwjssp2pd/image/upload/v1773074497/default.jpg",
+      public_id: ""
+    };
+  }
+}
+
       // Portfolio
       if (req.files?.portfolio?.length) {
   const newImages = req.files.portfolio.map((file) => ({
@@ -103,6 +113,48 @@ user.portfolio = user.portfolio.filter(img => img._id.toString() !== req.params.
 await user.save();
 
 res.json({ message: "Image supprimée", portfolio: user.portfolio });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 🔹 GET /users/:id → profil public d'un pro
+router.get("/:id", auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id)
+      .select("-password -notifications");
+
+    if (!user) {
+      return res.status(404).json({ error: "Utilisateur introuvable" });
+    }
+
+    let phone = null;
+    let email = null;
+
+    const { conversationId } = req.query;
+
+    if (conversationId) {
+      const conversation = await Conversation.findById(conversationId);
+
+      if (conversation) {
+        const dealAccepted =
+          (conversation.dealProposedByPro && conversation.dealAcceptedByClient) ||
+          (conversation.dealProposedByClient && conversation.dealAcceptedByPro);
+
+        if (dealAccepted) {
+          phone = user.phone;
+          email = user.email;
+        }
+      }
+    }
+
+    res.json({
+      ...user.toObject(),
+      phone,
+      email
+    });
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: err.message });

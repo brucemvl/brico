@@ -14,7 +14,6 @@ import {
 } from "react-native";
 import { useApi } from "../services/api";
 
-
 type UserType = {
   _id: string;
   name: string;
@@ -22,14 +21,7 @@ type UserType = {
     url: string;
   };
 };
-
-type MessageType = {
-  from: UserType;
-  content: string;
-  createdAt: string;
-  readBy: string[];
-};
-
+type MessageType = { from: UserType; content: string; createdAt: string; readBy: string[] };
 type ConversationType = {
   _id: string;
   request: string;
@@ -41,13 +33,7 @@ type ConversationType = {
   dealAcceptedByClient?: boolean;
   dealAcceptedByPro?: boolean;
 };
-
-type RequestType = {
-  _id: string;
-  clientValidated: boolean;
-  proValidated: boolean;
-  status: string;
-};
+type RequestType = { _id: string; clientValidated: boolean; proValidated: boolean; status: string };
 
 export default function Conversation() {
   const { apiFetch } = useApi();
@@ -60,7 +46,7 @@ export default function Conversation() {
   const [message, setMessage] = useState("");
   const [currentUserId, setCurrentUserId] = useState("");
   const [loading, setLoading] = useState(true);
-  const [contact, setContact] = useState<{phone?: string; email?: string} | null>(null);
+  const [contact, setContact] = useState<{ phone?: string; email?: string } | null>(null);
 
   const scrollRef = useRef<ScrollView | null>(null);
 
@@ -95,11 +81,24 @@ export default function Conversation() {
     loadConversation();
   }, [conversationId]);
 
+  // Récupérer les coordonnées automatiquement après accord
+  const dealAccepted =
+    (conversation?.dealProposedByPro && conversation?.dealAcceptedByClient) ||
+    (conversation?.dealProposedByClient && conversation?.dealAcceptedByPro);
+
   useEffect(() => {
-  setTimeout(() => {
-    scrollRef.current?.scrollToEnd({ animated: true });
-  }, 100);
-}, [conversation?.messages]);
+    if (dealAccepted && conversation?._id) {
+      const fetchContact = async () => {
+        try {
+          const res = await apiFetch(`/conversations/${conversation._id}/contact`);
+          setContact(res);
+        } catch (err) {
+          console.log("Erreur récupération contact:", err);
+        }
+      };
+      fetchContact();
+    }
+  }, [dealAccepted, conversation?._id]);
 
   // Envoyer message
   const sendMessage = async () => {
@@ -125,12 +124,16 @@ export default function Conversation() {
 
   // Voir profil pro
   const openProfile = () => {
-    if (!conversation?.pro?._id) return;
-    router.push({
-      pathname: "/profile",
-      params: { id: conversation.pro._id }
-    });
-  };
+  if (!conversation?.pro?._id) return;
+
+  router.push({
+    pathname: "/profile",
+    params: {
+      id: conversation.pro._id,
+      conversationId: conversation._id
+    }
+  });
+};
 
   // Proposer accord
   const proposeDeal = async () => {
@@ -146,47 +149,24 @@ export default function Conversation() {
 
   // Accepter accord
   const acceptDeal = async () => {
-  if (!conversation?._id) return;
-
-  try {
-    const updatedConversation: ConversationType = await apiFetch(
-      `/conversations/${conversation._id}/accept-deal`,
-      { method: "POST" }
-    );
-
-    // Mettre à jour la conversation
-    setConversation(updatedConversation);
-
-    // Debug
-    console.log("Updated conversation after accept:", updatedConversation);
-
-    Alert.alert("Accord accepté", "Vous avez accepté le deal");
-
-  } catch (err) {
-    console.error(err);
-    const msg = err instanceof Error ? err.message : "Erreur serveur";
-    Alert.alert("Erreur", msg);
-  }
-};
-
-  // Voir coordonnées
-  const getContact = async () => {
     if (!conversation?._id) return;
     try {
-      const res = await apiFetch(`/conversations/${conversation._id}/contact`);
-     setContact(res);
-    } catch {
-      Alert.alert("Accord non validé", "Les deux utilisateurs doivent accepter l'accord");
+      const updatedConversation: ConversationType = await apiFetch(
+        `/conversations/${conversation._id}/accept-deal`,
+        { method: "POST" }
+      );
+      setConversation(updatedConversation);
+      Alert.alert("Accord accepté", "Vous avez accepté le deal");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Erreur serveur";
+      Alert.alert("Erreur", msg);
     }
   };
 
   if (loading) return <Text>Chargement...</Text>;
   if (!conversation) return <Text>Conversation introuvable</Text>;
 
-const dealAccepted =
-  (conversation.dealProposedByPro && conversation.dealAcceptedByClient) || 
-  (conversation.dealProposedByClient && conversation.dealAcceptedByPro);
-    const clientProposed = conversation.dealProposedByClient && !conversation.dealAcceptedByClient;
+  const clientProposed = conversation.dealProposedByClient && !conversation.dealAcceptedByClient;
   const proProposed = conversation.dealProposedByPro && !conversation.dealAcceptedByPro;
 
   return (
@@ -208,41 +188,37 @@ const dealAccepted =
             <Text style={styles.buttonText}>Accepter accord</Text>
           </TouchableOpacity>
         )}
-
-        {dealAccepted && (
-          <TouchableOpacity style={styles.button} onPress={getContact}>
-            <Text style={styles.buttonText}>Voir coordonnées</Text>
-          </TouchableOpacity>
-        )}
       </View>
 
       {/* STATUT ACCORD */}
       {!dealAccepted && <Text style={styles.dealStatus}>Accord non validé — coordonnées bloquées</Text>}
       {dealAccepted && <Text style={styles.dealAccepted}>Accord validé 🎉</Text>}
 
-      {contact && (
-  <View style={styles.contactBox}>
-    {contact.phone && (
-      <TouchableOpacity
-        style={styles.contactButton}
-        onPress={() => Linking.openURL(`tel:${contact.phone}`)}
-      >
-        <Text style={styles.contactText}>📞 {contact.phone}</Text>
-      </TouchableOpacity>
-    )}
+      {/* COORDONNÉES */}
+      {dealAccepted && contact && (
+        <View style={styles.contactBox}>
+          {contact.phone && (
+            <TouchableOpacity onPress={() => Linking.openURL(`tel:${contact.phone}`)}>
+              <Text style={styles.contactText}>📞 {contact.phone}</Text>
+            </TouchableOpacity>
+          )}
+          {contact.email && (
+            <TouchableOpacity onPress={() => Linking.openURL(`mailto:${contact.email}`)}>
+              <Text style={styles.contactText}>✉️ {contact.email}</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      )}
 
-    {contact.email && (
-      <TouchableOpacity
-        style={styles.contactButton}
-        onPress={() => Linking.openURL(`mailto:${contact.email}`)}
-      >
-        <Text style={styles.contactText}>✉️ {contact.email}</Text>
-      </TouchableOpacity>
-    )}
-  </View>
-)}
+      <View style={{ flexDirection: "row", alignItems: "center", padding: 10 }}>
+  <Image
+    source={{ uri: conversation.pro?.profileImage?.url }}
+    style={{ width: 50, height: 50, borderRadius: 25, marginRight: 10 }}
+  />
+  <Text style={{ fontSize: 18, fontWeight: "bold" }}>{conversation.pro?.name}</Text>
+</View>
 
-      {/* MESSAGES */}
+       {/* MESSAGES */}
       <ScrollView
         ref={scrollRef}
         style={styles.messages}
@@ -267,7 +243,7 @@ const isRead = msg.readBy?.includes(otherUserId || "");
       {!isMe && (
         <Image
           source={{
-            uri: msg.from.profileImage?.url || "https://i.pravatar.cc/100"
+            uri: msg.from.profileImage?.url
           }}
           style={styles.avatar}
         />
@@ -323,6 +299,8 @@ const styles = StyleSheet.create({
   buttonText: { color: "white", fontWeight: "bold" },
   dealStatus: { textAlign: "center", color: "#888", marginBottom: 5 },
   dealAccepted: { textAlign: "center", color: "green", fontWeight: "bold", marginBottom: 5 },
+  contactBox: { padding: 10, backgroundColor: "#f0f0f0", margin: 10, borderRadius: 8 },
+  contactText: { fontSize: 16, marginBottom: 5 },
   messages: { flex: 1, padding: 15 },
   messageBubble: { padding: 10, borderRadius: 10, marginBottom: 8, maxWidth: "80%" },
   myMessage: { alignSelf: "flex-end", backgroundColor: "#DCF8C6" },
@@ -330,22 +308,6 @@ const styles = StyleSheet.create({
   author: { fontWeight: "bold", marginBottom: 3 },
   inputContainer: { flexDirection: "row", padding: 10 },
   input: { flex: 1, borderWidth: 1, borderColor: "#ccc", borderRadius: 8, marginRight: 10, padding: 8 },
-contactBox: {
-  backgroundColor: "#F2F2F2",
-  margin: 10,
-  padding: 12,
-  borderRadius: 10,
-},
-
-contactButton: {
-  paddingVertical: 8,
-},
-
-contactText: {
-  color: "#007AFF",
-  fontWeight: "bold",
-  fontSize: 16
-},
 messageRow: {
   flexDirection: "row",
   marginBottom: 10,

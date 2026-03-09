@@ -2,21 +2,20 @@ import { useLocalSearchParams } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
     Alert,
-    Button,
     Dimensions,
     Image,
-    Modal,
+    Linking,
     ScrollView,
     StyleSheet,
     Text,
     TextInput,
     TouchableOpacity,
-    View
+    View,
 } from "react-native";
 import { useApi } from "../services/api";
 
 type MessageType = {
-  from: { _id: string; name: string };
+  from: { _id: string; name: string; profileImage?: string };
   content: string;
   createdAt: string;
   readBy: string[];
@@ -38,15 +37,9 @@ type RequestType = {
   category: string;
   location: string;
   budget: number;
-
-  client: { name: string };
-
-  clientValidated?: boolean;
-  proValidated?: boolean;
-
-  images?: { url: string }[];
-
+  client: { _id: string; name: string; profileImage?: string; phone?: string; email?: string };
   conversation?: ConversationType;
+  images?: { url: string }[];
 };
 
 export default function RequestDetailPro() {
@@ -57,10 +50,8 @@ export default function RequestDetailPro() {
   const [request, setRequest] = useState<RequestType | null>(null);
   const [currentUserId, setCurrentUserId] = useState("");
   const [message, setMessage] = useState("");
-  const [modalVisible, setModalVisible] = useState(false);
-  const [modalImage, setModalImage] = useState<string | null>(null);
-
   const scrollRef = useRef<ScrollView>(null);
+  const [contact, setContact] = useState<{ phone?: string; email?: string } | null>(null);
 
   // Charger utilisateur
   useEffect(() => {
@@ -70,6 +61,24 @@ export default function RequestDetailPro() {
     };
     fetchMe();
   }, []);
+
+  const dealAccepted =
+    (request?.conversation?.dealProposedByPro && request?.conversation?.dealAcceptedByClient) ||
+    (request?.conversation?.dealProposedByClient && request?.conversation?.dealAcceptedByPro);
+
+    useEffect(() => {
+  const fetchContact = async () => {
+    if (dealAccepted) {
+      try {
+        const res = await apiFetch(`/requests/${requestId}/contact`);
+        setContact({ phone: res.phone, email: res.email });
+      } catch {
+        setContact(null);
+      }
+    }
+  };
+  fetchContact();
+}, [dealAccepted, requestId]);
 
   // Charger demande
   const fetchRequest = async () => {
@@ -91,57 +100,33 @@ export default function RequestDetailPro() {
     const markAsRead = async () => {
       if (!request?.conversation?._id) return;
       try {
-        await apiFetch(`/conversations/${request.conversation._id}/mark-read`, {
-  method: "POST",
-});
+        await apiFetch(`/conversations/${request.conversation._id}/mark-read`, { method: "POST" });
       } catch {}
     };
     markAsRead();
   }, [request?.conversation?._id]);
 
   const proposeDeal = async () => {
-          if (!request?.conversation?._id) return;
+    if (!request?.conversation?._id) return;
+    try {
+      await apiFetch(`/conversations/${request.conversation._id}/propose-deal`, { method: "POST" });
+      fetchRequest();
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
-  try {
-    await apiFetch(`/conversations/${request.conversation?._id}/propose-deal`, {
-  method: "POST",
-});
-
-    fetchRequest();
-
-  } catch (err) {
-    console.error(err);
-  }
-};
-
-const acceptDeal = async () => {
-  if (!request?.conversation?._id) return;
-
-  try {
-    await apiFetch(`/conversations/${request.conversation._id}/accept-deal`, {
-      method: "POST",
-    });
-    Alert.alert("Accord accepté", "Vous avez accepté le deal");
-
-    // 🔹 recharger les flags
-    fetchRequest();
-  } catch (err) {
-    console.error(err);
-    Alert.alert("Erreur", "Impossible d'accepter le deal");
-  }
-};
-
-const getContact = async () => {
-  try {
-
-    const res = await apiFetch(`/requests/${requestId}/contact`);
-
-    alert(`Téléphone : ${res.phone}\nEmail : ${res.email}`);
-
-  } catch {
-    alert("Les deux utilisateurs doivent accepter l'accord");
-  }
-};
+  const acceptDeal = async () => {
+    if (!request?.conversation?._id) return;
+    try {
+      await apiFetch(`/conversations/${request.conversation._id}/accept-deal`, { method: "POST" });
+      Alert.alert("Accord accepté", "Vous avez accepté le deal");
+      fetchRequest();
+    } catch (err) {
+      console.error(err);
+      Alert.alert("Erreur", "Impossible d'accepter le deal");
+    }
+  };
 
   // Envoyer message
   const sendMessage = async () => {
@@ -151,8 +136,7 @@ const getContact = async () => {
         method: "POST",
         body: JSON.stringify({ content: message }),
       });
-
-      setRequest((prev) =>
+      setRequest(prev =>
         prev
           ? {
               ...prev,
@@ -174,28 +158,19 @@ const getContact = async () => {
 
   const messages = request.conversation?.messages || [];
 
-  // Agrandir image
-  const openImageModal = (uri: string) => {
-    setModalImage(uri);
-    setModalVisible(true);
-  };
+  
 
-  const dealAccepted =
-  (request?.conversation?.dealProposedByPro && request?.conversation?.dealAcceptedByClient) ||
-  (request?.conversation?.dealProposedByClient && request?.conversation?.dealAcceptedByPro);
+  const clientProposed =
+    request?.conversation?.dealProposedByClient && !request?.conversation?.dealAcceptedByClient;
+  const proProposed =
+    request?.conversation?.dealProposedByPro && !request?.conversation?.dealAcceptedByPro;
 
-const clientProposed =
-  request?.conversation?.dealProposedByClient &&
-  !request?.conversation?.dealAcceptedByClient;
-
-const proProposed =
-  request?.conversation?.dealProposedByPro &&
-  !request?.conversation?.dealAcceptedByPro;
+    
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{ flex: 1, backgroundColor: "#fff" }}>
       <ScrollView
-        style={styles.container}
+        style={{ padding: 20 }}
         ref={scrollRef}
         onContentSizeChange={() => scrollRef.current?.scrollToEnd({ animated: true })}
       >
@@ -204,49 +179,42 @@ const proProposed =
         <Text>Lieu: {request.location}</Text>
         <Text>Budget: {request.budget}€</Text>
 
-        {request.images && request.images.length > 0 && (
-          <>
-            <Text style={{ marginTop: 10, fontWeight: "bold" }}>Images :</Text>
-            <ScrollView horizontal style={{ marginVertical: 10 }}>
-              {request.images.map((img, i) => (
-                <TouchableOpacity key={i} onPress={() => openImageModal(img.url)}>
-                  <Image
-                    source={{ uri: img.url }}
-                    style={{ width: 100, height: 100, marginRight: 10, borderRadius: 8 }}
-                  />
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          </>
-        )}
+        {/* Coordonnées après accord */}
+        {dealAccepted && contact && (
+  <View style={styles.contactBox}>
+    {contact.phone && (
+      <TouchableOpacity onPress={() => Linking.openURL(`tel:${contact.phone}`)}>
+        <Text style={styles.contactText}>📞 {contact.phone}</Text>
+      </TouchableOpacity>
+    )}
+    {contact.email && (
+      <TouchableOpacity onPress={() => Linking.openURL(`mailto:${contact.email}`)}>
+        <Text style={styles.contactText}>✉️ {contact.email}</Text>
+      </TouchableOpacity>
+    )}
+  </View>
+)}
 
+        {/* Actions deal */}
         <View style={styles.dealBox}>
+          {!clientProposed && !proProposed && !dealAccepted && (
+            <TouchableOpacity onPress={proposeDeal}>
+              <Text style={styles.dealAction}>Proposer un accord</Text>
+            </TouchableOpacity>
+          )}
 
-  // Affichage des actions
-{!request?.conversation?.dealProposedByClient && !request?.conversation?.dealProposedByPro && !dealAccepted && (
-  <TouchableOpacity onPress={proposeDeal}>
-    <Text>Proposer un accord</Text>
-  </TouchableOpacity>
-)}
+          {clientProposed && !dealAccepted && (
+            <TouchableOpacity onPress={acceptDeal}>
+              <Text style={styles.dealAction}>Accepter l'accord proposé par le client</Text>
+            </TouchableOpacity>
+          )}
 
-{request?.conversation?.dealProposedByClient && !dealAccepted && (
-  <TouchableOpacity onPress={acceptDeal}>
-    <Text>Accepter l'accord proposé par le client</Text>
-  </TouchableOpacity>
-)}
+          {proProposed && !dealAccepted && <Text style={styles.dealStatus}>Vous avez proposé un accord — en attente du client</Text>}
 
-{request?.conversation?.dealProposedByPro && !dealAccepted && (
-  <Text>Vous avez proposé un accord — en attente du client</Text>
-)}
+          {dealAccepted && <Text style={styles.dealStatus}>✅ Accord validé</Text>}
+        </View>
 
-{dealAccepted && (
-  <TouchableOpacity onPress={getContact}>
-    <Text>Voir coordonnées</Text>
-  </TouchableOpacity>
-)}
-
-</View>
-
+        {/* Messages */}
         <Text style={styles.chatTitle}>Conversation avec {request.client.name}</Text>
         {messages.map((msg, i) => {
           const isMe = msg.from._id === currentUserId;
@@ -255,104 +223,63 @@ const proProposed =
             if (msg.readBy.length === 1) status = "✓ envoyé";
             if (msg.readBy.length >= 2) status = "✓✓ lu";
           }
+          const msgTime = new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
           return (
-            <View
-              key={i}
-              style={[styles.messageBubble, isMe ? styles.myMessage : styles.otherMessage]}
-            >
-              {!isMe && <Text style={styles.author}>{msg.from.name}</Text>}
-              <Text>{msg.content}</Text>
-              {isMe && <Text style={styles.readStatus}>{status}</Text>}
+            <View key={i} style={[styles.messageRow, isMe ? styles.myMessageRow : styles.otherMessageRow]}>
+              {!isMe && request.client.profileImage && (
+                <Image source={{ uri: request.client.profileImage }} style={styles.avatar} />
+              )}
+              <View style={[styles.messageBubble, isMe ? styles.myMessage : styles.otherMessage]}>
+                {!isMe && <Text style={styles.author}>{msg.from.name}</Text>}
+                <Text>{msg.content}</Text>
+                <View style={styles.messageMeta}>
+                  <Text style={styles.time}>{msgTime}</Text>
+                  {isMe && <Text style={styles.readStatus}>{status}</Text>}
+                </View>
+              </View>
             </View>
           );
         })}
 
-        <TextInput
-          value={message}
-          onChangeText={setMessage}
-          placeholder="Votre message..."
-          style={styles.input}
-        />
-        <Button title="Envoyer" onPress={sendMessage} />
-      </ScrollView>
-
-      {/* Modal image */}
-      <Modal
-        visible={modalVisible}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <View style={styles.modalContainer}>
-          <TouchableOpacity
-            style={styles.modalBackground}
-            activeOpacity={1}
-            onPress={() => setModalVisible(false)}
+        <View style={styles.inputRow}>
+          <TextInput
+            value={message}
+            onChangeText={setMessage}
+            placeholder="Votre message..."
+            style={styles.input}
           />
-          <View style={styles.modalContent}>
-            {modalImage && (
-              <Image
-                source={{ uri: modalImage }}
-                style={styles.modalImage}
-                resizeMode="contain"
-              />
-            )}
-            <Button title="Fermer" onPress={() => setModalVisible(false)} />
-          </View>
+          <TouchableOpacity onPress={sendMessage} style={styles.sendButton}>
+            <Text style={{ color: "#fff" }}>Envoyer</Text>
+          </TouchableOpacity>
         </View>
-      </Modal>
+      </ScrollView>
     </View>
   );
 }
 
-const { width, height } = Dimensions.get("window");
+const { width } = Dimensions.get("window");
 
 const styles = StyleSheet.create({
-  container: { padding: 20 },
   title: { fontSize: 22, fontWeight: "bold", marginBottom: 10 },
   chatTitle: { marginTop: 20, marginBottom: 10, fontWeight: "bold" },
-  messageBubble: { padding: 10, borderRadius: 10, marginBottom: 8, maxWidth: "80%" },
-  myMessage: { alignSelf: "flex-end", backgroundColor: "#DCF8C6" },
-  otherMessage: { alignSelf: "flex-start", backgroundColor: "#eee" },
-  author: { fontWeight: "bold", marginBottom: 3 },
-  readStatus: { fontSize: 10, marginTop: 4, color: "#777", alignSelf: "flex-end" },
-  input: { borderWidth: 1, borderColor: "#ccc", padding: 10, marginTop: 10, borderRadius: 8 },
-
-  // Modal styles
-  modalContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  modalBackground: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0,0,0,0.6)",
-  },
-  modalContent: {
-    width: "90%",
-    maxHeight: "80%",
-    backgroundColor: "#fff",
-    padding: 10,
-    borderRadius: 10,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  modalImage: {
-    width: width * 0.8,
-    height: height * 0.5,
-    marginBottom: 10,
-  },
-  dealBox: {
-  marginTop: 15,
-  marginBottom: 10,
-  padding: 10,
-  borderRadius: 8,
-  backgroundColor: "#f3f3f3",
-},
-
-dealStatus: {
-  marginTop: 5,
-  color: "#555",
-},
+  dealBox: { padding: 10, borderRadius: 8, backgroundColor: "#f3f3f3", marginVertical: 10 },
+  dealAction: { color: "#007AFF", fontWeight: "bold", marginBottom: 5 },
+  dealStatus: { color: "#555" },
+  contactBox: { padding: 10, backgroundColor: "#f0f0f0", borderRadius: 8, marginVertical: 10 },
+  contactText: { fontSize: 16, marginBottom: 5, color: "#007AFF" },
+  messageRow: { flexDirection: "row", marginBottom: 8, alignItems: "flex-end" },
+  myMessageRow: { justifyContent: "flex-end" },
+  otherMessageRow: { justifyContent: "flex-start" },
+  avatar: { width: 36, height: 36, borderRadius: 18, marginRight: 8 },
+  messageBubble: { padding: 10, borderRadius: 12, maxWidth: width * 0.7 },
+  myMessage: { backgroundColor: "#DCF8C6", alignSelf: "flex-end" },
+  otherMessage: { backgroundColor: "#eee" },
+  author: { fontWeight: "bold", marginBottom: 2 },
+  messageMeta: { flexDirection: "row", justifyContent: "space-between", marginTop: 5 },
+  time: { fontSize: 10, color: "#555" },
+  readStatus: { fontSize: 10, color: "#777", marginLeft: 5 },
+  inputRow: { flexDirection: "row", alignItems: "center", marginTop: 10 },
+  input: { flex: 1, borderWidth: 1, borderColor: "#ccc", borderRadius: 8, padding: 10 },
+  sendButton: { padding: 10, backgroundColor: "#007AFF", borderRadius: 8, marginLeft: 8 },
 });

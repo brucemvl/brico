@@ -87,7 +87,10 @@ equipment: { type: String, trim: true },
   completedRequests: [{ type: mongoose.Schema.Types.ObjectId, ref: "Request" }],
 
   profileImage: {
-  url: String,
+  url: {
+    type: String,
+  default: "https://res.cloudinary.com/dwjssp2pd/image/upload/v1773074497/default.jpg",
+  },
   public_id: String
 },
 
