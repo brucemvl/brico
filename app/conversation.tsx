@@ -3,6 +3,8 @@ import React, { useEffect, useRef, useState } from "react";
 import {
     Alert,
     Button,
+    Image,
+    Linking,
     ScrollView,
     StyleSheet,
     Text,
@@ -12,9 +14,13 @@ import {
 } from "react-native";
 import { useApi } from "../services/api";
 
+
 type UserType = {
   _id: string;
   name: string;
+  profileImage?: {
+    url: string;
+  };
 };
 
 type MessageType = {
@@ -54,6 +60,7 @@ export default function Conversation() {
   const [message, setMessage] = useState("");
   const [currentUserId, setCurrentUserId] = useState("");
   const [loading, setLoading] = useState(true);
+  const [contact, setContact] = useState<{phone?: string; email?: string} | null>(null);
 
   const scrollRef = useRef<ScrollView | null>(null);
 
@@ -87,6 +94,12 @@ export default function Conversation() {
   useEffect(() => {
     loadConversation();
   }, [conversationId]);
+
+  useEffect(() => {
+  setTimeout(() => {
+    scrollRef.current?.scrollToEnd({ animated: true });
+  }, 100);
+}, [conversation?.messages]);
 
   // Envoyer message
   const sendMessage = async () => {
@@ -161,7 +174,7 @@ export default function Conversation() {
     if (!conversation?._id) return;
     try {
       const res = await apiFetch(`/conversations/${conversation._id}/contact`);
-      Alert.alert("Coordonnées", `Téléphone : ${res.phone}\nEmail : ${res.email}`);
+     setContact(res);
     } catch {
       Alert.alert("Accord non validé", "Les deux utilisateurs doivent accepter l'accord");
     }
@@ -207,6 +220,28 @@ const dealAccepted =
       {!dealAccepted && <Text style={styles.dealStatus}>Accord non validé — coordonnées bloquées</Text>}
       {dealAccepted && <Text style={styles.dealAccepted}>Accord validé 🎉</Text>}
 
+      {contact && (
+  <View style={styles.contactBox}>
+    {contact.phone && (
+      <TouchableOpacity
+        style={styles.contactButton}
+        onPress={() => Linking.openURL(`tel:${contact.phone}`)}
+      >
+        <Text style={styles.contactText}>📞 {contact.phone}</Text>
+      </TouchableOpacity>
+    )}
+
+    {contact.email && (
+      <TouchableOpacity
+        style={styles.contactButton}
+        onPress={() => Linking.openURL(`mailto:${contact.email}`)}
+      >
+        <Text style={styles.contactText}>✉️ {contact.email}</Text>
+      </TouchableOpacity>
+    )}
+  </View>
+)}
+
       {/* MESSAGES */}
       <ScrollView
         ref={scrollRef}
@@ -214,17 +249,58 @@ const dealAccepted =
         onContentSizeChange={() => scrollRef.current?.scrollToEnd({ animated: true })}
       >
         {conversation.messages.map((msg, i) => {
-          const isMe = msg.from._id === currentUserId;
-          return (
-            <View
-              key={i}
-              style={[styles.messageBubble, isMe ? styles.myMessage : styles.otherMessage]}
-            >
-              {!isMe && <Text style={styles.author}>{msg.from.name}</Text>}
-              <Text>{msg.content}</Text>
-            </View>
-          );
-        })}
+  const isMe = msg.from._id === currentUserId;
+const otherUserId =
+  conversation.client?._id === currentUserId
+    ? conversation.pro?._id
+    : conversation.client?._id;
+
+const isRead = msg.readBy?.includes(otherUserId || "");
+  return (
+    <View
+      key={i}
+      style={[
+        styles.messageRow,
+        isMe ? styles.myRow : styles.otherRow
+      ]}
+    >
+      {!isMe && (
+        <Image
+          source={{
+            uri: msg.from.profileImage?.url || "https://i.pravatar.cc/100"
+          }}
+          style={styles.avatar}
+        />
+      )}
+
+      <View
+        style={[
+          styles.messageBubble,
+          isMe ? styles.myMessage : styles.otherMessage
+        ]}
+      >
+        {!isMe && <Text style={styles.author}>{msg.from.name}</Text>}
+
+        <Text style={styles.messageText}>{msg.content}</Text>
+
+        <View style={styles.messageFooter}>
+          <Text style={styles.time}>
+            {new Date(msg.createdAt).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit"
+            })}
+          </Text>
+
+          {isMe && (
+            <Text style={styles.readStatus}>
+              {isRead ? "✓✓ lu" : "✓"}
+            </Text>
+          )}
+        </View>
+      </View>
+    </View>
+  );
+})}
       </ScrollView>
 
       {/* INPUT */}
@@ -254,4 +330,61 @@ const styles = StyleSheet.create({
   author: { fontWeight: "bold", marginBottom: 3 },
   inputContainer: { flexDirection: "row", padding: 10 },
   input: { flex: 1, borderWidth: 1, borderColor: "#ccc", borderRadius: 8, marginRight: 10, padding: 8 },
+contactBox: {
+  backgroundColor: "#F2F2F2",
+  margin: 10,
+  padding: 12,
+  borderRadius: 10,
+},
+
+contactButton: {
+  paddingVertical: 8,
+},
+
+contactText: {
+  color: "#007AFF",
+  fontWeight: "bold",
+  fontSize: 16
+},
+messageRow: {
+  flexDirection: "row",
+  marginBottom: 10,
+  alignItems: "flex-end"
+},
+
+myRow: {
+  justifyContent: "flex-end"
+},
+
+otherRow: {
+  justifyContent: "flex-start"
+},
+
+avatar: {
+  width: 32,
+  height: 32,
+  borderRadius: 16,
+  marginRight: 6
+},
+
+messageText: {
+  fontSize: 15
+},
+
+messageFooter: {
+  flexDirection: "row",
+  justifyContent: "flex-end",
+  marginTop: 5
+},
+
+time: {
+  fontSize: 10,
+  color: "#777",
+  marginRight: 4
+},
+
+readStatus: {
+  fontSize: 10,
+  color: "#007AFF"
+},
 });

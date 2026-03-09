@@ -10,7 +10,14 @@ const ratingSchema = new mongoose.Schema({
 const notificationSchema = new mongoose.Schema({
   type: {
     type: String,
-    enum: ["new_request", "new_offer", "new_message", "request_accepted"]
+    enum: [
+  "new_request",
+  "new_offer",
+  "new_message",
+  "request_accepted",
+  "deal_update",
+  "deal_accepted"
+]
   },
 
   request: {
