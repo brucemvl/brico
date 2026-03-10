@@ -37,7 +37,17 @@ dealProposedByPro: { type: Boolean, default: false },
   dealAcceptedByClient: { type: Boolean, default: false },
 dealAcceptedByPro: { type: Boolean, default: false },
 
-  messages: [messageSchema]
+  messages: [messageSchema],
+
+  lastInteractionAt: {
+  type: Date,
+  default: Date.now
+},
+
+lastInteractionBy: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: "User"
+}
 
 }, { timestamps: true });
 

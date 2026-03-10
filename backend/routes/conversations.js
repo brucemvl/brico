@@ -94,6 +94,9 @@ router.post("/:id/message", auth, async (req, res) => {
       createdAt: new Date()
     });
 
+    conversation.lastInteractionAt = new Date();
+conversation.lastInteractionBy = req.user.id;
+
     await conversation.save();
     await conversation.populate("messages.from", "name profileImage");
 
@@ -149,6 +152,10 @@ router.post("/:id/propose-deal", auth, async (req, res) => {
     if (req.user.id === conversation.pro.toString()) {
       // 🔹 Propose un deal
       conversation.dealProposedByPro = true;
+
+      conversation.lastInteractionAt = new Date();
+conversation.lastInteractionBy = req.user.id;
+
       await conversation.save();
 
       await createNotification({
@@ -191,6 +198,9 @@ router.post("/:id/accept-deal", auth, async (req, res) => {
     const dealAccepted =
       (conversation.dealProposedByPro && conversation.dealAcceptedByClient) ||
       (conversation.dealProposedByClient && conversation.dealAcceptedByPro);
+
+      conversation.lastInteractionAt = new Date();
+conversation.lastInteractionBy = req.user.id;
 
     await conversation.save();
 

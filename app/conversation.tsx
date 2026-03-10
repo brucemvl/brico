@@ -159,19 +159,25 @@ const [comment, setComment] = useState("");
 
   // Accepter accord
   const acceptDeal = async () => {
-    if (!conversation?._id) return;
-    try {
-      const updatedConversation: ConversationType = await apiFetch(
-        `/conversations/${conversation._id}/accept-deal`,
-        { method: "POST" }
-      );
-      setConversation(updatedConversation);
-      Alert.alert("Accord accepté", "Vous avez accepté le deal");
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : "Erreur serveur";
-      Alert.alert("Erreur", msg);
-    }
-  };
+  if (!conversation?._id) return;
+
+  try {
+
+    await apiFetch(
+      `/conversations/${conversation._id}/accept-deal`,
+      { method: "POST" }
+    );
+
+    Alert.alert("Accord accepté", "Vous avez accepté le deal");
+
+    // 🔥 recharge tout
+    await loadConversation();
+
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "Erreur serveur";
+    Alert.alert("Erreur", msg);
+  }
+};
 
   const submitReview = async () => {
   if (!conversation || !request) return;
@@ -211,6 +217,10 @@ const [comment, setComment] = useState("");
 
   const clientProposed = conversation.dealProposedByClient && !conversation.dealAcceptedByClient;
   const proProposed = conversation.dealProposedByPro && !conversation.dealAcceptedByPro;
+
+  const canReview =
+request?.status === "in_progress" && dealAccepted &&
+!request.reviewByClient;
 
   return (
     <View style={{ flex: 1, paddingTop: 40 }}>
@@ -253,12 +263,12 @@ const [comment, setComment] = useState("");
         </View>
       )}
 
-{dealAccepted && request?.status === "in_progress" && (
+{canReview && (
 <TouchableOpacity
 style={styles.completeButton}
 onPress={() => setReviewModal(true)}
 >
-<Text style={{color:"black"}}>Donner un avis ⭐</Text>
+<Text style={{color:"black"}}>Terminer la Mission</Text>
 </TouchableOpacity>
 )}
 

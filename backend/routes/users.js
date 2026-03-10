@@ -5,6 +5,7 @@ const User = require("../models/User");
 const upload = require("../middlewares/uploadCloudinary");
 const cloudinary = require("../config/cloudinary");
 const Conversation = require("../models/Conversation");
+const Request = require("../models/Request");
 
 // 🔹 GET /users/me → profil connecté
 router.get("/me", auth, async (req, res) => {
@@ -173,6 +174,12 @@ router.post("/:id/review", auth, async (req, res) => {
       return res.status(404).json({ error: "Utilisateur introuvable" });
     }
 
+    const request = await Request.findById(requestId);
+
+    if (!request) {
+      return res.status(404).json({ error: "Demande introuvable" });
+    }
+
     const alreadyRated = user.ratings.find(
       r =>
         r.fromUser.toString() === req.user.id &&
@@ -183,6 +190,7 @@ router.post("/:id/review", auth, async (req, res) => {
       return res.status(400).json({ error: "Avis déjà donné" });
     }
 
+    // 🔹 Ajouter le rating
     user.ratings.push({
       fromUser: req.user.id,
       request: requestId,
@@ -191,10 +199,36 @@ router.post("/:id/review", auth, async (req, res) => {
     });
 
     user.updateAverageRating();
-
     await user.save();
 
-    res.json(user);
+    // 🔹 Marquer que le client ou le pro a noté
+    if (req.user.role === "client") {
+      request.reviewByClient = true;
+    }
+
+    if (req.user.role === "pro") {
+      request.reviewByPro = true;
+    }
+
+    // 🔹 Si les deux ont noté → mission terminée
+    if (request.reviewByClient && request.reviewByPro) {
+      request.status = "completed";
+    }
+
+    const conversation = await Conversation.findOne({ request: requestId });
+
+if (conversation) {
+  conversation.lastInteractionAt = new Date();
+  conversation.lastInteractionBy = req.user.id;
+  await conversation.save();
+
+    await request.save();
+
+    res.json({
+      message: "Avis enregistré",
+      requestStatus: request.status
+    });
+  }
 
   } catch (err) {
     console.error(err);

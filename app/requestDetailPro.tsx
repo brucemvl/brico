@@ -193,7 +193,7 @@ const [comment, setComment] = useState("");
   const messages = request.conversation?.messages || [];
 
   const canReview =
-  request?.status === "completed" &&
+  request?.status === "in_progress" && dealAccepted &&
   !request.reviewByPro;
 
   const clientProposed =

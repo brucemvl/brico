@@ -27,8 +27,11 @@ router.get("/client", auth, async (req, res) => {
 
     const formatted = requests.map(r => {
       const conv = conversations.find(c => c.request.toString() === r._id.toString());
-      const hasUnread = conv?.messages?.some(msg => !msg.readBy.includes(req.user.id)) || false;
-      return { ...r.toObject(), hasUnread };
+const hasUnread =
+  conv &&
+  conv.lastInteractionBy &&
+  conv.lastInteractionBy.toString() !== req.user.id;
+        return { ...r.toObject(), hasUnread };
     });
 
     res.json(formatted);
@@ -335,12 +338,27 @@ router.post("/:id/accept/:offerId", auth, async (req, res) => {
 
     // 🔹 Assigner le pro et stocker l'offre acceptée
     request.proAssigned = offer.pro;
-    request.acceptedOffer = offer.toObject();
+request.acceptedOffer = offer.toObject();
+request.status = "in_progress";
 
-    // 🔹 Changer le statut uniquement pour le client et le pro assigné
-    request.status = "in_progress";
+await request.save();
 
-    await request.save();
+// 🔹 Créer la conversation côté client si elle n'existe pas
+let conversation = await Conversation.findOne({
+  request: request._id,
+  client: request.client,
+  pro: offer.pro
+});
+
+if (!conversation) {
+  conversation = new Conversation({
+    request: request._id,
+    client: request.client,
+    pro: offer.pro,
+    messages: []
+  });
+  await conversation.save();
+}
 
     // 🔹 Notification au pro choisi
     await createNotification({
