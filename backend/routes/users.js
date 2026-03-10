@@ -161,4 +161,45 @@ router.get("/:id", auth, async (req, res) => {
   }
 });
 
+//AVIS
+router.post("/:id/review", auth, async (req, res) => {
+  try {
+
+    const { score, comment, requestId } = req.body;
+
+    const user = await User.findById(req.params.id);
+
+    if (!user) {
+      return res.status(404).json({ error: "Utilisateur introuvable" });
+    }
+
+    const alreadyRated = user.ratings.find(
+      r =>
+        r.fromUser.toString() === req.user.id &&
+        r.request.toString() === requestId
+    );
+
+    if (alreadyRated) {
+      return res.status(400).json({ error: "Avis déjà donné" });
+    }
+
+    user.ratings.push({
+      fromUser: req.user.id,
+      request: requestId,
+      score,
+      comment
+    });
+
+    user.updateAverageRating();
+
+    await user.save();
+
+    res.json(user);
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;

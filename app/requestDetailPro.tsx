@@ -5,6 +5,7 @@ import {
     Dimensions,
     Image,
     Linking,
+    Modal,
     ScrollView,
     StyleSheet,
     Text,
@@ -40,6 +41,9 @@ type RequestType = {
   client: { _id: string; name: string; profileImage?: string; phone?: string; email?: string };
   conversation?: ConversationType;
   images?: { url: string }[];
+  status: string;   // ✅ AJOUTER ÇA
+  reviewByClient?: boolean;
+  reviewByPro?: boolean;
 };
 
 export default function RequestDetailPro() {
@@ -52,6 +56,10 @@ export default function RequestDetailPro() {
   const [message, setMessage] = useState("");
   const scrollRef = useRef<ScrollView>(null);
   const [contact, setContact] = useState<{ phone?: string; email?: string } | null>(null);
+
+  const [reviewModal, setReviewModal] = useState(false);
+const [rating, setRating] = useState(5);
+const [comment, setComment] = useState("");
 
   // Charger utilisateur
   useEffect(() => {
@@ -154,11 +162,39 @@ export default function RequestDetailPro() {
     }
   };
 
+  const submitReview = async () => {
+  if (!request) return;
+
+  try {
+
+    await apiFetch(`/users/${request.client._id}/review`, {
+      method: "POST",
+      body: JSON.stringify({
+        score: rating,
+        comment,
+        requestId: request._id
+      })
+    });
+
+    setReviewModal(false);
+
+    Alert.alert("Merci !", "Votre avis a été enregistré");
+
+  } catch (err) {
+    console.log(err);
+    Alert.alert("Erreur", "Impossible d'envoyer l'avis");
+  }
+};
+
+
+
   if (!request) return <Text>Chargement...</Text>;
 
   const messages = request.conversation?.messages || [];
 
-  
+  const canReview =
+  request?.status === "completed" &&
+  !request.reviewByPro;
 
   const clientProposed =
     request?.conversation?.dealProposedByClient && !request?.conversation?.dealAcceptedByClient;
@@ -213,6 +249,63 @@ export default function RequestDetailPro() {
 
           {dealAccepted && <Text style={styles.dealStatus}>✅ Accord validé</Text>}
         </View>
+
+        {canReview && (
+  <TouchableOpacity
+    style={styles.reviewButton}
+    onPress={() => setReviewModal(true)}
+  >
+    <Text style={{ color: "#220303" }}>Donner un avis ⭐</Text>
+  </TouchableOpacity>
+)}
+
+<Modal visible={reviewModal} transparent animationType="slide">
+
+<View style={styles.modalOverlay}>
+
+<View style={styles.modal}>
+
+<Text style={styles.modalTitle}>
+Comment s'est passé ce client ?
+</Text>
+
+<View style={styles.stars}>
+
+{[1,2,3,4,5].map((s)=>(
+<TouchableOpacity key={s} onPress={()=>setRating(s)}>
+<Text style={{fontSize:30}}>
+{s <= rating ? "⭐" : "☆"}
+</Text>
+</TouchableOpacity>
+))}
+
+</View>
+
+<TextInput
+placeholder="Commentaire (optionnel)"
+value={comment}
+onChangeText={setComment}
+style={styles.input}
+/>
+
+<TouchableOpacity
+style={styles.sendReview}
+onPress={submitReview}
+>
+<Text style={{color:"#fff"}}>Envoyer l'avis</Text>
+</TouchableOpacity>
+
+<TouchableOpacity onPress={()=>setReviewModal(false)}>
+<Text style={{textAlign:"center", marginTop:10}}>
+Fermer
+</Text>
+</TouchableOpacity>
+
+</View>
+
+</View>
+
+</Modal>
 
         {/* Messages */}
         <Text style={styles.chatTitle}>Conversation avec {request.client.name}</Text>
@@ -282,4 +375,45 @@ const styles = StyleSheet.create({
   inputRow: { flexDirection: "row", alignItems: "center", marginTop: 10 },
   input: { flex: 1, borderWidth: 1, borderColor: "#ccc", borderRadius: 8, padding: 10 },
   sendButton: { padding: 10, backgroundColor: "#007AFF", borderRadius: 8, marginLeft: 8 },
+  reviewButton:{
+backgroundColor:"#28a745",
+padding:12,
+borderRadius:8,
+alignItems:"center",
+marginTop:10
+},
+
+modalOverlay:{
+flex:1,
+backgroundColor:"rgba(0,0,0,0.5)",
+justifyContent:"center",
+alignItems:"center"
+},
+
+modal:{
+backgroundColor:"white",
+padding:20,
+borderRadius:10,
+width:"85%"
+},
+
+modalTitle:{
+fontSize:18,
+fontWeight:"bold",
+marginBottom:15,
+textAlign:"center"
+},
+
+stars:{
+flexDirection:"row",
+justifyContent:"center",
+marginBottom:20
+},
+
+sendReview:{
+backgroundColor:"#007AFF",
+padding:12,
+borderRadius:8,
+alignItems:"center"
+},
 });

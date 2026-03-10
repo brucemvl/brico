@@ -46,8 +46,9 @@ router.get("/pro", auth, async (req, res) => {
     const proId = req.user.id;
 
     // 🔹 Toutes les demandes ouvertes
-    const openRequests = await Request.find({ status: "open" });
-
+const openRequests = await Request.find({
+  status: { $in: ["open", "in_progress"] }
+});
     // 🔹 Mes demandes en cours (in_progress) uniquement si je suis assigné
     const myInProgress = await Request.find({
       status: "in_progress",

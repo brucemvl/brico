@@ -36,10 +36,13 @@ const requestSchema = new mongoose.Schema({
 
   // 🔹 Statut global de la demande
   status: {
-    type: String,
-    enum: ["open", "in_progress", "completed", "cancelled"],
-    default: "open"
-  },
+  type: String,
+  enum: ["open","in_progress","completed"],
+  default: "open"
+},
+
+reviewByClient: { type: Boolean, default: false },
+reviewByPro: { type: Boolean, default: false },
 
   offers: [offerSchema],
   messages: [messageSchema],

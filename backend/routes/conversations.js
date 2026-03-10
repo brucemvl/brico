@@ -172,51 +172,45 @@ router.post("/:id/propose-deal", auth, async (req, res) => {
 //ACCEPTER DEAL
 router.post("/:id/accept-deal", auth, async (req, res) => {
   try {
+
     const conversation = await Conversation.findById(req.params.id);
-    if (!conversation) return res.status(404).json({ error: "Conversation introuvable" });
 
-    let updated = false;
+    if (!conversation) {
+      return res.status(404).json({ error: "Conversation introuvable" });
+    }
 
-    if (req.user.id === conversation.client.toString() && conversation.dealProposedByPro) {
+    // logique existante d'acceptation
+    if (req.user.id === conversation.client.toString()) {
       conversation.dealAcceptedByClient = true;
-      updated = true;
-
-      await createNotification({
-        userId: conversation.pro,
-        type: "deal_accepted",
-        content: "Le client a accepté le deal",
-        relatedRequest: conversation.request,
-        conversation: conversation._id
-      });
     }
 
-    if (req.user.id === conversation.pro.toString() && conversation.dealProposedByClient) {
+    if (req.user.id === conversation.pro.toString()) {
       conversation.dealAcceptedByPro = true;
-      updated = true;
-
-      await createNotification({
-        userId: conversation.client,
-        type: "deal_accepted",
-        content: "Le pro a accepté le deal",
-        relatedRequest: conversation.request,
-        conversation: conversation._id
-      });
     }
 
-    if (!updated) return res.status(403).json({ error: "Aucune proposition à accepter" });
+    const dealAccepted =
+      (conversation.dealProposedByPro && conversation.dealAcceptedByClient) ||
+      (conversation.dealProposedByClient && conversation.dealAcceptedByPro);
 
     await conversation.save();
 
-    // 🔹 Populate correctement
-    await conversation.populate("client", "name email phone");
-    await conversation.populate("pro", "name email phone");
-    await conversation.populate("messages.from", "name profileImage");
+    // 🔥 SI accord validé → mission en cours
+    if (dealAccepted) {
 
-    return res.json(conversation);
+      const request = await Request.findById(conversation.request);
+
+      if (request) {
+        request.status = "in_progress";
+        await request.save();
+      }
+
+    }
+
+    res.json(conversation);
 
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Erreur serveur" });
+    res.status(500).json({ error: err.message });
   }
 });
 

@@ -5,6 +5,7 @@ import {
     Button,
     Image,
     Linking,
+    Modal,
     ScrollView,
     StyleSheet,
     Text,
@@ -33,7 +34,12 @@ type ConversationType = {
   dealAcceptedByClient?: boolean;
   dealAcceptedByPro?: boolean;
 };
-type RequestType = { _id: string; clientValidated: boolean; proValidated: boolean; status: string };
+type RequestType = {
+     _id: string; clientValidated: boolean;
+     proValidated: boolean;
+      status: string;
+       reviewByClient?: boolean;
+reviewByPro?: boolean; };
 
 export default function Conversation() {
   const { apiFetch } = useApi();
@@ -47,6 +53,10 @@ export default function Conversation() {
   const [currentUserId, setCurrentUserId] = useState("");
   const [loading, setLoading] = useState(true);
   const [contact, setContact] = useState<{ phone?: string; email?: string } | null>(null);
+
+  const [reviewModal, setReviewModal] = useState(false);
+const [rating, setRating] = useState(5);
+const [comment, setComment] = useState("");
 
   const scrollRef = useRef<ScrollView | null>(null);
 
@@ -163,6 +173,39 @@ export default function Conversation() {
     }
   };
 
+  const submitReview = async () => {
+  if (!conversation || !request) return;
+
+  try {
+
+    const targetUser =
+      conversation.client?._id === currentUserId
+        ? conversation.pro?._id
+        : conversation.client?._id;
+
+    if (!targetUser) {
+      Alert.alert("Erreur", "Utilisateur introuvable");
+      return;
+    }
+
+    await apiFetch(`/users/${targetUser}/review`, {
+      method: "POST",
+      body: JSON.stringify({
+        score: rating,
+        comment,
+        requestId: request._id
+      })
+    });
+
+    setReviewModal(false);
+
+    Alert.alert("Merci !", "Votre avis a été enregistré");
+
+  } catch (err) {
+    console.log(err);
+  }
+};
+
   if (loading) return <Text>Chargement...</Text>;
   if (!conversation) return <Text>Conversation introuvable</Text>;
 
@@ -209,6 +252,62 @@ export default function Conversation() {
           )}
         </View>
       )}
+
+{dealAccepted && request?.status === "in_progress" && (
+<TouchableOpacity
+style={styles.completeButton}
+onPress={() => setReviewModal(true)}
+>
+<Text style={{color:"black"}}>Donner un avis ⭐</Text>
+</TouchableOpacity>
+)}
+
+<Modal
+visible={reviewModal}
+transparent
+animationType="slide"
+>
+<View style={styles.modalOverlay}>
+
+<View style={styles.modal}>
+
+<Text style={styles.modalTitle}>
+Comment s'est passée la mission ?
+</Text>
+
+{/* étoiles */}
+
+<View style={styles.stars}>
+{[1,2,3,4,5].map((s)=>(
+<TouchableOpacity key={s} onPress={()=>setRating(s)}>
+<Text style={{fontSize:30}}>
+{s <= rating ? "⭐" : "☆"}
+</Text>
+</TouchableOpacity>
+))}
+</View>
+
+<TextInput
+placeholder="Votre commentaire (optionnel)"
+value={comment}
+onChangeText={setComment}
+style={styles.input}
+/>
+
+<Button
+title="Envoyer l'avis"
+onPress={submitReview}
+/>
+
+<Button
+title="Fermer"
+onPress={()=>setReviewModal(false)}
+/>
+
+</View>
+</View>
+</Modal>
+      
 
       <View style={{ flexDirection: "row", alignItems: "center", padding: 10 }}>
   <Image
@@ -349,4 +448,38 @@ readStatus: {
   fontSize: 10,
   color: "#007AFF"
 },
+modalOverlay:{
+flex:1,
+backgroundColor:"rgba(0,0,0,0.5)",
+justifyContent:"center",
+alignItems:"center"
+},
+
+modal:{
+backgroundColor:"white",
+padding:20,
+borderRadius:10,
+width:"85%"
+},
+
+modalTitle:{
+fontSize:18,
+fontWeight:"bold",
+marginBottom:15,
+textAlign:"center"
+},
+
+stars:{
+flexDirection:"row",
+justifyContent:"center",
+marginBottom:20
+},
+
+completeButton:{
+backgroundColor:"#28a745",
+padding:12,
+borderRadius:8,
+alignItems:"center",
+margin:10
+}
 });

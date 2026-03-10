@@ -17,7 +17,7 @@ type RequestType = {
   category: string;
   location: string;
   budget: number;
-  status: "open" | "accepted" | "completed" | "cancelled";
+  status: "open" | "in_progress" | "accepted" | "completed" | "cancelled";
   hasUnread?: boolean;
 };
 
@@ -73,7 +73,7 @@ export default function HomePro() {
 
   // 🔹 Logique de filtrage
   const filteredRequests = (() => {
-    const validStatuses: RequestType["status"][] = ["open", "accepted"];
+    const validStatuses: RequestType["status"][] = ["open", "in_progress"];
     const filtered = requests.filter(r => validStatuses.includes(r.status));
     switch (activeFilter) {
       case "skills":

@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 
 const ratingSchema = new mongoose.Schema({
   fromUser: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+  request: { type: mongoose.Schema.Types.ObjectId, ref: "Request", required: true },
   score: { type: Number, min: 1, max: 5, required: true },
   comment: String,
   date: { type: Date, default: Date.now }
