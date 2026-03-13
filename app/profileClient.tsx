@@ -11,8 +11,11 @@ import {
     StyleSheet,
     Text,
     TextInput,
-    View
+    TouchableOpacity,
+    View,
 } from "react-native";
+import Autocomplete from "react-native-autocomplete-input";
+
 
 import { useApi } from "../services/api";
 
@@ -30,6 +33,9 @@ export default function ProfileClient() {
 
   const [loading,setLoading] = useState(true);
   const [saving,setSaving] = useState(false);
+
+  const [locationQuery, setLocationQuery] = useState("");
+    const [cities, setCities] = useState([]);
 
   const fetchProfile = async () => {
 
@@ -74,6 +80,35 @@ export default function ProfileClient() {
       setProfileImage({uri: result.assets[0].uri});
     }
   };
+
+  const searchCities = async (text) => {
+  setLocationQuery(text);
+
+  if (text.length < 2) {
+    setCities([]);
+    return;
+  }
+
+  try {
+    // On filtre par nom + département
+    const res = await fetch(
+      `https://geo.api.gouv.fr/communes?nom=${text}&fields=departement,code,centre&limit=10`
+    );
+
+    const data = await res.json();
+
+    // Trier pour mettre Bagneux 92 en premier
+    const sorted = data.sort((a, b) => {
+      if (a.departement.code === "92") return -1;
+      if (b.departement.code === "92") return 1;
+      return 0;
+    });
+
+    setCities(sorted);
+  } catch (err) {
+    console.log("Erreur villes:", err);
+  }
+};
 
   const handleSave = async () => {
 
@@ -148,7 +183,31 @@ style={styles.profileImage}
 <TextInput style={styles.input} value={phone} onChangeText={setPhone}/>
 
 <Text>Localisation</Text>
-<TextInput style={styles.input} value={location} onChangeText={setLocation}/>
+<Autocomplete
+        data={cities}
+        value={locationQuery}
+        onChangeText={searchCities}
+        placeholder="Tapez une ville..."
+        style={{width: 300}}
+      
+        flatListProps={{
+          keyExtractor: (item) => item.code,
+          renderItem: ({ item }) => (
+            <TouchableOpacity
+              onPress={() => {
+                const selected = `${item.nom} (${item.departement.code})`;
+                setLocation(selected);
+                setLocationQuery(selected);
+                setCities([]);
+              }}
+            >
+              <Text style={{ padding: 10 }}>
+                {item.nom} ({item.departement.code})
+              </Text>
+            </TouchableOpacity>
+          ),
+        }}
+      />
 
 <Text>Description</Text>
 <TextInput

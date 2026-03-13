@@ -141,12 +141,21 @@ export default function ProfilePro() {
   }
 
   try {
+    // On filtre par nom + département
     const res = await fetch(
-      `https://geo.api.gouv.fr/communes?nom=${text}&fields=departement&limit=5`
+      `https://geo.api.gouv.fr/communes?nom=${text}&fields=departement,code,centre&limit=10`
     );
 
     const data = await res.json();
-    setCities(data);
+
+    // Trier pour mettre Bagneux 92 en premier
+    const sorted = data.sort((a, b) => {
+      if (a.departement.code === "92") return -1;
+      if (b.departement.code === "92") return 1;
+      return 0;
+    });
+
+    setCities(sorted);
   } catch (err) {
     console.log("Erreur villes:", err);
   }
