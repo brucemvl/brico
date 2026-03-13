@@ -63,14 +63,7 @@ router.put(
         };
       }
 
-      if (!req.files?.profileImage?.[0]) {
-  if (!user.profileImage?.url) {
-    user.profileImage = {
-      url: "https://res.cloudinary.com/dwjssp2pd/image/upload/v1773074497/default.jpg",
-      public_id: ""
-    };
-  }
-}
+
 
       // Portfolio
       if (req.files?.portfolio?.length) {
@@ -119,6 +112,56 @@ res.json({ message: "Image supprimée", portfolio: user.portfolio });
     res.status(500).json({ error: err.message });
   }
 });
+
+// 🔹 PUT /users/profile/client → mise à jour profil client
+router.put(
+  "/profile/client",
+  auth,
+  upload.single("profileImage"),
+  async (req, res) => {
+    try {
+
+      const user = await User.findById(req.user.id);
+
+      if (!user) {
+        return res.status(404).json({ error: "Utilisateur introuvable" });
+      }
+
+      if (req.user.role !== "client") {
+        return res.status(403).json({ error: "Accès réservé aux clients" });
+      }
+
+      // 🔹 Champs texte
+      user.name = req.body.name ?? user.name;
+      user.phone = req.body.phone ?? user.phone;
+      user.location = req.body.location ?? user.location;
+      user.description = req.body.description ?? user.description;
+
+      // 🔹 Image profil
+      if (req.file) {
+
+        if (user.profileImage?.public_id) {
+          await cloudinary.uploader.destroy(user.profileImage.public_id);
+        }
+
+        user.profileImage = {
+          url: req.file.path,
+          public_id: req.file.filename,
+        };
+      }
+
+      
+
+      await user.save();
+
+      res.json(user);
+
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: err.message });
+    }
+  }
+);
 
 // 🔹 GET /users/:id → profil public d'un pro
 router.get("/:id", auth, async (req, res) => {

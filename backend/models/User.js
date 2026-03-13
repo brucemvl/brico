@@ -89,8 +89,7 @@ equipment: { type: String, trim: true },
 
   profileImage: {
   url: {
-    type: String,
-  default: "https://res.cloudinary.com/dwjssp2pd/image/upload/v1773074497/default.jpg",
+    type: String
   },
   public_id: String
 },
@@ -112,11 +111,33 @@ portfolio: [
 // ⭐ Auto activation du badge si SIRET présent
 //
 userSchema.pre("save", async function () {
+
+  // ⭐ Activation badge pro
   if (this.role === "pro" && this.siret) {
     this.proBadge = true;
   } else {
     this.proBadge = false;
   }
+
+  // ⭐ Image par défaut selon rôle
+  if (!this.profileImage?.url) {
+
+    if (this.role === "pro") {
+      this.profileImage = {
+        url: "https://res.cloudinary.com/dwjssp2pd/image/upload/v1773074497/default_pro.jpg",
+        public_id: ""
+      };
+    }
+
+    if (this.role === "client") {
+      this.profileImage = {
+        url: "https://res.cloudinary.com/dwjssp2pd/image/upload/v1773074497/default_client.jpg",
+        public_id: ""
+      };
+    }
+
+  }
+
 });
 
 

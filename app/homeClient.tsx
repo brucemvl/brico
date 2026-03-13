@@ -23,9 +23,12 @@ export default function HomeClient() {
   const [requests, setRequests] = useState<RequestType[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const activeRequests = requests.filter(r => r.status !== "completed");
+const historyRequests = requests.filter(r => r.status === "completed");
+
   // 🔹 Fonction pour récupérer les demandes
-  const fetchRequests = async () => {
-    setLoading(true);
+const fetchRequests = useCallback(async () => {
+      setLoading(true);
     try {
       const data = await apiFetch("/requests/client");
       setRequests(data);
@@ -34,14 +37,14 @@ export default function HomeClient() {
     } finally {
       setLoading(false);
     }
-  };
+}, []);
 
   // 🔹 Rafraîchit la liste à chaque retour sur cet écran
   useFocusEffect(
-    useCallback(() => {
-      fetchRequests();
-    }, [])
-  );
+  useCallback(() => {
+    fetchRequests();
+  }, [fetchRequests])
+);
 
   // 🔹 Supprimer une demande
   const handleDelete = async (id: string) => {
@@ -84,31 +87,65 @@ export default function HomeClient() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
+
+      <TouchableOpacity
+onPress={()=>router.push("/profileClient")}
+>
+<Text style={{marginBottom:20,color:"blue"}}>
+Modifier mon profil
+</Text>
+</TouchableOpacity>
+
       <Text style={styles.title}>Accueil Particulier</Text>
       <Text style={styles.title}>Mes demandes</Text>
 
-      {requests.length === 0 ? (
-        <Text>Aucune demande pour le moment</Text>
-      ) : (
-        requests.map((item) => (
-<TouchableOpacity
-    key={item._id}
-    style={{ flexDirection: "row", alignItems: "center", gap: 10 }}
-    onPress={() => router.push(`/requestDetailClient?id=${item._id}`)}
-  >
-                <View style={styles.card}>
-              <Text style={{ fontWeight: "bold" }}>{item.title}</Text>
-              <Text>Catégorie: {item.category}</Text>
-              <Text>Statut: {item.status}</Text>
-              {/* ajoute d'autres infos si besoin */}
-              {item.hasUnread && <View style={styles.redDot} />}
-            </View>
-            <TouchableOpacity onPress={() => handleDelete(item._id)}>
-              <Text style={{ color: "red" }}>Supprimer</Text>
-            </TouchableOpacity>
-          </TouchableOpacity>
-        ))
-      )}
+      <Text style={styles.subtitle}>Demandes actives</Text>
+
+{activeRequests.length === 0 ? (
+  <Text>Aucune demande active</Text>
+) : (
+  activeRequests.map((item) => (
+    <TouchableOpacity
+      key={item._id}
+      style={{ flexDirection: "row", alignItems: "center", gap: 10 }}
+      onPress={() => router.push(`/requestDetailClient?id=${item._id}`)}
+    >
+      <View style={styles.card}>
+        <Text style={{ fontWeight: "bold" }}>{item.title}</Text>
+        <Text>Catégorie: {item.category}</Text>
+        <Text>Statut: {item.status}</Text>
+
+        {item.hasUnread && <View style={styles.redDot} />}
+      </View>
+
+      <TouchableOpacity onPress={() => handleDelete(item._id)}>
+        <Text style={{ color: "red" }}>Supprimer</Text>
+      </TouchableOpacity>
+    </TouchableOpacity>
+  ))
+)}
+
+<Text style={styles.subtitle}>Historique</Text>
+
+{historyRequests.length === 0 ? (
+  <Text>Aucune mission terminée</Text>
+) : (
+  historyRequests.map((item) => (
+    <TouchableOpacity
+      key={item._id}
+      style={{ flexDirection: "row", alignItems: "center", gap: 10 }}
+      onPress={() => router.push(`/requestDetailClient?id=${item._id}`)}
+    >
+      <View style={styles.card}>
+        <Text style={{ fontWeight: "bold" }}>{item.title}</Text>
+        <Text>Catégorie: {item.category}</Text>
+        <Text>Statut: {item.status}</Text>
+
+        {item.hasUnread && <View style={styles.redDot} />}
+      </View>
+    </TouchableOpacity>
+  ))
+)}
 
       <TouchableOpacity onPress={() => router.push('/createRequestForm')} style={{ marginTop: 20 }}>
         <Text style={{ color: "black", fontSize: 16 }}>+ Nouvelle Demande</Text>
@@ -133,4 +170,10 @@ const styles = StyleSheet.create({
     top: 8,
     right: 8,
   },
+  subtitle: {
+  fontSize: 18,
+  fontWeight: "bold",
+  marginTop: 20,
+  marginBottom: 10
+},
 });
