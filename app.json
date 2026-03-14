@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "brico-connect",
-    "slug": "brico-connect",
+    "slug": "briconnect",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -19,13 +19,15 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.bmdev14.bricoconnect"
     },
     "web": {
       "output": "static",
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
+      "expo-notifications",
       "expo-router",
       [
         "expo-splash-screen",
@@ -39,11 +41,17 @@
           }
         }
       ]
-     /* "@stripe/stripe-react-native" */
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "514fdd8f-34fa-4f61-8811-64c37b1ab983"
+      }
+    },
+    "owner": "bmdev14"
   }
 }

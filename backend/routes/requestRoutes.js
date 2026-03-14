@@ -9,6 +9,7 @@ const cloudinary = require("../config/cloudinary");
 const streamifier = require("streamifier");
 const sharp = require("sharp");
 const fetch = require("node-fetch");
+const User = require("../models/User");
 
 // =======================
 // 🔹 GET demandes du client connecté
@@ -193,6 +194,21 @@ router.post("/", auth, upload.array("images"), async (req, res) => {
     }
 
     await newRequest.save();
+
+// 🔔 Notifier les pros ayant la compétence
+ const pros = await User.find({
+  role: "pro",
+  skills: category
+}).select("_id");
+
+for (const pro of pros) {
+  await createNotification({
+    userId: pro._id,
+    type: "new_request",
+    request: newRequest._id
+  });
+}
+
     res.status(201).json(newRequest);
   } catch (err) {
     console.error("POST /requests error:", err);
@@ -345,6 +361,23 @@ router.post("/:id/message", auth, async (req, res) => {
 
     await conversation.save();
     await conversation.populate("messages.from", "name profileImage");
+
+    // 🔔 Notification nouveau message
+let receiverId;
+
+if (req.user.role === "pro") {
+  receiverId = conversation.client;
+} else {
+  receiverId = conversation.pro;
+}
+
+await createNotification({
+  userId: receiverId,
+  type: "new_message",
+  request: request._id,
+  conversation: conversation._id
+});
+
 
     res.json(conversation);
   } catch (err) {

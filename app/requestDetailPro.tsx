@@ -1,17 +1,17 @@
 import { useLocalSearchParams } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
-    Alert,
-    Dimensions,
-    Image,
-    Linking,
-    Modal,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Alert,
+  Dimensions,
+  Image,
+  Linking,
+  Modal,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from "react-native";
 import { useApi } from "../services/api";
 
@@ -41,7 +41,7 @@ type RequestType = {
   client: { _id: string; name: string; profileImage?: string; phone?: string; email?: string };
   conversation?: ConversationType;
   images?: { url: string }[];
-  status: string;   // ✅ AJOUTER ÇA
+  status: string;
   reviewByClient?: boolean;
   reviewByPro?: boolean;
 };
@@ -58,8 +58,13 @@ export default function RequestDetailPro() {
   const [contact, setContact] = useState<{ phone?: string; email?: string } | null>(null);
 
   const [reviewModal, setReviewModal] = useState(false);
-const [rating, setRating] = useState(5);
-const [comment, setComment] = useState("");
+  const [rating, setRating] = useState(5);
+  const [comment, setComment] = useState("");
+
+  // Images preview
+  const [previewVisible, setPreviewVisible] = useState(false);
+  const [previewImage, setPreviewImage] = useState<string>("");
+  const [uploading, setUploading] = useState(false);
 
   // Charger utilisateur
   useEffect(() => {
@@ -74,21 +79,20 @@ const [comment, setComment] = useState("");
     (request?.conversation?.dealProposedByPro && request?.conversation?.dealAcceptedByClient) ||
     (request?.conversation?.dealProposedByClient && request?.conversation?.dealAcceptedByPro);
 
-    useEffect(() => {
-  const fetchContact = async () => {
-    if (dealAccepted) {
-      try {
-        const res = await apiFetch(`/requests/${requestId}/contact`);
-        setContact({ phone: res.phone, email: res.email });
-      } catch {
-        setContact(null);
+  useEffect(() => {
+    const fetchContact = async () => {
+      if (dealAccepted) {
+        try {
+          const res = await apiFetch(`/requests/${requestId}/contact`);
+          setContact({ phone: res.phone, email: res.email });
+        } catch {
+          setContact(null);
+        }
       }
-    }
-  };
-  fetchContact();
-}, [dealAccepted, requestId]);
+    };
+    fetchContact();
+  }, [dealAccepted, requestId]);
 
-  // Charger demande
   const fetchRequest = async () => {
     if (!requestId) return;
     try {
@@ -136,7 +140,6 @@ const [comment, setComment] = useState("");
     }
   };
 
-  // Envoyer message
   const sendMessage = async () => {
     if (!message.trim()) return;
     try {
@@ -163,45 +166,41 @@ const [comment, setComment] = useState("");
   };
 
   const submitReview = async () => {
-  if (!request) return;
+    if (!request) return;
+    try {
+      await apiFetch(`/users/${request.client._id}/review`, {
+        method: "POST",
+        body: JSON.stringify({
+          score: rating,
+          comment,
+          requestId: request._id,
+        }),
+      });
+      setReviewModal(false);
+      Alert.alert("Merci !", "Votre avis a été enregistré");
+    } catch (err) {
+      console.log(err);
+      Alert.alert("Erreur", "Impossible d'envoyer l'avis");
+    }
+  };
 
-  try {
-
-    await apiFetch(`/users/${request.client._id}/review`, {
-      method: "POST",
-      body: JSON.stringify({
-        score: rating,
-        comment,
-        requestId: request._id
-      })
-    });
-
-    setReviewModal(false);
-
-    Alert.alert("Merci !", "Votre avis a été enregistré");
-
-  } catch (err) {
-    console.log(err);
-    Alert.alert("Erreur", "Impossible d'envoyer l'avis");
-  }
-};
-
-
+  const openPreview = (url: string) => {
+    setPreviewImage(url);
+    setPreviewVisible(true);
+  };
 
   if (!request) return <Text>Chargement...</Text>;
 
   const messages = request.conversation?.messages || [];
 
   const canReview =
-  request?.status === "in_progress" && dealAccepted &&
-  !request.reviewByPro;
+    request?.status === "in_progress" && dealAccepted &&
+    !request.reviewByPro;
 
   const clientProposed =
     request?.conversation?.dealProposedByClient && !request?.conversation?.dealAcceptedByClient;
   const proProposed =
     request?.conversation?.dealProposedByPro && !request?.conversation?.dealAcceptedByPro;
-
-    
 
   return (
     <View style={{ flex: 1, backgroundColor: "#fff" }}>
@@ -214,22 +213,34 @@ const [comment, setComment] = useState("");
         <Text>Catégorie: {request.category}</Text>
         <Text>Lieu: {request.location}</Text>
         <Text>Budget: {request.budget}€</Text>
+        {request.description && <Text>Description: {request.description}</Text>}
+
+        {/* 🔹 Images du client */}
+        {request.images && request.images.length > 0 && (
+          <ScrollView horizontal style={{ marginVertical: 10 }}>
+            {request.images.map((img, idx) => (
+              <TouchableOpacity key={idx} onPress={() => openPreview(img.url)} style={{ marginRight: 10 }}>
+                <Image source={{ uri: img.url }} style={{ width: 150, height: 150, borderRadius: 8 }} />
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        )}
 
         {/* Coordonnées après accord */}
         {dealAccepted && contact && (
-  <View style={styles.contactBox}>
-    {contact.phone && (
-      <TouchableOpacity onPress={() => Linking.openURL(`tel:${contact.phone}`)}>
-        <Text style={styles.contactText}>📞 {contact.phone}</Text>
-      </TouchableOpacity>
-    )}
-    {contact.email && (
-      <TouchableOpacity onPress={() => Linking.openURL(`mailto:${contact.email}`)}>
-        <Text style={styles.contactText}>✉️ {contact.email}</Text>
-      </TouchableOpacity>
-    )}
-  </View>
-)}
+          <View style={styles.contactBox}>
+            {contact.phone && (
+              <TouchableOpacity onPress={() => Linking.openURL(`tel:${contact.phone}`)}>
+                <Text style={styles.contactText}>📞 {contact.phone}</Text>
+              </TouchableOpacity>
+            )}
+            {contact.email && (
+              <TouchableOpacity onPress={() => Linking.openURL(`mailto:${contact.email}`)}>
+                <Text style={styles.contactText}>✉️ {contact.email}</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        )}
 
         {/* Actions deal */}
         <View style={styles.dealBox}>
@@ -238,74 +249,51 @@ const [comment, setComment] = useState("");
               <Text style={styles.dealAction}>Proposer un accord</Text>
             </TouchableOpacity>
           )}
-
           {clientProposed && !dealAccepted && (
             <TouchableOpacity onPress={acceptDeal}>
               <Text style={styles.dealAction}>Accepter l'accord proposé par le client</Text>
             </TouchableOpacity>
           )}
-
           {proProposed && !dealAccepted && <Text style={styles.dealStatus}>Vous avez proposé un accord — en attente du client</Text>}
-
           {dealAccepted && <Text style={styles.dealStatus}>✅ Accord validé</Text>}
         </View>
 
         {canReview && (
-  <TouchableOpacity
-    style={styles.reviewButton}
-    onPress={() => setReviewModal(true)}
-  >
-    <Text style={{ color: "#220303" }}>Donner un avis ⭐</Text>
-  </TouchableOpacity>
-)}
+          <TouchableOpacity
+            style={styles.reviewButton}
+            onPress={() => setReviewModal(true)}
+          >
+            <Text style={{ color: "#220303" }}>Donner un avis ⭐</Text>
+          </TouchableOpacity>
+        )}
 
-<Modal visible={reviewModal} transparent animationType="slide">
-
-<View style={styles.modalOverlay}>
-
-<View style={styles.modal}>
-
-<Text style={styles.modalTitle}>
-Comment s'est passé ce client ?
-</Text>
-
-<View style={styles.stars}>
-
-{[1,2,3,4,5].map((s)=>(
-<TouchableOpacity key={s} onPress={()=>setRating(s)}>
-<Text style={{fontSize:30}}>
-{s <= rating ? "⭐" : "☆"}
-</Text>
-</TouchableOpacity>
-))}
-
-</View>
-
-<TextInput
-placeholder="Commentaire (optionnel)"
-value={comment}
-onChangeText={setComment}
-style={styles.input}
-/>
-
-<TouchableOpacity
-style={styles.sendReview}
-onPress={submitReview}
->
-<Text style={{color:"#fff"}}>Envoyer l'avis</Text>
-</TouchableOpacity>
-
-<TouchableOpacity onPress={()=>setReviewModal(false)}>
-<Text style={{textAlign:"center", marginTop:10}}>
-Fermer
-</Text>
-</TouchableOpacity>
-
-</View>
-
-</View>
-
-</Modal>
+        {/* Modal review */}
+        <Modal visible={reviewModal} transparent animationType="slide">
+          <View style={styles.modalOverlay}>
+            <View style={styles.modal}>
+              <Text style={styles.modalTitle}>Comment s'est passé ce client ?</Text>
+              <View style={styles.stars}>
+                {[1,2,3,4,5].map((s)=>(
+                  <TouchableOpacity key={s} onPress={()=>setRating(s)}>
+                    <Text style={{fontSize:30}}>{s <= rating ? "⭐" : "☆"}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+              <TextInput
+                placeholder="Commentaire (optionnel)"
+                value={comment}
+                onChangeText={setComment}
+                style={styles.input}
+              />
+              <TouchableOpacity style={styles.sendReview} onPress={submitReview}>
+                <Text style={{color:"#fff"}}>Envoyer l'avis</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={()=>setReviewModal(false)}>
+                <Text style={{textAlign:"center", marginTop:10}}>Fermer</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
 
         {/* Messages */}
         <Text style={styles.chatTitle}>Conversation avec {request.client.name}</Text>
@@ -317,7 +305,6 @@ Fermer
             if (msg.readBy.length >= 2) status = "✓✓ lu";
           }
           const msgTime = new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
           return (
             <View key={i} style={[styles.messageRow, isMe ? styles.myMessageRow : styles.otherMessageRow]}>
               {!isMe && request.client.profileImage && (
@@ -347,6 +334,22 @@ Fermer
           </TouchableOpacity>
         </View>
       </ScrollView>
+
+      {/* Modal preview image */}
+      <Modal visible={previewVisible} transparent animationType="fade">
+        <TouchableOpacity
+          style={{
+            flex: 1,
+            backgroundColor: "rgba(0,0,0,0.9)",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+          onPress={() => setPreviewVisible(false)}
+          activeOpacity={1}
+        >
+          <Image source={{ uri: previewImage }} style={{ width: "90%", height: "80%", resizeMode: "contain", borderRadius: 12 }} />
+        </TouchableOpacity>
+      </Modal>
     </View>
   );
 }
@@ -375,45 +378,10 @@ const styles = StyleSheet.create({
   inputRow: { flexDirection: "row", alignItems: "center", marginTop: 10 },
   input: { flex: 1, borderWidth: 1, borderColor: "#ccc", borderRadius: 8, padding: 10 },
   sendButton: { padding: 10, backgroundColor: "#007AFF", borderRadius: 8, marginLeft: 8 },
-  reviewButton:{
-backgroundColor:"#28a745",
-padding:12,
-borderRadius:8,
-alignItems:"center",
-marginTop:10
-},
-
-modalOverlay:{
-flex:1,
-backgroundColor:"rgba(0,0,0,0.5)",
-justifyContent:"center",
-alignItems:"center"
-},
-
-modal:{
-backgroundColor:"white",
-padding:20,
-borderRadius:10,
-width:"85%"
-},
-
-modalTitle:{
-fontSize:18,
-fontWeight:"bold",
-marginBottom:15,
-textAlign:"center"
-},
-
-stars:{
-flexDirection:"row",
-justifyContent:"center",
-marginBottom:20
-},
-
-sendReview:{
-backgroundColor:"#007AFF",
-padding:12,
-borderRadius:8,
-alignItems:"center"
-},
+  reviewButton: { backgroundColor:"#28a745", padding:12, borderRadius:8, alignItems:"center", marginTop:10 },
+  modalOverlay: { flex:1, backgroundColor:"rgba(0,0,0,0.5)", justifyContent:"center", alignItems:"center" },
+  modal: { backgroundColor:"white", padding:20, borderRadius:10, width:"85%" },
+  modalTitle: { fontSize:18, fontWeight:"bold", marginBottom:15, textAlign:"center" },
+  stars: { flexDirection:"row", justifyContent:"center", marginBottom:20 },
+  sendReview: { backgroundColor:"#007AFF", padding:12, borderRadius:8, alignItems:"center" },
 });

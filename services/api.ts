@@ -6,7 +6,7 @@ export const useApi = () => {
   const context = useContext(AuthContext);
   if (!context) throw new Error("useApi must be used within AuthProvider");
 
-const { user, logout, loading } = context;
+const { user, logout, loading } = context; // 🔹 récupérer ici
 const router = useRouter()
   const token = user?.token ?? null;
 
@@ -58,5 +58,5 @@ const router = useRouter()
     }
   };
 
-  return { apiFetch, logout };
+  return { apiFetch, logout, user, loading };
 };

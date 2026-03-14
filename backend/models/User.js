@@ -82,6 +82,10 @@ equipment: { type: String, trim: true },
   subscriptionStart: Date,
   subscriptionEnd: Date,
 
+  expoPushToken: {
+  type: String
+},
+
   ratings: [ratingSchema],
   averageRating: { type: Number, default: 0 },
 

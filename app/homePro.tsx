@@ -27,6 +27,7 @@ export default function HomePro() {
   type ProfileType = {
     name: string;
     profileImage?: { url: string };
+    averageRating: number
   };
 
   const router = useRouter();
@@ -135,6 +136,18 @@ export default function HomePro() {
 
       {profile?.profileImage?.url && <Image source={{ uri: profile.profileImage.url }} style={styles.avatar} />}
       <Text style={{ marginBottom: 10 }}>{profile?.name}</Text>
+
+      {/* ⭐ Rating pro */}
+{profile?.averageRating && (
+  <View style={{ flexDirection: "row", marginBottom: 10 }}>
+    {[1,2,3,4,5].map(i => (
+      <Text key={i} style={{ fontSize: 16 }}>
+        {i <= Math.round(profile.averageRating) ? "⭐" : "☆"}
+      </Text>
+    ))}
+    <Text>{profile.averageRating}</Text>
+  </View>
+)}
 
       <Text style={styles.title}>Demandes disponibles</Text>
 

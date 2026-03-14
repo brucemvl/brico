@@ -19,6 +19,18 @@ router.get("/me", auth, async (req, res) => {
   }
 });
 
+//PUSHTOKEN
+router.post("/push-token", auth, async (req, res) => {
+
+  await User.findByIdAndUpdate(
+    req.user.id,
+    { expoPushToken: req.body.token }
+  );
+
+  res.json({ success: true });
+
+});
+
 // 🔹 PUT /users/profile/pro → mise à jour profil pro
 router.put(
   "/profile/pro",
