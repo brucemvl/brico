@@ -27,11 +27,11 @@ router.get("/client", auth, async (req, res) => {
 
     const formatted = requests.map(r => {
       const conv = conversations.find(c => c.request.toString() === r._id.toString());
-const hasUnread =
-  conv &&
-  conv.lastInteractionBy &&
-  conv.lastInteractionBy.toString() !== req.user.id;
-        return { ...r.toObject(), hasUnread };
+      const hasUnread =
+        conv &&
+        conv.lastInteractionBy &&
+        conv.lastInteractionBy.toString() !== req.user.id;
+      return { ...r.toObject(), hasUnread };
     });
 
     res.json(formatted);
@@ -49,9 +49,9 @@ router.get("/pro", auth, async (req, res) => {
     const proId = req.user.id;
 
     // 🔹 Toutes les demandes ouvertes
-const openRequests = await Request.find({
-  status: { $in: ["open", "in_progress"] }
-});
+    const openRequests = await Request.find({
+      status: { $in: ["open", "in_progress"] }
+    });
     // 🔹 Mes demandes en cours (in_progress) uniquement si je suis assigné
     const myInProgress = await Request.find({
       status: "in_progress",
@@ -125,16 +125,16 @@ router.get("/:id", auth, async (req, res) => {
 
       // 🔹 Si aucune conversation, on la crée
       if (!conversation) {
-  conversation = new Conversation({
-    request: request._id,
-    client: request.client,       // ok
-    pro: req.user.id,             // <-- obligatoire !
-    messages: [],                 // vide pour l'instant
-  });
-  await conversation.save();
-  await conversation.populate("client", "name profileImage");
-  await conversation.populate("messages.from", "name profileImage");
-}
+        conversation = new Conversation({
+          request: request._id,
+          client: request.client,       // ok
+          pro: req.user.id,             // <-- obligatoire !
+          messages: [],                 // vide pour l'instant
+        });
+        await conversation.save();
+        await conversation.populate("client", "name profileImage");
+        await conversation.populate("messages.from", "name profileImage");
+      }
 
       return res.json({ ...request.toObject(), conversation });
     }
@@ -157,18 +157,18 @@ router.post("/", auth, upload.array("images"), async (req, res) => {
 
     // 🔹 Construire l'objet explicitement
     const newRequest = new Request({
-  client: req.user.id,
-  title,
-  description,
-  category,
-  location,
-  budget,
-  images: [],
-  offers: [],
-  messages: [],
-  clientValidated: false,
-  proValidated: false
-});
+      client: req.user.id,
+      title,
+      description,
+      category,
+      location,
+      budget,
+      images: [],
+      offers: [],
+      messages: [],
+      clientValidated: false,
+      proValidated: false
+    });
 
     // 🔹 Upload des images
     if (req.files?.length) {
@@ -196,6 +196,73 @@ router.post("/", auth, upload.array("images"), async (req, res) => {
     res.status(201).json(newRequest);
   } catch (err) {
     console.error("POST /requests error:", err);
+    res.status(500).json({ error: "Erreur serveur" });
+  }
+});
+
+// MODIFICATIONS IMAGES
+router.post("/:id/images", auth, upload.array("images"), async (req, res) => {
+  try {
+
+    const request = await Request.findById(req.params.id);
+
+    if (!request) {
+      return res.status(404).json({ error: "Demande introuvable" });
+    }
+
+    // 🔹 Vérifie que c'est le client propriétaire
+    if (request.client.toString() !== req.user.id) {
+      return res.status(403).json({ error: "Non autorisé" });
+    }
+
+    if (!req.files?.length) {
+      return res.status(400).json({ error: "Aucune image envoyée" });
+    }
+
+    for (const file of req.files) {
+
+  request.images.push({
+    url: file.path,
+    public_id: file.filename
+  });
+
+}
+
+    await request.save();
+
+    const updated = await Request.findById(req.params.id)
+  .populate("client", "name profileImage");
+
+    res.json(updated);
+
+  } catch (err) {
+    console.error("POST /requests/:id/images error:", err);
+    res.status(500).json({ error: "Erreur serveur" });
+  }
+});
+
+//DELETE UNE IMAGE
+router.delete("/:id/images/:imageId", auth, async (req, res) => {
+  try {
+    const request = await Request.findById(req.params.id);
+    if (!request) return res.status(404).json({ error: "Demande introuvable" });
+
+    if (request.client.toString() !== req.user.id)
+      return res.status(403).json({ error: "Non autorisé" });
+
+    const image = request.images.find(img => img._id.toString() === req.params.imageId);
+    if (!image) return res.status(404).json({ error: "Image introuvable" });
+
+    if (image.public_id) {
+      await cloudinary.uploader.destroy(image.public_id);
+    }
+
+    request.images = request.images.filter(img => img._id.toString() !== req.params.imageId);
+    await request.save();
+
+    res.json({ images: request.images });
+  } catch (err) {
+    console.error("DELETE /requests/:id/images error:", err);
     res.status(500).json({ error: "Erreur serveur" });
   }
 });
@@ -322,7 +389,7 @@ router.post("/:id/offer", auth, async (req, res) => {
 // =======================
 router.post("/:id/accept/:offerId", auth, async (req, res) => {
   try {
-    if (!req.user || req.user.role !== "client") 
+    if (!req.user || req.user.role !== "client")
       return res.status(403).json({ error: "Seulement pour les clients" });
 
     const request = await Request.findById(req.params.id);
@@ -338,27 +405,27 @@ router.post("/:id/accept/:offerId", auth, async (req, res) => {
 
     // 🔹 Assigner le pro et stocker l'offre acceptée
     request.proAssigned = offer.pro;
-request.acceptedOffer = offer.toObject();
-request.status = "in_progress";
+    request.acceptedOffer = offer.toObject();
+    request.status = "in_progress";
 
-await request.save();
+    await request.save();
 
-// 🔹 Créer la conversation côté client si elle n'existe pas
-let conversation = await Conversation.findOne({
-  request: request._id,
-  client: request.client,
-  pro: offer.pro
-});
+    // 🔹 Créer la conversation côté client si elle n'existe pas
+    let conversation = await Conversation.findOne({
+      request: request._id,
+      client: request.client,
+      pro: offer.pro
+    });
 
-if (!conversation) {
-  conversation = new Conversation({
-    request: request._id,
-    client: request.client,
-    pro: offer.pro,
-    messages: []
-  });
-  await conversation.save();
-}
+    if (!conversation) {
+      conversation = new Conversation({
+        request: request._id,
+        client: request.client,
+        pro: offer.pro,
+        messages: []
+      });
+      await conversation.save();
+    }
 
     // 🔹 Notification au pro choisi
     await createNotification({
