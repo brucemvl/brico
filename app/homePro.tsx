@@ -44,8 +44,9 @@ export default function HomePro() {
   const [loading, setLoading] = useState(true);
 
   const [fontsLoaded] = useFonts({ 
-    "Londrina": require("../assets/fonts/Londrina/LondrinaSolid-Light.ttf"), 
-    "Londrinak": require("../assets/fonts/Londrina/LondrinaSolid-Regular.ttf"), 
+    "Londrina": require("../assets/fonts/Londrina/LondrinaSolid-Regular.ttf"), 
+    "Londrinak": require("../assets/fonts/Londrina/LondrinaSolid-Black.ttf"), 
+    "Mont": require("../assets/fonts/Montserrat/Montserrat-Regular.ttf"), 
   });
 
   // 🔹 Charger le profil
@@ -153,11 +154,11 @@ export default function HomePro() {
         onPress={() => router.push({ pathname: "/profilePro" })}
         style={styles.profileButton}
       >
-        <Text>Mon Profil</Text>
+        <Text style={{fontFamily: "Mont", color: "white"}}>Mon Profil</Text>
       </TouchableOpacity>
 
       {profile?.profileImage?.url && <Image source={{ uri: profile.profileImage.url }} style={styles.avatar} />}
-      <Text style={{ marginBottom: 10 }}>{profile?.name}</Text>
+      <Text style={{ marginBottom: 10, fontFamily: "Londrinak" }}>{profile?.name}</Text>
 
       {/* ⭐ Rating pro */}
 {profile?.averageRating && (
@@ -179,14 +180,14 @@ export default function HomePro() {
           style={[styles.filterButton, activeFilter === "skills" && styles.activeFilter]}
           onPress={() => setActiveFilter("skills")}
         >
-          <Text>Mes compétences</Text>
+          <Text style={styles.filterText}>Mes compétences</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           style={[styles.filterButton, activeFilter === "all" && styles.activeFilter]}
           onPress={() => setActiveFilter("all")}
         >
-          <Text>Toutes</Text>
+          <Text style={styles.filterText}>Toutes</Text>
         </TouchableOpacity>
 
         {categories.map(cat => (
@@ -196,7 +197,7 @@ export default function HomePro() {
             onPress={() => setActiveFilter(cat)}
           >
             <View style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
-              <Text>{cat}</Text>
+              <Text style={styles.filterText}>{cat}</Text>
               {hasUnreadByCategory[cat] && <View style={styles.categoryBadge} />}
             </View>
           </TouchableOpacity>
@@ -218,9 +219,9 @@ export default function HomePro() {
                     {item.hasUnread && <View style={styles.messageBadge} />}
                   </View>
 <View style={styles.cardContainer}>
-                  <Text style={{fontFamily: "Londrinak"}}>Catégorie : {item.category}</Text>
-                  <Text style={{fontFamily: "Londrinak"}}>Lieu : {item.location}</Text>
-                  <Text style={{fontFamily: "Londrinak"}}>Budget : {item.budget}€</Text>
+                  <Text style={{fontFamily: "Londrina"}}>Catégorie : {item.category}</Text>
+                  <Text style={{fontFamily: "Londrina"}}>Lieu : {item.location}</Text>
+                  <Text style={{fontFamily: "Londrina"}}>Budget : {item.budget}€</Text>
                   </View>
 
                   {item.status === "accepted" && (
@@ -251,13 +252,13 @@ export default function HomePro() {
 const styles = StyleSheet.create({
   container: { paddingTop: 80, alignItems: "center", paddingBottom: 60 },
   center: { flex: 1, justifyContent: "center", alignItems: "center" },
-  title: { fontSize: 24, fontFamily: "Londrinak", marginBottom: 15 },
+  title: { fontSize: 24, fontFamily: "Mont", marginBottom: 15 },
   avatar: { height: 70, width: 70, resizeMode: "contain", borderRadius: 35, marginBottom: 5 },
   profileButton: { alignSelf: "flex-end", margin: 20, borderWidth: 1, backgroundColor: "green", padding: 5, borderRadius: 10 },
 
   filtersContainer: { marginBottom: 15, flexWrap: "wrap", flexDirection: "row", gap: 6, justifyContent: "center" },
   filterButton: {
-    paddingHorizontal: 15,
+    paddingHorizontal: 10,
     paddingVertical: 8,
     borderWidth: 1,
     borderRadius: 20,
@@ -265,11 +266,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center"
   },
+  filterText: {fontFamily: "Mont"},
   activeFilter: { backgroundColor: "#ddd" },
 
   requestsContainer: { width: "100%", paddingHorizontal: 20, alignItems: "center" },
   card: { borderWidth: 4, borderColor: "#4CAF50", borderRadius: 10, marginBottom: 12, width: "100%" },
-  cardTitle: { color: "#ffffff", fontSize: 16, marginBottom: 5, fontFamily: "Londrinak" },
+  cardTitle: { color: "#ffffff", fontSize: 16, marginBottom: 5 },
   cardContainer: {padding: 15},
   skillBadge: { margin: 5, backgroundColor: "#d4edda", padding: 5, borderRadius: 5 },
   badgeText: { fontSize: 12, color: "#155724" },
