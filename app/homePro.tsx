@@ -1,4 +1,5 @@
 import { useFocusEffect } from "@react-navigation/native";
+import { useFonts } from "expo-font";
 import { useRouter } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
 import {
@@ -11,6 +12,7 @@ import {
 } from "react-native";
 import { useApi } from "../services/api";
 
+
 type RequestType = {
   _id: string;
   title: string;
@@ -22,6 +24,8 @@ type RequestType = {
 };
 
 const categories = ["plomberie", "peinture", "agencement", "électricité", "divers"];
+
+
 
 export default function HomePro() {
   type ProfileType = {
@@ -39,6 +43,11 @@ export default function HomePro() {
   const [activeFilter, setActiveFilter] = useState<"skills" | "all" | string>("skills");
   const [loading, setLoading] = useState(true);
 
+  const [fontsLoaded] = useFonts({ 
+    "Londrina": require("../assets/fonts/Londrina/LondrinaSolid-Light.ttf"), 
+    "Londrinak": require("../assets/fonts/Londrina/LondrinaSolid-Regular.ttf"), 
+  });
+
   // 🔹 Charger le profil
   useEffect(() => {
     const loadProfile = async () => {
@@ -54,17 +63,27 @@ export default function HomePro() {
 
   // 🔹 Fetch demandes + compétences
   const fetchRequests = async () => {
-    setLoading(true);
-    try {
-      const data = await apiFetch("/requests/pro");
-      setRequests(data.requests || []);
-      setSkills(data.skills || []);
-    } catch (err) {
-      console.error("Erreur fetch pro:", err);
-    } finally {
-      setLoading(false);
+  setLoading(true);
+
+  try {
+    const data = await apiFetch("/requests/pro");
+
+    if (!data) {
+      console.log("API response vide");
+      return;
     }
-  };
+
+    console.log("REQUESTS API:", data);
+
+    setRequests(data.requests || []);
+    setSkills(data.skills || []);
+
+  } catch (err) {
+    console.error("Erreur fetch pro:", err);
+  } finally {
+    setLoading(false);
+  }
+};
 
   useFocusEffect(
     useCallback(() => {
@@ -124,6 +143,9 @@ export default function HomePro() {
       </View>
     );
   }
+
+    if (!fontsLoaded) return null;
+
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -191,14 +213,15 @@ export default function HomePro() {
             return (
               <TouchableOpacity key={item._id} onPress={() => openRequest(item)} style={{ width: "100%" }}>
                 <View style={styles.card}>
-                  <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+                  <View style={{ flexDirection: "row", justifyContent: "space-between", backgroundColor: "#4CAF50", paddingBlock: 6, paddingInline: 4 }}>
                     <Text style={styles.cardTitle}>{item.title}</Text>
                     {item.hasUnread && <View style={styles.messageBadge} />}
                   </View>
-
-                  <Text>Catégorie : {item.category}</Text>
-                  <Text>Lieu : {item.location}</Text>
-                  <Text>Budget : {item.budget}€</Text>
+<View style={styles.cardContainer}>
+                  <Text style={{fontFamily: "Londrinak"}}>Catégorie : {item.category}</Text>
+                  <Text style={{fontFamily: "Londrinak"}}>Lieu : {item.location}</Text>
+                  <Text style={{fontFamily: "Londrinak"}}>Budget : {item.budget}€</Text>
+                  </View>
 
                   {item.status === "accepted" && (
                     <View style={styles.acceptedBadge}>
@@ -228,7 +251,7 @@ export default function HomePro() {
 const styles = StyleSheet.create({
   container: { paddingTop: 80, alignItems: "center", paddingBottom: 60 },
   center: { flex: 1, justifyContent: "center", alignItems: "center" },
-  title: { fontSize: 22, fontWeight: "bold", marginBottom: 15 },
+  title: { fontSize: 24, fontFamily: "Londrinak", marginBottom: 15 },
   avatar: { height: 70, width: 70, resizeMode: "contain", borderRadius: 35, marginBottom: 5 },
   profileButton: { alignSelf: "flex-end", margin: 20, borderWidth: 1, backgroundColor: "green", padding: 5, borderRadius: 10 },
 
@@ -245,9 +268,10 @@ const styles = StyleSheet.create({
   activeFilter: { backgroundColor: "#ddd" },
 
   requestsContainer: { width: "100%", paddingHorizontal: 20, alignItems: "center" },
-  card: { padding: 15, borderWidth: 1, borderRadius: 10, marginBottom: 12, width: "100%" },
-  cardTitle: { fontWeight: "bold", fontSize: 16, marginBottom: 5 },
-  skillBadge: { marginTop: 8, backgroundColor: "#d4edda", padding: 5, borderRadius: 5 },
+  card: { borderWidth: 4, borderColor: "#4CAF50", borderRadius: 10, marginBottom: 12, width: "100%" },
+  cardTitle: { color: "#ffffff", fontSize: 16, marginBottom: 5, fontFamily: "Londrinak" },
+  cardContainer: {padding: 15},
+  skillBadge: { margin: 5, backgroundColor: "#d4edda", padding: 5, borderRadius: 5 },
   badgeText: { fontSize: 12, color: "#155724" },
   acceptedBadge: { marginTop: 8, backgroundColor: "#ffeeba", padding: 5, borderRadius: 5, alignItems: "center" },
 

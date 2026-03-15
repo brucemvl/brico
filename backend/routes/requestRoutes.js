@@ -47,25 +47,27 @@ router.get("/client", auth, async (req, res) => {
 // =======================
 router.get("/pro", auth, async (req, res) => {
   try {
-    const proId = req.user.id;
+    // 🔹 Récupérer l'ID du pro depuis le token
+    const proId = req.user.id || req.user._id;
 
-    // 🔹 Toutes les demandes ouvertes
-    const openRequests = await Request.find({
-      status: { $in: ["open", "in_progress"] }
+    // 🔹 Vérifier que l'utilisateur existe
+    const user = await User.findById(proId);
+    if (!user) return res.status(404).json({ message: "Utilisateur introuvable" });
+
+    // 🔹 Récupérer toutes les demandes ouvertes ou en cours
+    // "in_progress" si le pro est assigné, "open" pour toutes
+    const requests = await Request.find({
+      $or: [
+        { status: { $in: ["open"] } },
+        { status: "in_progress", proAssigned: proId }
+      ]
     });
-    // 🔹 Mes demandes en cours (in_progress) uniquement si je suis assigné
-    const myInProgress = await Request.find({
-      status: "in_progress",
-      proAssigned: proId
-    });
 
-    // 🔹 Concaténer
-    const allRequests = [...openRequests, ...myInProgress];
-
-    // 🔹 Récupérer les conversations pour marquer unread
+    // 🔹 Récupérer les conversations du pro pour calculer hasUnread
     const conversations = await Conversation.find({ pro: proId });
 
-    const requestsWithUnread = allRequests.map(r => {
+    // 🔹 Préparer les demandes avec hasUnread
+    const requestsWithUnread = requests.map(r => {
       const conv = conversations.find(c => c.request.toString() === r._id.toString());
       const hasUnread =
         conv?.messages?.some(msg => msg.from.toString() !== proId && !msg.readBy.includes(proId)) || false;
@@ -81,9 +83,10 @@ router.get("/pro", auth, async (req, res) => {
       };
     });
 
+    // 🔹 Retourner à l’API frontend
     res.json({
       requests: requestsWithUnread,
-      skills: req.user.skills
+      skills: user.skills || []
     });
 
   } catch (err) {
@@ -111,6 +114,15 @@ router.get("/:id", auth, async (req, res) => {
         .populate("pro", "name profileImage")
         .populate("messages.from", "name profileImage")
         .sort({ updatedAt: -1 });
+
+         // 🔹 Marquer la conversation comme lue
+  await Conversation.updateMany(
+    { request: req.params.id, client: req.user.id },
+    {
+      lastInteractionBy: req.user.id,
+      lastInteractionAt: new Date()
+    }
+  );
 
       return res.json({ ...request.toObject(), conversations });
     }
@@ -198,8 +210,9 @@ router.post("/", auth, upload.array("images"), async (req, res) => {
 // 🔔 Notifier les pros ayant la compétence
  const pros = await User.find({
   role: "pro",
-  skills: category
-}).select("_id");
+  skills: category,
+  expoPushToken: { $exists: true, $ne: "" } // seulement ceux avec token
+}).select("_id expoPushToken");
 
 for (const pro of pros) {
   await createNotification({
