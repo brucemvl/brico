@@ -97,6 +97,38 @@ router.put(
   }
 );
 
+// 🔹 Supprimer la photo de profil pro
+router.delete("/profile/pro/profile-image", auth, async (req, res) => {
+  try {
+    if (req.user.role !== "pro") {
+      return res.status(403).json({ error: "Accès réservé aux pros" });
+    }
+
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ error: "Utilisateur introuvable" });
+    }
+
+    if (!user.profileImage?.public_id) {
+      return res.status(404).json({ error: "Aucune photo de profil" });
+    }
+
+    // supprimer de cloudinary
+    await cloudinary.uploader.destroy(user.profileImage.public_id);
+
+    // supprimer dans la base
+    user.profileImage = null;
+
+    await user.save();
+
+    res.json({ message: "Photo supprimée" });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // 🔹 Supprimer une image du portfolio
 router.delete("/profile/pro/portfolio/:imageId", auth, async (req, res) => {
   try {

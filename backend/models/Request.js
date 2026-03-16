@@ -27,7 +27,7 @@ const requestSchema = new mongoose.Schema({
   description: String,
   category: {
     type: String,
-    enum: ["peinture", "plomberie", "agencement", "électricité", "divers"],
+    enum: ["Peinture", "Plomberie", "Agencement", "Electricité", "Carrelage", "Divers"],
     required: true
   },
   location: { type: String, required: true },

@@ -127,11 +127,12 @@ const [location, setLocation] = useState("");
 
       <Text>Catégorie*</Text>
       <Picker selectedValue={category} onValueChange={setCategory}>
-        <Picker.Item label="Plomberie" value="plomberie" />
-        <Picker.Item label="Peinture" value="peinture" />
-        <Picker.Item label="Agencement" value="agencement" />
-        <Picker.Item label="Electricité" value="électricité" />
-        <Picker.Item label="Divers" value="divers" />
+        <Picker.Item label="Plomberie" value="Plomberie" />
+        <Picker.Item label="Peinture" value="Peinture" />
+        <Picker.Item label="Agencement" value="Agencement" />
+        <Picker.Item label="Electricité" value="Electricité" />
+        <Picker.Item label="Carrelage" value="Carrelage" />
+        <Picker.Item label="Divers" value="Divers" />
       </Picker>
 
       <Text>Ville*</Text>

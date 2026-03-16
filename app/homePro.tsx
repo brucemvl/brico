@@ -10,7 +10,9 @@ import {
   TouchableOpacity,
   View
 } from "react-native";
+import modifier from "../assets/modifier.png";
 import { useApi } from "../services/api";
+
 
 
 type RequestType = {
@@ -23,7 +25,7 @@ type RequestType = {
   hasUnread?: boolean;
 };
 
-const categories = ["plomberie", "peinture", "agencement", "électricité", "divers"];
+const categories = ["Plomberie", "Peinture", "Agencement", "Electricité", "Carrelage", "divers"];
 
 
 
@@ -47,6 +49,7 @@ export default function HomePro() {
     "Londrina": require("../assets/fonts/Londrina/LondrinaSolid-Regular.ttf"), 
     "Londrinak": require("../assets/fonts/Londrina/LondrinaSolid-Black.ttf"), 
     "Mont": require("../assets/fonts/Montserrat/Montserrat-Regular.ttf"), 
+    "Montt": require("../assets/fonts/Montserrat/Montserrat-Bold.ttf"), 
   });
 
   // 🔹 Charger le profil
@@ -150,28 +153,31 @@ export default function HomePro() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
+      
+
+<View style={{alignItems: "center", gap: 4, marginBlock: 20}}>
+      <Image source={{ uri: profile?.profileImage?.url }} style={styles.avatar} />
       <TouchableOpacity
         onPress={() => router.push({ pathname: "/profilePro" })}
         style={styles.profileButton}
       >
-        <Text style={{fontFamily: "Mont", color: "white"}}>Mon Profil</Text>
+        <Image source={modifier} style={{width: 20, height: 20}}/>
       </TouchableOpacity>
-
-      {profile?.profileImage?.url && <Image source={{ uri: profile.profileImage.url }} style={styles.avatar} />}
-      <Text style={{ marginBottom: 10, fontFamily: "Londrinak" }}>{profile?.name}</Text>
+      <Text style={{fontFamily: "Londrinak", fontSize: 16 }}>{profile?.name}</Text>
 
       {/* ⭐ Rating pro */}
 {profile?.averageRating && (
-  <View style={{ flexDirection: "row", marginBottom: 10 }}>
+  <View style={{ flexDirection: "row"}}>
     {[1,2,3,4,5].map(i => (
       <Text key={i} style={{ fontSize: 16 }}>
         {i <= Math.round(profile.averageRating) ? "⭐" : "☆"}
       </Text>
     ))}
-    <Text>{profile.averageRating}</Text>
   </View>
 )}
+    <Text style={{fontFamily: "Mont"}}>({profile?.averageRating})</Text>
 
+</View>
       <Text style={styles.title}>Demandes disponibles</Text>
 
       {/* 🔹 Boutons filtres */}
@@ -207,21 +213,21 @@ export default function HomePro() {
       {/* 🔹 Liste des demandes */}
       <View style={styles.requestsContainer}>
         {filteredRequests.length === 0 ? (
-          <Text>Aucune demande disponible</Text>
+          <Text style={{fontFamily: "Londrina", fontSize: 16, marginBlock: 20}}>Aucune demande disponible</Text>
         ) : (
           filteredRequests.map(item => {
             const isMatchingSkill = skills.includes(item.category);
             return (
               <TouchableOpacity key={item._id} onPress={() => openRequest(item)} style={{ width: "100%" }}>
                 <View style={styles.card}>
-                  <View style={{ flexDirection: "row", justifyContent: "space-between", backgroundColor: "#4CAF50", paddingBlock: 6, paddingInline: 4 }}>
+                  <View style={{ flexDirection: "row", justifyContent: "space-between", backgroundColor: "#3E9040", paddingBlock: 6, paddingInline: 4 }}>
                     <Text style={styles.cardTitle}>{item.title}</Text>
                     {item.hasUnread && <View style={styles.messageBadge} />}
                   </View>
 <View style={styles.cardContainer}>
-                  <Text style={{fontFamily: "Londrina"}}>Catégorie : {item.category}</Text>
-                  <Text style={{fontFamily: "Londrina"}}>Lieu : {item.location}</Text>
-                  <Text style={{fontFamily: "Londrina"}}>Budget : {item.budget}€</Text>
+                  <Text style={{fontFamily: "Londrina", fontSize: 16}}>Catégorie : {item.category}</Text>
+                  <Text style={{fontFamily: "Londrina", fontSize: 16}}>Lieu : {item.location}</Text>
+                  <Text style={{fontFamily: "Londrina", fontSize: 16}}>Budget : {item.budget}€</Text>
                   </View>
 
                   {item.status === "accepted" && (
@@ -242,8 +248,8 @@ export default function HomePro() {
         )}
       </View>
 
-      <TouchableOpacity onPress={async () => { await logout(); router.replace("/"); }} style={{ marginTop: 20 }}>
-        <Text>Logout</Text>
+      <TouchableOpacity onPress={async () => { await logout(); router.replace("/"); }} style={{ marginTop: 20, padding: 8 }}>
+        <Text style={{fontFamily: "Mont", color: "red"}}>Deconnexion</Text>
       </TouchableOpacity>
     </ScrollView>
   );
@@ -252,9 +258,9 @@ export default function HomePro() {
 const styles = StyleSheet.create({
   container: { paddingTop: 80, alignItems: "center", paddingBottom: 60 },
   center: { flex: 1, justifyContent: "center", alignItems: "center" },
-  title: { fontSize: 24, fontFamily: "Mont", marginBottom: 15 },
-  avatar: { height: 70, width: 70, resizeMode: "contain", borderRadius: 35, marginBottom: 5 },
-  profileButton: { alignSelf: "flex-end", margin: 20, borderWidth: 1, backgroundColor: "green", padding: 5, borderRadius: 10 },
+  title: { fontSize: 24, fontFamily: "Montt", marginBottom: 15 },
+  avatar: { height: 90, width: 90, resizeMode: "contain", borderRadius: 45 },
+  profileButton: { alignSelf: "flex-end",  padding: 5, borderRadius: 50, backgroundColor: "#999999", position: "absolute", top: 60, borderColor: "#f5f5f5", borderWidth: 1 },
 
   filtersContainer: { marginBottom: 15, flexWrap: "wrap", flexDirection: "row", gap: 6, justifyContent: "center" },
   filterButton: {
@@ -267,14 +273,14 @@ const styles = StyleSheet.create({
     justifyContent: "center"
   },
   filterText: {fontFamily: "Mont"},
-  activeFilter: { backgroundColor: "#ddd" },
+  activeFilter: { backgroundColor: "#999999" },
 
   requestsContainer: { width: "100%", paddingHorizontal: 20, alignItems: "center" },
-  card: { borderWidth: 4, borderColor: "#4CAF50", borderRadius: 10, marginBottom: 12, width: "100%" },
-  cardTitle: { color: "#ffffff", fontSize: 16, marginBottom: 5 },
-  cardContainer: {padding: 15},
-  skillBadge: { margin: 5, backgroundColor: "#d4edda", padding: 5, borderRadius: 5 },
-  badgeText: { fontSize: 12, color: "#155724" },
+  card: { borderWidth: 4, borderColor: "#3e9040", borderRadius: 10, marginBottom: 12, width: "100%" },
+  cardTitle: { color: "#ffffff", fontSize: 16, marginBottom: 5, fontFamily: "Montt" },
+  cardContainer: {padding: 15, gap: 4},
+  skillBadge: { margin: 5, backgroundColor: "#f0ea27", padding: 8, borderRadius: 8 },
+  badgeText: { fontSize: 12, color: "#155724", fontFamily: "Mont" },
   acceptedBadge: { marginTop: 8, backgroundColor: "#ffeeba", padding: 5, borderRadius: 5, alignItems: "center" },
 
   messageBadge: { width: 10, height: 10, borderRadius: 5, backgroundColor: "red", marginLeft: 6 },
