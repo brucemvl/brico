@@ -8,7 +8,6 @@ import {
   Alert,
   Animated,
   Image,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -38,6 +37,14 @@ const equipmentOptions = [
 export default function ProfilePro() {
   const { apiFetch } = useApi();
   const router = useRouter();
+
+  const scrollY = new Animated.Value(0);
+  
+    const headerOpacity = scrollY.interpolate({
+    inputRange: [0, 100],
+    outputRange: [1, 0],
+    extrapolate: "clamp",
+  });
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -293,9 +300,17 @@ setSkills(Array.isArray(data.skills) ? data.skills : []);
 
   return (
     <View>
-      <LinearGradient colors={["#f3f3f3", "#f3f3f3", "#f3f3f3", "#f3f3f3de"]}  style={styles.header}></LinearGradient>
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Mon Profil</Text>
+      <LinearGradient colors={["#f3f3f3", "#f3f3f3", "#f3f3f3", "#f3f3f3de"]}  style={styles.header}>
+        <Animated.Text style={{ fontFamily: "Montt", opacity: headerOpacity }}>Mon Profil</Animated.Text>
+      </LinearGradient>
+<Animated.ScrollView
+  contentContainerStyle={styles.container}
+  onScroll={Animated.event(
+    [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+    { useNativeDriver: false }
+  )}
+  scrollEventThrottle={6}
+> 
 
       <Text style={{fontFamily: "Mont", color: "#000000"}}>Photo de profil</Text>
       {profileImage && (
@@ -451,7 +466,7 @@ setSkills(Array.isArray(data.skills) ? data.skills : []);
 </TouchableOpacity>
         )}
       </View>
-    </ScrollView>
+    </Animated.ScrollView>
     </View>
   );
 }
@@ -469,7 +484,7 @@ const styles = StyleSheet.create({
   top: 0,
   left: 0,
   right: 0,
-  height: 120,
+  height: 90,
   zIndex: 10,
   justifyContent: "flex-end",
   padding: 15,
