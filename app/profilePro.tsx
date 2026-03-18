@@ -21,6 +21,20 @@ import { useApi } from "../services/api";
 
 const categories = ["Plomberie", "Electricité", "Peinture", "Agencement", "Carrelage", "Divers"];
 
+const equipmentOptions = [
+  "Caisse à outils",
+  "Perceuse",
+  "Scie",
+  "Ponceuse",
+  "Multimètre",
+  "Escabeau",
+  "Camion",
+  "Aspirateur chantier",
+  "Bache de protection",
+  "Scie sauteuse",
+   "Scie circulaire"
+];
+
 export default function ProfilePro() {
   const { apiFetch } = useApi();
   const router = useRouter();
@@ -31,7 +45,7 @@ export default function ProfilePro() {
   const [siret, setSiret] = useState("");
   const [location, setLocation] = useState("");
   const [description, setDescription] = useState("");
-  const [equipment, setEquipment] = useState("");
+const [equipment, setEquipment] = useState<string[]>([]);
   const [skills, setSkills] = useState<string[]>([]);
   const [profileImage, setProfileImage] = useState<any>(null);
   const [portfolio, setPortfolio] = useState<any[]>([]);
@@ -52,7 +66,7 @@ export default function ProfilePro() {
       setSiret(data.siret || "");
       setLocation(data.location || "");
       setDescription(data.description || "");
-      setEquipment(data.equipment || "");
+setEquipment(data.equipment ? JSON.parse(data.equipment) : []);
       setSkills(data.skills || []);
       setProfileImage(data.profileImage || null);
       setPortfolio(data.portfolio || []);
@@ -152,6 +166,14 @@ export default function ProfilePro() {
     });
   };
 
+  const toggleEquipment = (item: string) => {
+  if (equipment.includes(item)) {
+    setEquipment(equipment.filter((e) => e !== item));
+  } else {
+    setEquipment([...equipment, item]);
+  }
+};
+
   const toggleSkill = (skill: string) => {
     if (skills.includes(skill))
       setSkills(skills.filter((s) => s !== skill));
@@ -198,7 +220,7 @@ export default function ProfilePro() {
       formData.append("siret", siret);
       formData.append("location", location);
       formData.append("description", description);
-      formData.append("equipment", equipment);
+      formData.append("equipment", JSON.stringify(equipment));
       formData.append("skills", JSON.stringify(skills));
 
       // Profile image
@@ -258,7 +280,7 @@ export default function ProfilePro() {
     <View>
       <LinearGradient colors={["#f3f3f3", "#f3f3f3", "#f3f3f3", "#f3f3f3de"]}  style={styles.header}></LinearGradient>
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Mon Profil Professionnel</Text>
+      <Text style={styles.title}>Mon Profil</Text>
 
       <Text style={{fontFamily: "Mont", color: "#000000"}}>Photo de profil</Text>
       {profileImage && (
@@ -337,11 +359,6 @@ export default function ProfilePro() {
 </View>
 
 <View style={styles.box}>
-      <Text style={{fontFamily: "Mont", color: "#ffffff"}}>Matériel utilisé</Text>
-      <TextInput style={[styles.input, { height: 80 }]} value={equipment} onChangeText={setEquipment} multiline />
-</View>
-
-<View style={styles.box}>
       <Text style={{ marginBottom: 15, fontFamily: "Mont", color: "#ffffff" }}>Compétences</Text>
       <View style={styles.skillsContainer}>
         {categories.map((cat) => (
@@ -351,6 +368,31 @@ export default function ProfilePro() {
         ))}
       </View>
       </View>
+
+      <View style={styles.box}>
+      <Text style={{fontFamily: "Mont", color: "#ffffff"}}>Matériel</Text>
+<View style={styles.skillsContainer}>
+    {equipmentOptions.map((item) => (
+      <TouchableOpacity
+        key={item}
+        style={[
+          styles.skillButton,
+          equipment.includes(item) && styles.skillSelected,
+        ]}
+        onPress={() => toggleEquipment(item)}
+      >
+        <Text
+          style={{
+            fontFamily: "Montt",
+            color: equipment.includes(item) ? "black" : "#ccc",
+          }}
+        >
+          {item}
+        </Text>
+      </TouchableOpacity>
+    ))}
+  </View>
+  </View>
 
 
 <View style={styles.box}>

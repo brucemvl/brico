@@ -162,7 +162,7 @@ export default function HomePro() {
 
   return (
     <View>
-<LinearGradient colors={["#f3f3f3", "#f3f3f3", "#f3f3f3f1" ]} style={styles.header }>
+<LinearGradient colors={["#f3f3f3", "#f3f3f3", "#f3f3f3f1", "#f3f3f3db" ]} style={styles.header }>
   <Animated.Text style={{ fontFamily: "Montt", opacity: headerOpacity }}>Mon Profil</Animated.Text>
 </LinearGradient>    
 <Animated.ScrollView

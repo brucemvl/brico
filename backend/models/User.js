@@ -65,7 +65,7 @@ const userSchema = new mongoose.Schema({
   },
   location: { type: String, trim: true },
 description: { type: String, trim: true },
-equipment: { type: String, trim: true },
+equipment: [{ type: String, trim: true }],
 
   // 🔥 Badge automatique
   proBadge: {
