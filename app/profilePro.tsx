@@ -1,19 +1,19 @@
 import * as ImageManipulator from "expo-image-manipulator";
 import * as ImagePicker from "expo-image-picker";
+import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
   Animated,
-  Button,
   Image,
   ScrollView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 import Autocomplete from "react-native-autocomplete-input";
 import { useApi } from "../services/api";
@@ -255,10 +255,12 @@ export default function ProfilePro() {
   if (loading) return <ActivityIndicator size="large" />;
 
   return (
+    <View>
+      <LinearGradient colors={["#f3f3f3", "#f3f3f3", "#f3f3f3", "#f3f3f3de"]}  style={styles.header}></LinearGradient>
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>Mon Profil Professionnel</Text>
 
-      <Text style={{fontFamily: "Mont", color: "#ffffff"}}>Photo de profil</Text>
+      <Text style={{fontFamily: "Mont", color: "#000000"}}>Photo de profil</Text>
       {profileImage && (
     <Image
       source={{ uri: profileImage.url || profileImage.uri }}
@@ -344,7 +346,7 @@ export default function ProfilePro() {
       <View style={styles.skillsContainer}>
         {categories.map((cat) => (
           <TouchableOpacity key={cat} style={[styles.skillButton, skills.includes(cat) && styles.skillSelected]} onPress={() => toggleSkill(cat)}>
-            <Text style={{fontFamily: "Montt"}}>{cat}</Text>
+            <Text style={{fontFamily: "Montt", color: skills.includes(cat) ?  "black" : "#ccc" }}>{cat}</Text>
           </TouchableOpacity>
         ))}
       </View>
@@ -352,7 +354,7 @@ export default function ProfilePro() {
 
 
 <View style={styles.box}>
-      <Text style={{ marginTop: 20, fontFamily: "Mont" }}>Mes réalisations</Text>
+      <Text style={{ marginBottom: 15, fontFamily: "Mont", color: "#ffffff" }}>Mes réalisations</Text>
 
       <View style={styles.portfolioContainer}>
         {portfolio.map((img, index) => (
@@ -378,29 +380,44 @@ export default function ProfilePro() {
         ))}
       </View>
 
-      <Button title="Ajouter des photos" onPress={handlePickPortfolioImages} />
+      <TouchableOpacity style={[styles.addProfileButton, {marginBlock: 15, borderColor: "#2c6724", borderWidth: 1}]} onPress={handlePickPortfolioImages} >
+        <Text style={{color: "white", fontFamily: "Mont"}}>Ajouter des photos</Text>
+      </TouchableOpacity>
       </View>
 
       <View style={{ marginTop: 30 }}>
         {saving ? (
           <ActivityIndicator />
         ) : (
-          <Button title="Enregistrer" onPress={handleSave} />
+<TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+  <Text style={styles.saveText}>Enregistrer</Text>
+</TouchableOpacity>
         )}
       </View>
     </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     alignItems: "center",
-    paddingTop: 60,
+    paddingTop: 160,
     paddingHorizontal: 20,
     paddingBottom: 80,
     gap: 15
   },
-  title: { fontSize: 22, fontFamily: "Montt", marginBottom: 20 },
+  header: {
+  position: "absolute",
+  top: 0,
+  left: 0,
+  right: 0,
+  height: 120,
+  zIndex: 10,
+  justifyContent: "flex-end",
+  padding: 15,
+},
+  title: { fontSize: 22, fontFamily: "Montt" },
   box: {
 backgroundColor: "#3e9040",
 width: "100%",
@@ -419,13 +436,13 @@ borderRadius: 20
     width: "100%",
     backgroundColor: "#ffffff",
     
-    fontFamily: "Londrina"
+    fontFamily: "Londrina",
+    fontSize: 15
   },
   profileImage: {
-    width: 100,
-    height: 100,
+    width: 90,
+    height: 90,
     borderRadius: 50,
-    marginBottom: 15,
   },
   portfolioContainer: {
     flexDirection: "row",
@@ -442,16 +459,16 @@ borderRadius: 20
     borderRadius: 8,
   },
   deleteButton: {
-    position: "absolute",
-    top: -5,
-    right: -5,
-    backgroundColor: "red",
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    justifyContent: "center",
-    alignItems: "center",
-  },
+  position: "absolute",
+  top: -8,
+  right: -8,
+  backgroundColor: "rgba(0,0,0,0.6)",
+  width: 24,
+  height: 24,
+  borderRadius: 12,
+  justifyContent: "center",
+  alignItems: "center",
+},
   deleteText: {
     color: "white",
     fontSize: 14,
@@ -467,8 +484,19 @@ borderRadius: 20
     alignItems: "center",
   },
   skillsContainer: { flexDirection: "row", flexWrap: "wrap", marginBottom: 20, justifyContent: "center" },
-  skillButton: { borderWidth: 1, borderRadius: 20, padding: 8, marginRight: 8, marginBottom: 8, backgroundColor: "#f3f3f3" },
-  skillSelected: { backgroundColor: "#d6e943" },
+  skillButton: {
+  paddingHorizontal: 12,
+  paddingVertical: 6,
+  borderRadius: 20,
+  borderWidth: 1,
+  borderColor: "#ccc",
+  margin: 5,
+},
+
+skillSelected: {
+  backgroundColor: "#ebed4d",
+  borderColor: "#4CAF50",
+},
   badge: { backgroundColor: "#d4edda", padding: 8, borderRadius: 8, marginBottom: 10 },
   badgeText: { color: "#415715", fontWeight: "bold" },
   deleteProfileButton: {
@@ -483,5 +511,19 @@ addProfileButton: {
   padding: 10,
   borderRadius: 20,
 
-}
+},
+saveButton: {
+  backgroundColor: "#1592cc",
+  width: "100%",
+  padding: 15,
+  borderRadius: 25,
+  alignItems: "center",
+},
+
+saveText: {
+  color: "white",
+  fontFamily: "Montt",
+  fontSize: 16,
+},
+
 });

@@ -1,10 +1,11 @@
 import { useFocusEffect } from "@react-navigation/native";
 import { useFonts } from "expo-font";
+import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
 import {
+  Animated,
   Image,
-  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -44,6 +45,14 @@ export default function HomePro() {
   const [skills, setSkills] = useState<string[]>([]);
   const [activeFilter, setActiveFilter] = useState<"skills" | "all" | string>("skills");
   const [loading, setLoading] = useState(true);
+
+  const scrollY = new Animated.Value(0);
+
+  const headerOpacity = scrollY.interpolate({
+  inputRange: [0, 100],
+  outputRange: [1, 0],
+  extrapolate: "clamp",
+});
 
   const [fontsLoaded] = useFonts({ 
     "Londrina": require("../assets/fonts/Londrina/LondrinaSolid-Regular.ttf"), 
@@ -152,8 +161,18 @@ export default function HomePro() {
 
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      
+    <View>
+<LinearGradient colors={["#f3f3f3", "#f3f3f3", "#f3f3f3f1" ]} style={styles.header }>
+  <Animated.Text style={{ fontFamily: "Montt", opacity: headerOpacity }}>Mon Profil</Animated.Text>
+</LinearGradient>    
+<Animated.ScrollView
+  contentContainerStyle={styles.container}
+  onScroll={Animated.event(
+    [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+    { useNativeDriver: false }
+  )}
+  scrollEventThrottle={6}
+>      
 
 <View style={{alignItems: "center", gap: 4, marginBlock: 20}}>
       <Image source={{ uri: profile?.profileImage?.url }} style={styles.avatar} />
@@ -251,17 +270,27 @@ export default function HomePro() {
       <TouchableOpacity onPress={async () => { await logout(); router.replace("/"); }} style={{ marginTop: 20, padding: 8 }}>
         <Text style={{fontFamily: "Mont", color: "red"}}>Deconnexion</Text>
       </TouchableOpacity>
-    </ScrollView>
+    </Animated.ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { paddingTop: 80, alignItems: "center", paddingBottom: 60 },
+  container: { paddingTop: 120, alignItems: "center", paddingBottom: 60 },
   center: { flex: 1, justifyContent: "center", alignItems: "center" },
   title: { fontSize: 24, fontFamily: "Montt", marginBottom: 15 },
   avatar: { height: 90, width: 90, resizeMode: "contain", borderRadius: 45 },
   profileButton: { alignSelf: "flex-end",  padding: 5, borderRadius: 50, backgroundColor: "#999999", position: "absolute", top: 60, borderColor: "#f5f5f5", borderWidth: 1 },
-
+header: {
+  position: "absolute",
+  top: 0,
+  left: 0,
+  right: 0,
+  height: 80,
+  zIndex: 10,
+  justifyContent: "flex-end",
+  padding: 15,
+},
   filtersContainer: { marginBottom: 15, flexWrap: "wrap", flexDirection: "row", gap: 6, justifyContent: "center" },
   filterButton: {
     paddingHorizontal: 10,
@@ -273,7 +302,7 @@ const styles = StyleSheet.create({
     justifyContent: "center"
   },
   filterText: {fontFamily: "Mont"},
-  activeFilter: { backgroundColor: "#999999" },
+  activeFilter: { backgroundColor: "#a4a4a4" },
 
   requestsContainer: { width: "100%", paddingHorizontal: 20, alignItems: "center" },
   card: { borderWidth: 4, borderColor: "#3e9040", borderRadius: 10, marginBottom: 12, width: "100%" },
