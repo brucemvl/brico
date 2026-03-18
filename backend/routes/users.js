@@ -53,16 +53,30 @@ router.put(
       user.siret = req.body.siret ?? user.siret;
       user.location = req.body.location ?? user.location;
       user.description = req.body.description ?? user.description;
-      user.equipment = req.body.equipment ?? user.equipment;
 
       // Skills
       if (req.body.skills) {
-        try {
-          user.skills = JSON.parse(req.body.skills);
-        } catch {
-          user.skills = [];
-        }
-      }
+  try {
+    const parsed = JSON.parse(req.body.skills);
+    if (Array.isArray(parsed)) {
+      user.skills = parsed;
+    }
+  } catch (e) {
+    console.log("Erreur parsing skills:", e);
+  }
+}
+
+      // equipements
+      if (req.body.equipment) {
+  try {
+    const parsed = JSON.parse(req.body.equipment);
+    if (Array.isArray(parsed)) {
+      user.equipment = parsed;
+    }
+  } catch (e) {
+    console.log("Erreur parsing equipments:", e);
+  }
+}
 
       // Profile Image
       if (req.files?.profileImage?.[0]) {

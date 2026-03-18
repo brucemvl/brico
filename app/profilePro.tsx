@@ -24,12 +24,12 @@ const categories = ["Plomberie", "Electricité", "Peinture", "Agencement", "Carr
 const equipmentOptions = [
   "Caisse à outils",
   "Perceuse",
-  "Scie",
+  "Vis / Chevilles",
   "Ponceuse",
   "Multimètre",
   "Escabeau",
   "Camion",
-  "Aspirateur chantier",
+  "Laser",
   "Bache de protection",
   "Scie sauteuse",
    "Scie circulaire"
@@ -56,6 +56,13 @@ const [equipment, setEquipment] = useState<string[]>([]);
   const [locationQuery, setLocationQuery] = useState("");
   const [cities, setCities] = useState([]);
 
+  const containsForbiddenInfo = (text: string) => {
+  const phoneRegex = /(\+?\d[\d\s.-]{7,})/;
+  const emailRegex = /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/i;
+
+  return phoneRegex.test(text) || emailRegex.test(text);
+};
+
   // 🔹 Fetch profil
   const fetchProfile = async () => {
     try {
@@ -66,8 +73,8 @@ const [equipment, setEquipment] = useState<string[]>([]);
       setSiret(data.siret || "");
       setLocation(data.location || "");
       setDescription(data.description || "");
-setEquipment(data.equipment ? JSON.parse(data.equipment) : []);
-      setSkills(data.skills || []);
+setEquipment(Array.isArray(data.equipment) ? data.equipment : []);
+setSkills(Array.isArray(data.skills) ? data.skills : []);
       setProfileImage(data.profileImage || null);
       setPortfolio(data.portfolio || []);
     } catch {
@@ -260,6 +267,14 @@ setEquipment(data.equipment ? JSON.parse(data.equipment) : []);
 
       setUploadingIndex(null);
 
+      if (containsForbiddenInfo(description)) {
+  Alert.alert(
+    "Contenu interdit",
+    "Veuillez ne pas inclure de numéro de téléphone ou d'email dans la description."
+  );
+  return;
+}
+
       await apiFetch("/users/profile/pro", {
         method: "PUT",
         body: formData,
@@ -377,7 +392,7 @@ setEquipment(data.equipment ? JSON.parse(data.equipment) : []);
         key={item}
         style={[
           styles.skillButton,
-          equipment.includes(item) && styles.skillSelected,
+          equipment.includes(item) && styles.equipmentSelected,
         ]}
         onPress={() => toggleEquipment(item)}
       >
@@ -536,7 +551,11 @@ borderRadius: 20
 },
 
 skillSelected: {
-  backgroundColor: "#ebed4d",
+  backgroundColor: "#2ebcf9",
+  borderColor: "#4CAF50",
+},
+equipmentSelected: {
+backgroundColor: "#ebed4d",
   borderColor: "#4CAF50",
 },
   badge: { backgroundColor: "#d4edda", padding: 8, borderRadius: 8, marginBottom: 10 },

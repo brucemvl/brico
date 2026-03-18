@@ -33,6 +33,7 @@ const categories = ["Plomberie", "Peinture", "Agencement", "Electricité", "Carr
 export default function HomePro() {
   type ProfileType = {
     name: string;
+    location: String,
     profileImage?: { url: string };
     averageRating: number
   };
@@ -175,6 +176,7 @@ export default function HomePro() {
 >      
 
 <View style={{alignItems: "center", gap: 4, marginBlock: 20}}>
+  <View>
       <Image source={{ uri: profile?.profileImage?.url }} style={styles.avatar} />
       <TouchableOpacity
         onPress={() => router.push({ pathname: "/profilePro" })}
@@ -182,8 +184,11 @@ export default function HomePro() {
       >
         <Image source={modifier} style={{width: 20, height: 20}}/>
       </TouchableOpacity>
+      </View>
       <Text style={{fontFamily: "Londrinak", fontSize: 16 }}>{profile?.name}</Text>
-
+      {profile?.location && 
+      <Text style={{fontFamily: "Londrinak", fontSize: 16 }}>{profile?.location}</Text>
+      }
       {/* ⭐ Rating pro */}
 {profile?.averageRating && (
   <View style={{ flexDirection: "row"}}>
@@ -232,7 +237,7 @@ export default function HomePro() {
       {/* 🔹 Liste des demandes */}
       <View style={styles.requestsContainer}>
         {filteredRequests.length === 0 ? (
-          <Text style={{fontFamily: "Londrina", fontSize: 16, marginBlock: 20}}>Aucune demande disponible</Text>
+          <Text style={{fontFamily: "Londrina", fontSize: 18, marginBlock: 20}}>Aucune demande disponible</Text>
         ) : (
           filteredRequests.map(item => {
             const isMatchingSkill = skills.includes(item.category);
@@ -280,7 +285,7 @@ const styles = StyleSheet.create({
   center: { flex: 1, justifyContent: "center", alignItems: "center" },
   title: { fontSize: 24, fontFamily: "Montt", marginBottom: 15 },
   avatar: { height: 90, width: 90, resizeMode: "contain", borderRadius: 45 },
-  profileButton: { alignSelf: "flex-end",  padding: 5, borderRadius: 50, backgroundColor: "#999999", position: "absolute", top: 60, borderColor: "#f5f5f5", borderWidth: 1 },
+  profileButton: { padding: 5, borderRadius: 50, backgroundColor: "#999999", position: "absolute", top: 60, right: -5, borderColor: "#f5f5f5", borderWidth: 1 },
 header: {
   position: "absolute",
   top: 0,

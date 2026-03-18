@@ -1,11 +1,11 @@
 import { useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
-    Image,
-    ScrollView,
-    StyleSheet,
-    Text,
-    View
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View
 } from "react-native";
 import MapView, { Marker } from "react-native-maps";
 import { useApi } from "../services/api";
@@ -27,25 +27,31 @@ export default function Profile() {
 
 useEffect(() => {
   const geocode = async () => {
-    if (!user?.location) return;
+  if (!user?.location) return;
 
-    try {
-      const res = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(user.location)}`
-      );
+  try {
+    const cleanLocation = user.location
+      .replace(/\(\d+\)/, "") // enlève (75)
+      .trim();
 
-      const data = await res.json();
+    const query = `${cleanLocation}, France`;
 
-      if (data.length > 0) {
-        setCoords({
-          latitude: parseFloat(data[0].lat),
-          longitude: parseFloat(data[0].lon)
-        });
-      }
-    } catch (err) {
-      console.log("Erreur géocodage", err);
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`
+    );
+
+    const data = await res.json();
+
+    if (data.length > 0) {
+      setCoords({
+        latitude: parseFloat(data[0].lat),
+        longitude: parseFloat(data[0].lon)
+      });
     }
-  };
+  } catch (err) {
+    console.log("Erreur géocodage", err);
+  }
+};
 
   geocode();
 }, [user]);
@@ -65,6 +71,11 @@ useEffect(() => {
 
   if (!user) return <Text>Chargement...</Text>;
 
+  const parsedEquipment =
+  typeof user.equipment === "string"
+    ? JSON.parse(user.equipment)
+    : user.equipment;
+
   return (
     <ScrollView style={styles.container}>
 
@@ -76,8 +87,14 @@ useEffect(() => {
           }}
           style={styles.avatar}
         />
-
+<View style={{alignItems: "center"}}>
         <Text style={styles.name}>{user.name}</Text>
+
+         {user.location && (
+          <Text style={styles.location}>📍 {user.location}</Text>
+        )}
+
+        </View>
 
         <View style={styles.badges}>
   {user.proBadge && (
@@ -101,13 +118,11 @@ useEffect(() => {
 
         {user.averageRating > 0 && (
           <Text style={styles.rating}>
-            ⭐ {user.averageRating.toFixed(1)} / 5
+            ⭐ {user.averageRating === 5 ? "5" : user.averageRating.toFixed(1)}/5
           </Text>
         )}
 
-        {user.location && (
-          <Text style={styles.location}>📍 {user.location}</Text>
-        )}
+       
       </View>
 
       {/* DESCRIPTION */}
@@ -134,17 +149,24 @@ useEffect(() => {
       )}
 
       {/* ÉQUIPEMENT */}
-      {user.equipment && (
-        <View style={styles.section}>
-          <Text style={styles.title}>Équipement</Text>
-          <Text style={styles.text}>{user.equipment}</Text>
+      {user.equipment?.length > 0 && (
+  <View style={styles.section}>
+    <Text style={styles.title}>Équipement</Text>
+
+    <View style={styles.skillsContainer}>
+      {parsedEquipment?.map((item: string, i: number) => (
+        <View key={i} style={styles.skill}>
+          <Text style={styles.skillText}>{item}</Text>
         </View>
-      )}
+      ))}
+    </View>
+  </View>
+)}
 
       {/* PORTFOLIO */}
       {user.portfolio?.length > 0 && (
-        <View style={styles.section}>
-          <Text style={styles.title}>Portfolio</Text>
+        <View style={[styles.section, {paddingInline: 0}]}>
+          <Text style={[styles.title, {paddingInline: 20}]}>Travaux réalisés</Text>
 
           <View style={styles.portfolio}>
             {user.portfolio.map((img: any) => (
@@ -218,34 +240,37 @@ const styles = StyleSheet.create({
 
   container: {
     flex: 1,
-    backgroundColor: "#fff"
+    backgroundColor: "#fff",
+    paddingTop: 100
   },
 
   header: {
     alignItems: "center",
-    padding: 20
+    padding: 20,
+    flexDirection: "row",
+    justifyContent: "space-evenly",
+    backgroundColor: "#43d75f"
   },
 
   avatar: {
     width: 100,
-    height: 100,
-    borderRadius: 50,
-    marginBottom: 10
+    height: 110,
+    borderRadius: 25,
   },
 
   name: {
     fontSize: 22,
-    fontWeight: "bold"
+    fontFamily: "Londrinak"
   },
 
   rating: {
-    marginTop: 5,
-    fontSize: 16
+    fontSize: 16,
+    fontFamily: "Montt"
   },
 
   location: {
-    color: "#777",
-    marginTop: 3
+    color: "#000000",
+    fontFamily: "Mont"
   },
 
   section: {
@@ -256,22 +281,25 @@ const styles = StyleSheet.create({
 
   title: {
     fontSize: 18,
-    fontWeight: "bold",
+    fontFamily: "Montt",
     marginBottom: 10
   },
 
   text: {
-    fontSize: 15,
-    color: "#444"
+    fontSize: 16,
+    color: "#444",
+    fontFamily: "Londrina"
   },
 
   skillsContainer: {
     flexDirection: "row",
-    flexWrap: "wrap"
+    flexWrap: "wrap",
+    alignItems: "center",
+    justifyContent: "center"
   },
 
   skill: {
-    backgroundColor: "#eee",
+    backgroundColor: "#eeeeee",
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 8,
@@ -280,12 +308,14 @@ const styles = StyleSheet.create({
   },
 
   skillText: {
-    fontSize: 13
+    fontSize: 13,
+    fontFamily: "Mont"
   },
 
   portfolio: {
     flexDirection: "row",
-    flexWrap: "wrap"
+    flexWrap: "wrap",
+    justifyContent: "center"
   },
 
   portfolioImage: {
@@ -335,6 +365,7 @@ marginTop:10
 
 locationText:{
 marginTop:8,
-color:"#666"
+color:"#666",
+fontFamily: "Mont"
 }
 });
