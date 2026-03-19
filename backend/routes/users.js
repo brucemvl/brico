@@ -179,6 +179,20 @@ router.put(
   async (req, res) => {
     try {
 
+      const phoneRegex = /(\+?\d[\d\s.-]{7,})/;
+const emailRegex = /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/i;
+
+if (req.body.description) {
+  if (
+    phoneRegex.test(req.body.description) ||
+    emailRegex.test(req.body.description)
+  ) {
+    return res.status(400).json({
+      error: "Téléphone et email interdits dans la description"
+    });
+  }
+}
+
       const user = await User.findById(req.user.id);
 
       if (!user) {

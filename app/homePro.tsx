@@ -28,6 +28,8 @@ type RequestType = {
 
 const categories = ["Plomberie", "Peinture", "Agencement", "Electricité", "Carrelage", "divers"];
 
+const defaultAvatar = "https://res.cloudinary.com/dwjssp2pd/image/upload/v1773074497/default_pro.jpg";
+
 
 
 export default function HomePro() {
@@ -163,7 +165,7 @@ export default function HomePro() {
 
   return (
     <View>
-<LinearGradient colors={["#f3f3f3", "#f3f3f3", "#f3f3f3f1", "#f3f3f3db" ]} style={styles.header }>
+<LinearGradient colors={["#f3f3f3", "#f3f3f3", "#f3f3f3f4", "#f3f3f3e0" ]} style={styles.header }>
   <Animated.Text style={{ fontFamily: "Montt", opacity: headerOpacity }}>Mon Profil</Animated.Text>
 </LinearGradient>    
 <Animated.ScrollView
@@ -175,9 +177,12 @@ export default function HomePro() {
   scrollEventThrottle={6}
 >      
 
-<View style={{alignItems: "center", gap: 4, marginBlock: 20}}>
-  <View>
-      <Image source={{ uri: profile?.profileImage?.url }} style={styles.avatar} />
+<View style={{alignItems: "center", marginBlock: 20, width: "100%", paddingInline: 20}}>
+  <View style={{width: "100%", alignItems: "center", position: "absolute", zIndex: 99, bottom: profile?.location ? 100 : 80}}>
+<Image
+  source={{ uri: profile?.profileImage?.url || defaultAvatar }}
+  style={styles.avatar}
+/>
       <TouchableOpacity
         onPress={() => router.push({ pathname: "/profilePro" })}
         style={styles.profileButton}
@@ -185,12 +190,13 @@ export default function HomePro() {
         <Image source={modifier} style={{width: 20, height: 20}}/>
       </TouchableOpacity>
       </View>
+      <LinearGradient colors={["#5ce757", "#23853d"]} style={{width: "100%", alignItems: "center", paddingInline: 20, paddingTop: 50, paddingBottom: 20, borderRadius: 20}}>
       <Text style={{fontFamily: "Londrinak", fontSize: 16 }}>{profile?.name}</Text>
       {profile?.location && 
       <Text style={{fontFamily: "Londrinak", fontSize: 16 }}>{profile?.location}</Text>
       }
       {/* ⭐ Rating pro */}
-{profile?.averageRating && (
+{typeof profile?.averageRating === "number" && (
   <View style={{ flexDirection: "row"}}>
     {[1,2,3,4,5].map(i => (
       <Text key={i} style={{ fontSize: 16 }}>
@@ -200,6 +206,7 @@ export default function HomePro() {
   </View>
 )}
     <Text style={{fontFamily: "Mont"}}>({profile?.averageRating})</Text>
+    </LinearGradient>
 
 </View>
       <Text style={styles.title}>Demandes disponibles</Text>
@@ -284,8 +291,8 @@ const styles = StyleSheet.create({
   container: { paddingTop: 120, alignItems: "center", paddingBottom: 60 },
   center: { flex: 1, justifyContent: "center", alignItems: "center" },
   title: { fontSize: 24, fontFamily: "Montt", marginBottom: 15 },
-  avatar: { height: 90, width: 90, resizeMode: "contain", borderRadius: 45 },
-  profileButton: { padding: 5, borderRadius: 50, backgroundColor: "#999999", position: "absolute", top: 60, right: -5, borderColor: "#f5f5f5", borderWidth: 1 },
+  avatar: { height: 90, width: 90, resizeMode: "contain", borderRadius: 45, borderWidth: 2, borderColor: "#f3f3f3" },
+  profileButton: { padding: 5, borderRadius: 50, backgroundColor: "#999999", position: "absolute", bottom: 5, right: 8, borderColor: "#f5f5f5", borderWidth: 1 },
 header: {
   position: "absolute",
   top: 0,

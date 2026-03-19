@@ -290,7 +290,10 @@ setSkills(Array.isArray(data.skills) ? data.skills : []);
       Alert.alert("Succès", "Profil mis à jour !");
       router.replace("/homePro");
     } catch (err: any) {
-      Alert.alert("Erreur", err.message || "Erreur sauvegarde");
+Alert.alert(
+  "Erreur",
+  err?.error || err.message || "Erreur sauvegarde"
+);
     } finally {
       setSaving(false);
     }
