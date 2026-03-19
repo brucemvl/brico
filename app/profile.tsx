@@ -1,8 +1,9 @@
+import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
+  Animated,
   Image,
-  ScrollView,
   StyleSheet,
   Text,
   View
@@ -19,6 +20,32 @@ export default function Profile() {
   const userId = params.id as string;
 
   const [user, setUser] = useState<any>(null);
+
+  const scrollY = new Animated.Value(0);
+  
+    const headerOpacity = scrollY.interpolate({
+    inputRange: [0, 60],
+    outputRange: [0, 1],
+    extrapolate: "clamp",
+  });
+  
+  const fadeOut = scrollY.interpolate({
+    inputRange: [0, 100],
+    outputRange: [1, 0],
+    extrapolate: "clamp",
+  });
+  
+  const translateY = scrollY.interpolate({
+    inputRange: [0, 100],
+    outputRange: [0, -40],
+    extrapolate: "clamp",
+  });
+  
+  const scale = scrollY.interpolate({
+    inputRange: [0, 100],
+    outputRange: [1, 0.90],
+    extrapolate: "clamp",
+  });
 
   const [coords, setCoords] = useState<{
   latitude: number;
@@ -77,16 +104,37 @@ useEffect(() => {
     : user.equipment;
 
   return (
-    <ScrollView style={styles.container}>
-
+<View>
+  <Animated.Text style={{ fontFamily: "Montt", opacity: headerOpacity, marginTop: 50, marginLeft: 10 }}>Profil de {user?.name}</Animated.Text>
+<Animated.ScrollView
+  contentContainerStyle={styles.container}
+  onScroll={Animated.event(
+    [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+    { useNativeDriver: false }
+  )}
+  scrollEventThrottle={6}
+> 
       {/* HEADER */}
-      <View style={styles.header}>
-        <Image
+<Animated.View
+  style={{
+    alignItems: "center",
+    marginBlock: 10,
+    justifyContent: "center",
+    width: "100%",
+    opacity: fadeOut,
+    transform: [{ translateY }, { scale }],
+    flexDirection: "row",
+    
+  }}
+>
+          <Image
           source={{
             uri: user.profileImage?.url || defaultAvatar
           }}
           style={styles.avatar}
         />
+              <LinearGradient colors={["#5ce757",  "#3e9040", "#3e9040"]} style={{width: "85%", alignItems: "center", paddingInline: 20, paddingTop: 54, paddingBottom: 24, borderRadius: 20, gap: 4, left: 25}}>
+        
 <View style={{alignItems: "center"}}>
         <Text style={styles.name}>{user.name}</Text>
 
@@ -121,9 +169,9 @@ useEffect(() => {
             ⭐ {user.averageRating === 5 ? "5" : user.averageRating.toFixed(1)}/5
           </Text>
         )}
-
+</LinearGradient>
        
-      </View>
+      </Animated.View>
 
       {/* DESCRIPTION */}
       {user.description && (
@@ -232,30 +280,28 @@ title={user.name}
 </View>
 )}
 
-    </ScrollView>
+    </Animated.ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
 
   container: {
-    flex: 1,
-    backgroundColor: "#fff",
-    paddingTop: 100
-  },
-
-  header: {
-    alignItems: "center",
-    padding: 20,
-    flexDirection: "row",
-    justifyContent: "space-evenly",
-    backgroundColor: "#43d75f"
+    backgroundColor: "#f3f3f3",
+    paddingTop: 20,
+    paddingInline: 10,
+    flex: 1
   },
 
   avatar: {
     width: 100,
     height: 110,
     borderRadius: 25,
+    position: "absolute",
+    zIndex: 99,
+    left: 0,
+    borderWidth: 2, borderColor: "#F3F3F3"
   },
 
   name: {
@@ -299,7 +345,7 @@ const styles = StyleSheet.create({
   },
 
   skill: {
-    backgroundColor: "#eeeeee",
+    backgroundColor: "#3e9040",
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 8,
@@ -309,7 +355,8 @@ const styles = StyleSheet.create({
 
   skillText: {
     fontSize: 13,
-    fontFamily: "Mont"
+    fontFamily: "Mont",
+    color: "#fff"
   },
 
   portfolio: {
@@ -327,11 +374,14 @@ const styles = StyleSheet.create({
   },
   badges:{
 flexDirection:"row",
-marginTop:10
+marginTop:10,
+position:"absolute",
+right: 5,
+top: 1
 },
 
 badge:{
-backgroundColor:"#eef6ff",
+backgroundColor:"#cfe817",
 paddingHorizontal:10,
 paddingVertical:5,
 borderRadius:8,
@@ -339,8 +389,8 @@ marginRight:6
 },
 
 badgeText:{
-fontSize:12,
-fontWeight:"600"
+fontSize:11,
+fontFamily: "Montt"
 },
 review:{
 marginBottom:12,

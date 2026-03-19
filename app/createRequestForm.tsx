@@ -22,7 +22,7 @@ export default function CreateRequestForm() {
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [category, setCategory] = useState("plomberie");
+  const [category, setCategory] = useState("Plomberie");
   const [budget, setBudget] = useState("");
   const [images, setImages] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);

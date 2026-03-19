@@ -592,7 +592,7 @@ addProfileButton: {
 
 },
 saveButton: {
-  backgroundColor: "#1592cc",
+  backgroundColor: "#59b0d8",
   width: "100%",
   padding: 15,
   borderRadius: 25,
