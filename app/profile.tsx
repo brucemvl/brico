@@ -291,8 +291,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#f3f3f3",
     paddingTop: 20,
     paddingInline: 10,
-    flex: 1
-  },
+paddingBottom: 60  },
 
   avatar: {
     width: 100,
@@ -311,12 +310,14 @@ const styles = StyleSheet.create({
 
   rating: {
     fontSize: 16,
-    fontFamily: "Montt"
+    fontFamily: "Montt",
+    padding: 1
   },
 
   location: {
     color: "#000000",
-    fontFamily: "Mont"
+    fontFamily: "Mont",
+    padding: 1
   },
 
   section: {
@@ -390,7 +391,8 @@ marginRight:6
 
 badgeText:{
 fontSize:11,
-fontFamily: "Montt"
+fontFamily: "Montt",
+padding: 1
 },
 review:{
 marginBottom:12,

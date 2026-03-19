@@ -22,7 +22,7 @@ type RequestType = {
   category: string;
   location: string;
   budget: number;
-  status: "open" | "in_progress" | "accepted" | "completed" | "cancelled";
+  status: "open" | "in_progress" | "completed";
   hasUnread?: boolean;
 };
 
@@ -127,7 +127,7 @@ const scale = scrollY.interpolate({
 
   // 🔹 Logique de filtrage
   const filteredRequests = (() => {
-    const validStatuses: RequestType["status"][] = ["open", "in_progress"];
+    const validStatuses: RequestType["status"][] = ["open" , "in_progress"];
     const filtered = requests.filter(r => validStatuses.includes(r.status));
     switch (activeFilter) {
       case "skills":
@@ -315,7 +315,7 @@ const scale = scrollY.interpolate({
 }
 
 const styles = StyleSheet.create({
-  container: { paddingTop: 120, alignItems: "center", paddingBottom: 60 },
+  container: { paddingTop: 60, alignItems: "center", paddingBottom: 60 },
   center: { flex: 1, justifyContent: "center", alignItems: "center" },
   title: { fontSize: 24, fontFamily: "Montt", marginBottom: 15 },
   avatar: { height: 90, width: 90, resizeMode: "contain", borderRadius: 45, borderWidth: 2, borderColor: "#f3f3f3" },

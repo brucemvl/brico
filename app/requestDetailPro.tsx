@@ -1,11 +1,15 @@
+import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
   Alert,
+  Animated,
   Dimensions,
   Image,
+  KeyboardAvoidingView,
   Linking,
   Modal,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -65,6 +69,32 @@ export default function RequestDetailPro() {
   const [previewVisible, setPreviewVisible] = useState(false);
   const [previewImage, setPreviewImage] = useState<string>("");
   const [uploading, setUploading] = useState(false);
+
+  const scrollY = new Animated.Value(0);
+    
+      const headerOpacity = scrollY.interpolate({
+      inputRange: [0, 60],
+      outputRange: [0, 1],
+      extrapolate: "clamp",
+    });
+    
+    const fadeOut = scrollY.interpolate({
+      inputRange: [0, 100],
+      outputRange: [1, 0],
+      extrapolate: "clamp",
+    });
+    
+    const translateY = scrollY.interpolate({
+      inputRange: [0, 100],
+      outputRange: [0, -40],
+      extrapolate: "clamp",
+    });
+    
+    const scale = scrollY.interpolate({
+      inputRange: [0, 100],
+      outputRange: [1, 0.90],
+      extrapolate: "clamp",
+    });
 
   // Charger utilisateur
   useEffect(() => {
@@ -203,24 +233,52 @@ export default function RequestDetailPro() {
     request?.conversation?.dealProposedByPro && !request?.conversation?.dealAcceptedByPro;
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#fff" }}>
-      <ScrollView
-        style={{ padding: 20 }}
-        ref={scrollRef}
-        onContentSizeChange={() => scrollRef.current?.scrollToEnd({ animated: true })}
+<KeyboardAvoidingView
+  style={{ flex: 1 }}
+  behavior={Platform.OS === "ios" ? "padding" : "height"}
+  keyboardVerticalOffset={85} // ajuste selon ton header
+>
+  <View style={{  }}>
+          <Animated.Text style={{ fontFamily: "Montt", opacity: headerOpacity, marginTop: 50, marginLeft: 10 }}>{request.title}</Animated.Text>
+      <Animated.ScrollView
+        contentContainerStyle={styles.container}
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+          { useNativeDriver: false }
+        )}
+        scrollEventThrottle={6}
+        
+      > 
+      <Animated.View
+        style={{
+          alignItems: "center",
+          marginBlock: 10,
+          justifyContent: "center",
+          width: "100%",
+          opacity: fadeOut,
+          transform: [{ translateY }, { scale }],
+          flexDirection: "row",
+          
+        }}
       >
-        <Text style={styles.title}>{request.title}</Text>
-        <Text>Catégorie: {request.category}</Text>
-        <Text>Lieu: {request.location}</Text>
-        <Text>Budget: {request.budget}€</Text>
-        {request.description && <Text>Description: {request.description}</Text>}
+        <LinearGradient colors={["#5ce757",  "#3e9040", "#3e9040"]} style={{padding: 20, gap: 5, borderRadius: 20, width: "100%"}}>
+                  <Text style={styles.title}>{request.title}</Text>
+        <Text style={{fontFamily: "Montt", color: "#fff"}}>Catégorie: {request.category}</Text>
+        <Text style={{fontFamily: "Montt", color: "#fff"}}>Lieu: {request.location}</Text>
+        <Text style={{fontFamily: "Montt", color: "#fff"}}>Budget: {request.budget}€</Text>
+        </LinearGradient>
+        </Animated.View>
+        {request.description && <View style={{alignItems: "center", gap: 10}}>
+          <Text style={{fontFamily: "Montt", fontSize: 20, marginTop: 10, textAlign: "center"}}>Description</Text>
+        <Text  style={{fontFamily: "Londrina", fontSize: 16, color: "#3e9040"}}>{request.description}</Text>
+        </View>}
 
         {/* 🔹 Images du client */}
         {request.images && request.images.length > 0 && (
-          <ScrollView horizontal style={{ marginVertical: 10 }}>
+          <ScrollView horizontal style={{ marginVertical: 10, backgroundColor: "#3e9040", padding: 10, borderRadius: 20 }} contentContainerStyle={{justifyContent: "center", alignItems: "center"}}>
             {request.images.map((img, idx) => (
               <TouchableOpacity key={idx} onPress={() => openPreview(img.url)} style={{ marginRight: 10 }}>
-                <Image source={{ uri: img.url }} style={{ width: 150, height: 150, borderRadius: 8 }} />
+                <Image source={{ uri: img.url }} style={{ width: 130, height: 130, borderRadius: 8 }} />
               </TouchableOpacity>
             ))}
           </ScrollView>
@@ -245,7 +303,7 @@ export default function RequestDetailPro() {
         {/* Actions deal */}
         <View style={styles.dealBox}>
           {!clientProposed && !proProposed && !dealAccepted && (
-            <TouchableOpacity onPress={proposeDeal}>
+            <TouchableOpacity onPress={proposeDeal} style={{backgroundColor: "#007AFF", width: 160, padding: 10, alignItems: "center", justifyContent: "center", borderRadius: 20}}>
               <Text style={styles.dealAction}>Proposer un accord</Text>
             </TouchableOpacity>
           )}
@@ -263,7 +321,7 @@ export default function RequestDetailPro() {
             style={styles.reviewButton}
             onPress={() => setReviewModal(true)}
           >
-            <Text style={{ color: "#220303" }}>Donner un avis ⭐</Text>
+            <Text style={{ color: "#220303", fontFamily: "Mont" }}>Donner un avis ⭐</Text>
           </TouchableOpacity>
         )}
 
@@ -286,10 +344,10 @@ export default function RequestDetailPro() {
                 style={styles.input}
               />
               <TouchableOpacity style={styles.sendReview} onPress={submitReview}>
-                <Text style={{color:"#fff"}}>Envoyer l'avis</Text>
+                <Text style={{color:"#fff", fontFamily: "Mont"}}>Envoyer l'avis</Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={()=>setReviewModal(false)}>
-                <Text style={{textAlign:"center", marginTop:10}}>Fermer</Text>
+                <Text style={{textAlign:"center", marginTop:10, fontFamily: "Mont"}}>Fermer</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -307,12 +365,12 @@ export default function RequestDetailPro() {
           const msgTime = new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
           return (
             <View key={i} style={[styles.messageRow, isMe ? styles.myMessageRow : styles.otherMessageRow]}>
-              {!isMe && request.client.profileImage && (
-                <Image source={{ uri: request.client.profileImage }} style={styles.avatar} />
+              {!isMe && request.client?.profileImage && (
+                <Image source={{ uri: request.client?.profileImage?.url }} style={styles.avatar} />
               )}
               <View style={[styles.messageBubble, isMe ? styles.myMessage : styles.otherMessage]}>
                 {!isMe && <Text style={styles.author}>{msg.from.name}</Text>}
-                <Text>{msg.content}</Text>
+                <Text style={{fontFamily: "Mont", letterSpacing: -0.6}}>{msg.content}</Text>
                 <View style={styles.messageMeta}>
                   <Text style={styles.time}>{msgTime}</Text>
                   {isMe && <Text style={styles.readStatus}>{status}</Text>}
@@ -333,7 +391,7 @@ export default function RequestDetailPro() {
             <Text style={{ color: "#fff" }}>Envoyer</Text>
           </TouchableOpacity>
         </View>
-      </ScrollView>
+      </Animated.ScrollView>
 
       {/* Modal preview image */}
       <Modal visible={previewVisible} transparent animationType="fade">
@@ -351,19 +409,25 @@ export default function RequestDetailPro() {
         </TouchableOpacity>
       </Modal>
     </View>
+    </KeyboardAvoidingView>
   );
 }
 
 const { width } = Dimensions.get("window");
 
 const styles = StyleSheet.create({
-  title: { fontSize: 22, fontWeight: "bold", marginBottom: 10 },
-  chatTitle: { marginTop: 20, marginBottom: 10, fontWeight: "bold" },
-  dealBox: { padding: 10, borderRadius: 8, backgroundColor: "#f3f3f3", marginVertical: 10 },
-  dealAction: { color: "#007AFF", fontWeight: "bold", marginBottom: 5 },
-  dealStatus: { color: "#555" },
+  container: {
+    backgroundColor: "#f3f3f3",
+    paddingTop: 20,
+    paddingInline: 10,
+paddingBottom: 120  },
+  title: { fontSize: 22, fontFamily: "Montt", marginBlock: 10 },
+  chatTitle: { marginTop: 20, marginBottom: 10, fontFamily: "Montt", textAlign: "center" },
+  dealBox: {  borderRadius: 8, backgroundColor: "#f3f3f3", marginVertical: 10, alignItems: "center" },
+  dealAction: { color: "#fff", fontFamily: "Mont" },
+  dealStatus: { color: "#555", fontFamily: "Mont" },
   contactBox: { padding: 10, backgroundColor: "#f0f0f0", borderRadius: 8, marginVertical: 10 },
-  contactText: { fontSize: 16, marginBottom: 5, color: "#007AFF" },
+  contactText: { fontSize: 16, marginBottom: 5, color: "#007AFF", fontFamily: "Montt" },
   messageRow: { flexDirection: "row", marginBottom: 8, alignItems: "flex-end" },
   myMessageRow: { justifyContent: "flex-end" },
   otherMessageRow: { justifyContent: "flex-start" },
@@ -371,17 +435,17 @@ const styles = StyleSheet.create({
   messageBubble: { padding: 10, borderRadius: 12, maxWidth: width * 0.7 },
   myMessage: { backgroundColor: "#DCF8C6", alignSelf: "flex-end" },
   otherMessage: { backgroundColor: "#eee" },
-  author: { fontWeight: "bold", marginBottom: 2 },
+  author: { fontFamily: "Londrinak", marginBottom: 2 },
   messageMeta: { flexDirection: "row", justifyContent: "space-between", marginTop: 5 },
   time: { fontSize: 10, color: "#555" },
   readStatus: { fontSize: 10, color: "#777", marginLeft: 5 },
   inputRow: { flexDirection: "row", alignItems: "center", marginTop: 10 },
-  input: { flex: 1, borderWidth: 1, borderColor: "#ccc", borderRadius: 8, padding: 10 },
+  input: { borderWidth: 1, borderColor: "#ccc", borderRadius: 8, padding: 10 },
   sendButton: { padding: 10, backgroundColor: "#007AFF", borderRadius: 8, marginLeft: 8 },
   reviewButton: { backgroundColor:"#28a745", padding:12, borderRadius:8, alignItems:"center", marginTop:10 },
   modalOverlay: { flex:1, backgroundColor:"rgba(0,0,0,0.5)", justifyContent:"center", alignItems:"center" },
-  modal: { backgroundColor:"white", padding:20, borderRadius:10, width:"85%" },
-  modalTitle: { fontSize:18, fontWeight:"bold", marginBottom:15, textAlign:"center" },
+  modal: { backgroundColor:"white", padding:20, borderRadius:10, width:"85%", gap: 10 },
+  modalTitle: { fontSize:18, fontFamily: "Montt", marginBottom:15, textAlign:"center" },
   stars: { flexDirection:"row", justifyContent:"center", marginBottom:20 },
   sendReview: { backgroundColor:"#007AFF", padding:12, borderRadius:8, alignItems:"center" },
 });

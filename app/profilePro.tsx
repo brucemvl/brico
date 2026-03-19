@@ -586,7 +586,7 @@ backgroundColor: "#ebed4d",
 },
 addProfileButton: {
   
-  backgroundColor: "#83da77",
+  backgroundColor: "#72ca66",
   padding: 10,
   borderRadius: 20,
 

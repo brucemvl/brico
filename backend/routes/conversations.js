@@ -206,15 +206,17 @@ conversation.lastInteractionBy = req.user.id;
 
     // 🔥 SI accord validé → mission en cours
     if (dealAccepted) {
+  const request = await Request.findById(conversation.request);
 
-      const request = await Request.findById(conversation.request);
+  if (request) {
+    request.status = "in_progress";
 
-      if (request) {
-        request.status = "in_progress";
-        await request.save();
-      }
+    // 🔥 LA LIGNE QUI MANQUE
+    request.proAssigned = conversation.pro;
 
-    }
+    await request.save();
+  }
+}
 
     res.json(conversation);
 
