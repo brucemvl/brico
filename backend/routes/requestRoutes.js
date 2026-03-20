@@ -79,7 +79,8 @@ router.get("/pro", auth, async (req, res) => {
         location: r.location,
         budget: r.budget,
         status: r.status,
-        hasUnread
+        hasUnread,
+        proAssigned: r.proAssigned ? r.proAssigned.toString() : undefined,
       };
     });
 

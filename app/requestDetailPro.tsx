@@ -301,14 +301,18 @@ export default function RequestDetailPro() {
         </View>
         </LinearGradient>
         </Animated.View>
-        {request.description && <View style={{alignItems: "center", gap: 10}}>
+        {request.description &&
+        <View style={{backgroundColor: "#3e9040", width: "100%", borderRadius: 20, padding: 10}}>
+        <View style={{alignItems: "center", gap: 10}}>
           <Text style={{fontFamily: "Montt", fontSize: 20, marginTop: 10, textAlign: "center"}}>Description</Text>
+          <View style={{backgroundColor: "#f3F3F3", width: "100%", padding: 12, borderRadius: 10}}>
         <Text  style={{fontFamily: "Londrina", fontSize: 16, color: "#783516"}}>{request.description}</Text>
-        </View>}
+        </View>
+        </View>
 
         {/* 🔹 Images du client */}
         {request.images && request.images.length > 0 && (
-          <ScrollView horizontal style={{ marginVertical: 10, backgroundColor: "#3e9040", padding: 10, borderRadius: 20, width: "100%" }} contentContainerStyle={{justifyContent: "center", alignItems: "center"}}>
+          <ScrollView horizontal style={{ marginVertical: 10,  padding: 10, borderRadius: 20, width: "100%" }} contentContainerStyle={{justifyContent: "center", alignItems: "center"}}>
             {request.images.map((img, idx) => (
               <TouchableOpacity key={idx} onPress={() => openPreview(img.url)} style={{ marginRight: 10 }}>
                 <Image source={{ uri: img.url }} style={{ width: 130, height: 130, borderRadius: 8 }} />
@@ -316,11 +320,18 @@ export default function RequestDetailPro() {
             ))}
           </ScrollView>
         )}
+        </View>}
 
         {/* Coordonnées après accord */}
         {dealAccepted && contact && (
           <View style={styles.contactBox}>
             <Text style={{textAlign: "center", fontFamily: "Montt", marginBottom: 10}}>Coordonnées</Text>
+            <View style={{flexDirection: "row", alignItems: "center", gap: 20}}>
+              <View style={{alignItems: "center"}}>
+                <Image source={{uri: request?.client?.profileImage?.url}} style={{height: 30, width: 30, borderRadius: 15}} />
+                <Text style={{fontFamily: "Londrina"}}>{request?.client?.name}</Text>
+              </View>
+            <View>
             {contact.phone && (
               <TouchableOpacity onPress={() => Linking.openURL(`tel:${contact.phone}`)}>
                 <Text style={styles.contactText}>📞 {contact.phone}</Text>
@@ -331,6 +342,8 @@ export default function RequestDetailPro() {
                 <Text style={styles.contactText}>✉️ {contact.email}</Text>
               </TouchableOpacity>
             )}
+            </View>
+            </View>
           </View>
         )}
 
@@ -381,7 +394,7 @@ export default function RequestDetailPro() {
         <Modal visible={reviewModal} transparent animationType="slide">
           <View style={styles.modalOverlay}>
             <View style={styles.modal}>
-              <Text style={styles.modalTitle}>Comment s'est passé ce client ?</Text>
+              <Text style={styles.modalTitle}>Comment s'est deroulée la mission ?</Text>
               <View style={styles.stars}>
                 {[1,2,3,4,5].map((s)=>(
                   <TouchableOpacity key={s} onPress={()=>setRating(s)}>
@@ -439,7 +452,7 @@ export default function RequestDetailPro() {
             value={message}
             onChangeText={setMessage}
             placeholder="Votre message..."
-            style={styles.input}
+            style={styles.inputMsg}
           />
           <TouchableOpacity onPress={sendMessage} style={styles.sendButton}>
             <Text style={{ color: "#fff", fontFamily: "Mont", fontSize: 12 }}>Envoyer</Text>
@@ -480,7 +493,7 @@ paddingBottom: 120, alignItems: "center"  },
   dealBox: {  borderRadius: 8, backgroundColor: "#f3f3f3", marginVertical: 10, alignItems: "center" },
   dealAction: { color: "#fff", fontFamily: "Mont" },
   dealStatus: { color: "#555", fontFamily: "Mont" },
-  contactBox: { padding: 10, backgroundColor: "#d8d8d8", borderRadius: 8, marginVertical: 10, width: "100%" },
+  contactBox: { padding: 10, backgroundColor: "#e5e5e5", borderRadius: 8, marginVertical: 10, width: "100%" },
   contactText: { fontSize: 16, marginBottom: 5, color: "#007AFF", fontFamily: "Montt" },
   messageRow: { flexDirection: "row", marginBottom: 8, alignItems: "flex-end", width: "100%" },
   myMessageRow: { justifyContent: "flex-end" },
@@ -494,7 +507,8 @@ paddingBottom: 120, alignItems: "center"  },
   time: { fontSize: 10, color: "#555", fontFamily: "Londrina" },
   readStatus: { fontSize: 10, color: "#777", marginLeft: 5, fontFamily: "Londrina" },
   inputRow: { flexDirection: "row", alignItems: "center", marginTop: 10, width: "100%" },
-  input: { borderWidth: 1, borderColor: "#ccc", borderRadius: 8, padding: 10, width: "78%" },
+  input: { borderWidth: 1, borderColor: "#ccc", borderRadius: 8, padding: 10 },
+  inputMsg: { borderWidth: 1, borderColor: "#ccc", borderRadius: 8, padding: 10, width: "78%", fontFamily: "Mont" },
   sendButton: { padding: 10, backgroundColor: "#007AFF", borderRadius: 8, marginLeft: "2%", width: "20%", alignItems: "center", justifyContent: "center" },
   reviewButton: { backgroundColor:"#28a745", padding:12, borderRadius:8, alignItems:"center", marginTop:10, width: "80%" },
   modalOverlay: { flex:1, backgroundColor:"rgba(0,0,0,0.5)", justifyContent:"center", alignItems:"center" },

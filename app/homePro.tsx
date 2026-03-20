@@ -24,6 +24,7 @@ type RequestType = {
   budget: number;
   status: "open" | "in_progress" | "completed";
   hasUnread?: boolean;
+  proAssigned?: string;
 };
 
 const categories = ["Plomberie", "Peinture", "Agencement", "Electricité", "Carrelage", "divers"];
@@ -32,13 +33,18 @@ const defaultAvatar = "https://res.cloudinary.com/dwjssp2pd/image/upload/v177307
 
 
 
+
 export default function HomePro() {
   type ProfileType = {
+    _id?: string;
   name?: string;
   location?: string;
   profileImage?: { url?: string };
   averageRating?: number;
 };
+
+const [requestView, setRequestView] = useState<"requests" | "deals" | "completed">("requests");
+const [pickerOpen, setPickerOpen] = useState(false);
 
   const router = useRouter();
   const { apiFetch, logout } = useApi();
@@ -125,19 +131,56 @@ const scale = scrollY.interpolate({
     }, [])
   );
 
+  const requestViewLabels: Record<"requests" | "deals" | "completed", string> = {
+  requests: "Demandes",
+  deals: "Avec accord",
+  completed: "Terminées",
+};
+
+const changeRequestView = (view: "requests" | "deals" | "completed") => {
+  setRequestView(view);
+  setPickerOpen(false);
+  setActiveFilter(view === "requests" ? "skills" : "all");
+};
+
   // 🔹 Logique de filtrage
   const filteredRequests = (() => {
-    const validStatuses: RequestType["status"][] = ["open" , "in_progress"];
-    const filtered = requests.filter(r => validStatuses.includes(r.status));
-    switch (activeFilter) {
-      case "skills":
-        return filtered.filter(r => skills.includes(r.category));
-      case "all":
-        return filtered;
-      default:
-        return filtered.filter(r => r.category === activeFilter);
-    }
-  })();
+  const myId = profile?._id;
+
+  let baseFiltered: RequestType[] = [];
+
+  switch (requestView) {
+    case "requests":
+      baseFiltered = requests.filter(r => r.status === "open");
+      break;
+
+    case "deals":
+      baseFiltered = requests.filter(
+        r => r.status === "in_progress" && r.proAssigned === myId
+      );
+      break;
+
+    case "completed":
+      baseFiltered = requests.filter(
+        r => r.status === "completed" && r.proAssigned === myId
+      );
+      break;
+
+    default:
+      baseFiltered = requests;
+  }
+
+  switch (activeFilter) {
+    case "skills":
+      return requestView === "requests"
+        ? baseFiltered.filter(r => skills.includes(r.category))
+        : baseFiltered;
+    case "all":
+      return baseFiltered;
+    default:
+      return baseFiltered.filter(r => r.category === activeFilter);
+  }
+})();
 
   // 🔹 HasUnread par catégorie pour pastille rouge
   const hasUnreadByCategory = React.useMemo(() => {
@@ -234,7 +277,52 @@ const scale = scrollY.interpolate({
     </LinearGradient>
 
 </Animated.View>
-      <Text style={styles.title}>Demandes disponibles</Text>
+
+
+<View style={styles.pickerWrapper}>
+  <TouchableOpacity
+    style={styles.pickerButton}
+    onPress={() => setPickerOpen(prev => !prev)}
+    activeOpacity={0.8}
+  >
+    <Text style={styles.pickerButtonText}>
+      {requestViewLabels[requestView]}
+    </Text>
+    <Text style={styles.pickerArrow}>{pickerOpen ? "▲" : "▼"}</Text>
+  </TouchableOpacity>
+
+  {pickerOpen && (
+    <View style={styles.pickerDropdown}>
+      {(["requests", "deals", "completed"] as const).map(option => (
+        <TouchableOpacity
+          key={option}
+          style={[
+            styles.pickerOption,
+            requestView === option && styles.pickerOptionActive
+          ]}
+          onPress={() => changeRequestView(option)}
+        >
+          <Text
+            style={[
+              styles.pickerOptionText,
+              requestView === option && styles.pickerOptionTextActive
+            ]}
+          >
+            {requestViewLabels[option]}
+          </Text>
+        </TouchableOpacity>
+      ))}
+    </View>
+  )}
+</View>
+
+<Text style={styles.title}>
+  {requestView === "requests"
+    ? "Demandes disponibles"
+    : requestView === "deals"
+    ? "Demandes avec accord"
+    : "Demandes terminées"}
+</Text>
 
       {/* 🔹 Boutons filtres */}
       <View style={styles.filtersContainer}>
@@ -273,6 +361,12 @@ const scale = scrollY.interpolate({
         ) : (
           filteredRequests.map(item => {
             const isMatchingSkill = skills.includes(item.category);
+            const isAssignedToMe =
+            item.status === "in_progress" &&
+            item.proAssigned &&
+            profile?._id &&
+            item.proAssigned === profile._id;
+
             return (
               <TouchableOpacity key={item._id} onPress={() => openRequest(item)} style={{ width: "95%" }}>
                 <View style={styles.card}>
@@ -288,9 +382,9 @@ const scale = scrollY.interpolate({
                  {item.hasUnread && <View style={styles.messageBadge} />}
                   </View>
 
-                  {item.status === "accepted" && (
+                  {isAssignedToMe && (
                     <View style={styles.acceptedBadge}>
-                      <Text style={{ fontSize: 12 }}>🤝 Accord conclu</Text>
+                      <Text style={{ fontSize: 12, fontFamily: "Mont" }}>🤝 Accord conclu</Text>
                     </View>
                   )}
 
@@ -344,13 +438,72 @@ header: {
   activeFilter: { backgroundColor: "#a4a4a4" },
 
   requestsContainer: { width: "100%", paddingHorizontal: 20, alignItems: "center" },
-  card: { borderWidth: 4, borderColor: "#3e9040", borderRadius: 10, marginBottom: 12, width: "100%" },
+  card: { borderWidth: 5, borderColor: "#3e9040", borderRadius: 16, marginBottom: 12, width: "100%" },
   cardTitle: { color: "#ffffff", fontSize: 16, marginBottom: 5, fontFamily: "Montt" },
   cardContainer: {padding: 15,  flexDirection: "row", justifyContent: "space-between", alignItems: "center"},
-  skillBadge: { margin: 5, backgroundColor: "#f0ea27", padding: 8, borderRadius: 8 },
+  skillBadge: { margin: 5, backgroundColor: "#e2db1c", padding: 8, borderRadius: 8 },
   badgeText: { fontSize: 12, color: "#155724", fontFamily: "Mont" },
-  acceptedBadge: { marginTop: 8, backgroundColor: "#ffeeba", padding: 5, borderRadius: 5, alignItems: "center" },
+  acceptedBadge: { margin: 5, backgroundColor: "#ffeeba", padding: 8, borderRadius: 8, alignItems: "center" },
 
   messageBadge: { width: 16, height: 16, borderRadius: 8, backgroundColor: "red", marginLeft: 6 },
   categoryBadge: { width: 10, height: 10, borderRadius: 5, backgroundColor: "red", marginLeft: 4 },
+  pickerWrapper: {
+  width: "90%",
+  marginBottom: 10,
+  zIndex: 50,
+},
+
+pickerButton: {
+  borderWidth: 1,
+  borderColor: "#3e9040",
+  borderRadius: 12,
+  paddingHorizontal: 14,
+  paddingVertical: 12,
+  backgroundColor: "#fff",
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center",
+},
+
+pickerButtonText: {
+  fontFamily: "Montt",
+  fontSize: 15,
+  color: "#333",
+},
+
+pickerArrow: {
+  fontSize: 14,
+  color: "#3e9040",
+  fontFamily: "Montt",
+},
+
+pickerDropdown: {
+  marginTop: 6,
+  backgroundColor: "#fff",
+  borderWidth: 1,
+  borderColor: "#d6d6d6",
+  borderRadius: 12,
+  overflow: "hidden",
+},
+
+pickerOption: {
+  paddingHorizontal: 14,
+  paddingVertical: 12,
+  borderBottomWidth: 1,
+  borderBottomColor: "#ececec",
+},
+
+pickerOptionActive: {
+  backgroundColor: "#eef8ee",
+},
+
+pickerOptionText: {
+  fontFamily: "Mont",
+  color: "#333",
+},
+
+pickerOptionTextActive: {
+  fontFamily: "Montt",
+  color: "#3e9040",
+},
 });

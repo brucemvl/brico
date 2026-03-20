@@ -496,7 +496,7 @@ const styles = StyleSheet.create({
 },
   title: { fontSize: 22, fontFamily: "Montt" },
   box: {
-backgroundColor: "#3e9040",
+backgroundColor: "#609c4e",
 width: "100%",
 alignItems: "center",
 justifyContent: "center",
@@ -594,7 +594,7 @@ addProfileButton: {
 
 },
 saveButton: {
-  backgroundColor: "#59b0d8",
+  backgroundColor: "#42a6d5",
   width: "100%",
   padding: 15,
   borderRadius: 25,
