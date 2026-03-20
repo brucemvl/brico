@@ -274,16 +274,16 @@ const scale = scrollY.interpolate({
           filteredRequests.map(item => {
             const isMatchingSkill = skills.includes(item.category);
             return (
-              <TouchableOpacity key={item._id} onPress={() => openRequest(item)} style={{ width: "100%" }}>
+              <TouchableOpacity key={item._id} onPress={() => openRequest(item)} style={{ width: "95%" }}>
                 <View style={styles.card}>
                   <View style={{ flexDirection: "row", justifyContent: "space-between", backgroundColor: "#3E9040", paddingBlock: 6, paddingInline: 4 }}>
                     <Text style={styles.cardTitle}>{item.title}</Text>
                   </View>
 <View style={styles.cardContainer}>
 <View style={{gap: 4}}>
-                  <Text style={{fontFamily: "Londrina", fontSize: 16}}>Catégorie : {item.category}</Text>
-                  <Text style={{fontFamily: "Londrina", fontSize: 16}}>Lieu : {item.location}</Text>
-                  <Text style={{fontFamily: "Londrina", fontSize: 16}}>Budget : {item.budget}€</Text>
+                  <Text style={{fontFamily: "Londrina", fontSize: 16, color: "#783516"}}>Catégorie : {item.category}</Text>
+                  <Text style={{fontFamily: "Londrina", fontSize: 16, color: "#783516"}}>Lieu : {item.location}</Text>
+                  <Text style={{fontFamily: "Londrina", fontSize: 16, color: "#783516"}}>Budget : {item.budget}€</Text>
                  </View>
                  {item.hasUnread && <View style={styles.messageBadge} />}
                   </View>

@@ -128,29 +128,15 @@ router.get("/:id", auth, async (req, res) => {
     }
 
     if (req.user.role === "pro") {
-      // 🔹 Cherche si le pro a déjà une conversation pour cette demande
-      let conversation = await Conversation.findOne({
-        request: req.params.id,
-        pro: req.user.id
-      })
-        .populate("client", "name profileImage")
-        .populate("messages.from", "name profileImage");
+  const conversation = await Conversation.findOne({
+    request: req.params.id,
+    pro: req.user.id
+  })
+    .populate("client", "name profileImage")
+    .populate("messages.from", "name profileImage");
 
-      // 🔹 Si aucune conversation, on la crée
-      if (!conversation) {
-        conversation = new Conversation({
-          request: request._id,
-          client: request.client,       // ok
-          pro: req.user.id,             // <-- obligatoire !
-          messages: [],                 // vide pour l'instant
-        });
-        await conversation.save();
-        await conversation.populate("client", "name profileImage");
-        await conversation.populate("messages.from", "name profileImage");
-      }
-
-      return res.json({ ...request.toObject(), conversation });
-    }
+  return res.json({ ...request.toObject(), conversation: conversation || null });
+}
   } catch (err) {
     console.error("GET /requests/:id error:", err);
     res.status(500).json({ error: err.message });

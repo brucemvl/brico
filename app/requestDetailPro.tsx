@@ -42,7 +42,7 @@ type RequestType = {
   category: string;
   location: string;
   budget: number;
-  client: { _id: string; name: string; profileImage?: string; phone?: string; email?: string };
+  client: { _id: string; name: string; profileImage?: { url?: string }; phone?: string; email?: string };
   conversation?: ConversationType;
   images?: { url: string }[];
   status: string;
@@ -64,6 +64,8 @@ export default function RequestDetailPro() {
   const [reviewModal, setReviewModal] = useState(false);
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
+
+  const reviewScale = useRef(new Animated.Value(1)).current;
 
   // Images preview
   const [previewVisible, setPreviewVisible] = useState(false);
@@ -171,29 +173,29 @@ export default function RequestDetailPro() {
   };
 
   const sendMessage = async () => {
-    if (!message.trim()) return;
-    try {
-      const res = await apiFetch(`/requests/${requestId}/message`, {
-        method: "POST",
-        body: JSON.stringify({ content: message }),
-      });
-      setRequest(prev =>
-        prev
-          ? {
-              ...prev,
-              conversation: {
-                ...prev.conversation!,
-                messages: res.messages,
-              },
-            }
-          : prev
-      );
-      setMessage("");
-      scrollRef.current?.scrollToEnd({ animated: true });
-    } catch (err) {
-      console.error(err);
-    }
-  };
+  if (!message.trim()) return;
+
+  try {
+    const res = await apiFetch(`/requests/${requestId}/message`, {
+      method: "POST",
+      body: JSON.stringify({ content: message }),
+    });
+
+    setRequest(prev =>
+      prev
+        ? {
+            ...prev,
+            conversation: res,
+          }
+        : prev
+    );
+
+    setMessage("");
+    scrollRef.current?.scrollToEnd({ animated: true });
+  } catch (err) {
+    console.error(err);
+  }
+};
 
   const submitReview = async () => {
     if (!request) return;
@@ -219,6 +221,29 @@ export default function RequestDetailPro() {
     setPreviewVisible(true);
   };
 
+    useEffect(() => {
+  const animation = Animated.loop(
+    Animated.sequence([
+      Animated.timing(reviewScale, {
+        toValue: 1.12,
+        duration: 500,
+        useNativeDriver: true,
+      }),
+      Animated.timing(reviewScale, {
+        toValue: 1,
+        duration: 500,
+        useNativeDriver: true,
+      }),
+    ])
+  );
+
+  animation.start();
+
+  return () => {
+    animation.stop();
+  };
+}, []);
+
   if (!request) return <Text>Chargement...</Text>;
 
   const messages = request.conversation?.messages || [];
@@ -231,6 +256,8 @@ export default function RequestDetailPro() {
     request?.conversation?.dealProposedByClient && !request?.conversation?.dealAcceptedByClient;
   const proProposed =
     request?.conversation?.dealProposedByPro && !request?.conversation?.dealAcceptedByPro;
+
+  
 
   return (
 <KeyboardAvoidingView
@@ -261,21 +288,27 @@ export default function RequestDetailPro() {
           
         }}
       >
-        <LinearGradient colors={["#5ce757",  "#3e9040", "#3e9040"]} style={{padding: 20, gap: 5, borderRadius: 20, width: "100%"}}>
+        <LinearGradient colors={["#5ce757",  "#3e9040", "#3e9040"]} style={{padding: 20, borderRadius: 20, width: "100%", flexDirection: "row", justifyContent: "space-between"}}>
+          <View style={{gap: 5}}>
                   <Text style={styles.title}>{request.title}</Text>
         <Text style={{fontFamily: "Montt", color: "#fff"}}>Catégorie: {request.category}</Text>
         <Text style={{fontFamily: "Montt", color: "#fff"}}>Lieu: {request.location}</Text>
         <Text style={{fontFamily: "Montt", color: "#fff"}}>Budget: {request.budget}€</Text>
+        </View>
+        <View style={{flexDirection: "row-reverse", alignItems: "flex-end", gap: 5}}>
+        <Image source={{uri: request?.client?.profileImage?.url}} style={{height: 30, width: 30, borderRadius: 15}}/>
+        <Text style={{fontSize: 15, color: "#fff", fontFamily: "Londrina"}}>{request?.client?.name}</Text>
+        </View>
         </LinearGradient>
         </Animated.View>
         {request.description && <View style={{alignItems: "center", gap: 10}}>
           <Text style={{fontFamily: "Montt", fontSize: 20, marginTop: 10, textAlign: "center"}}>Description</Text>
-        <Text  style={{fontFamily: "Londrina", fontSize: 16, color: "#3e9040"}}>{request.description}</Text>
+        <Text  style={{fontFamily: "Londrina", fontSize: 16, color: "#783516"}}>{request.description}</Text>
         </View>}
 
         {/* 🔹 Images du client */}
         {request.images && request.images.length > 0 && (
-          <ScrollView horizontal style={{ marginVertical: 10, backgroundColor: "#3e9040", padding: 10, borderRadius: 20 }} contentContainerStyle={{justifyContent: "center", alignItems: "center"}}>
+          <ScrollView horizontal style={{ marginVertical: 10, backgroundColor: "#3e9040", padding: 10, borderRadius: 20, width: "100%" }} contentContainerStyle={{justifyContent: "center", alignItems: "center"}}>
             {request.images.map((img, idx) => (
               <TouchableOpacity key={idx} onPress={() => openPreview(img.url)} style={{ marginRight: 10 }}>
                 <Image source={{ uri: img.url }} style={{ width: 130, height: 130, borderRadius: 8 }} />
@@ -287,6 +320,7 @@ export default function RequestDetailPro() {
         {/* Coordonnées après accord */}
         {dealAccepted && contact && (
           <View style={styles.contactBox}>
+            <Text style={{textAlign: "center", fontFamily: "Montt", marginBottom: 10}}>Coordonnées</Text>
             {contact.phone && (
               <TouchableOpacity onPress={() => Linking.openURL(`tel:${contact.phone}`)}>
                 <Text style={styles.contactText}>📞 {contact.phone}</Text>
@@ -308,10 +342,20 @@ export default function RequestDetailPro() {
             </TouchableOpacity>
           )}
           {clientProposed && !dealAccepted && (
-            <TouchableOpacity onPress={acceptDeal}>
-              <Text style={styles.dealAction}>Accepter l'accord proposé par le client</Text>
-            </TouchableOpacity>
+            <TouchableOpacity onPress={acceptDeal} style={{backgroundColor: "#007AFF", padding: 14, width: 300, alignItems: "center", justifyContent: "center", borderRadius: 20 }}>
+<Animated.Text
+    style={{
+      color: "#fefefe",
+      fontFamily: "Mont",
+      fontSize: 13,
+      transform: [{ scale: reviewScale }],
+    }}
+  >
+    Accepter l'accord proposé par le client
+  </Animated.Text>
+  </TouchableOpacity>
           )}
+
           {proProposed && !dealAccepted && <Text style={styles.dealStatus}>Vous avez proposé un accord — en attente du client</Text>}
           {dealAccepted && <Text style={styles.dealStatus}>✅ Accord validé</Text>}
         </View>
@@ -321,8 +365,16 @@ export default function RequestDetailPro() {
             style={styles.reviewButton}
             onPress={() => setReviewModal(true)}
           >
-            <Text style={{ color: "#220303", fontFamily: "Mont" }}>Donner un avis ⭐</Text>
-          </TouchableOpacity>
+<Animated.Text
+    style={{
+      color: "#fefefe",
+      fontFamily: "Mont",
+      transform: [{ scale: reviewScale }],
+    }}
+  >
+    Donner un avis ⭐
+  </Animated.Text>
+            </TouchableOpacity>
         )}
 
         {/* Modal review */}
@@ -355,6 +407,7 @@ export default function RequestDetailPro() {
 
         {/* Messages */}
         <Text style={styles.chatTitle}>Conversation avec {request.client.name}</Text>
+        <LinearGradient colors={["#cecece", "#8a8a8a"]} style={{padding: 5, borderRadius: 20}}>
         {messages.map((msg, i) => {
           const isMe = msg.from._id === currentUserId;
           let status = "";
@@ -373,12 +426,13 @@ export default function RequestDetailPro() {
                 <Text style={{fontFamily: "Mont", letterSpacing: -0.6}}>{msg.content}</Text>
                 <View style={styles.messageMeta}>
                   <Text style={styles.time}>{msgTime}</Text>
-                  {isMe && <Text style={styles.readStatus}>{status}</Text>}
+                  {isMe && <Text style={[styles.readStatus, msg.readBy.length >= 2 && {color: "#0b87da"} ]}>{status}</Text>}
                 </View>
               </View>
             </View>
           );
         })}
+        </LinearGradient>
 
         <View style={styles.inputRow}>
           <TextInput
@@ -388,7 +442,7 @@ export default function RequestDetailPro() {
             style={styles.input}
           />
           <TouchableOpacity onPress={sendMessage} style={styles.sendButton}>
-            <Text style={{ color: "#fff" }}>Envoyer</Text>
+            <Text style={{ color: "#fff", fontFamily: "Mont", fontSize: 12 }}>Envoyer</Text>
           </TouchableOpacity>
         </View>
       </Animated.ScrollView>
@@ -420,15 +474,15 @@ const styles = StyleSheet.create({
     backgroundColor: "#f3f3f3",
     paddingTop: 20,
     paddingInline: 10,
-paddingBottom: 120  },
+paddingBottom: 120, alignItems: "center"  },
   title: { fontSize: 22, fontFamily: "Montt", marginBlock: 10 },
   chatTitle: { marginTop: 20, marginBottom: 10, fontFamily: "Montt", textAlign: "center" },
   dealBox: {  borderRadius: 8, backgroundColor: "#f3f3f3", marginVertical: 10, alignItems: "center" },
   dealAction: { color: "#fff", fontFamily: "Mont" },
   dealStatus: { color: "#555", fontFamily: "Mont" },
-  contactBox: { padding: 10, backgroundColor: "#f0f0f0", borderRadius: 8, marginVertical: 10 },
+  contactBox: { padding: 10, backgroundColor: "#d8d8d8", borderRadius: 8, marginVertical: 10, width: "100%" },
   contactText: { fontSize: 16, marginBottom: 5, color: "#007AFF", fontFamily: "Montt" },
-  messageRow: { flexDirection: "row", marginBottom: 8, alignItems: "flex-end" },
+  messageRow: { flexDirection: "row", marginBottom: 8, alignItems: "flex-end", width: "100%" },
   myMessageRow: { justifyContent: "flex-end" },
   otherMessageRow: { justifyContent: "flex-start" },
   avatar: { width: 36, height: 36, borderRadius: 18, marginRight: 8 },
@@ -437,12 +491,12 @@ paddingBottom: 120  },
   otherMessage: { backgroundColor: "#eee" },
   author: { fontFamily: "Londrinak", marginBottom: 2 },
   messageMeta: { flexDirection: "row", justifyContent: "space-between", marginTop: 5 },
-  time: { fontSize: 10, color: "#555" },
-  readStatus: { fontSize: 10, color: "#777", marginLeft: 5 },
-  inputRow: { flexDirection: "row", alignItems: "center", marginTop: 10 },
-  input: { borderWidth: 1, borderColor: "#ccc", borderRadius: 8, padding: 10 },
-  sendButton: { padding: 10, backgroundColor: "#007AFF", borderRadius: 8, marginLeft: 8 },
-  reviewButton: { backgroundColor:"#28a745", padding:12, borderRadius:8, alignItems:"center", marginTop:10 },
+  time: { fontSize: 10, color: "#555", fontFamily: "Londrina" },
+  readStatus: { fontSize: 10, color: "#777", marginLeft: 5, fontFamily: "Londrina" },
+  inputRow: { flexDirection: "row", alignItems: "center", marginTop: 10, width: "100%" },
+  input: { borderWidth: 1, borderColor: "#ccc", borderRadius: 8, padding: 10, width: "78%" },
+  sendButton: { padding: 10, backgroundColor: "#007AFF", borderRadius: 8, marginLeft: "2%", width: "20%", alignItems: "center", justifyContent: "center" },
+  reviewButton: { backgroundColor:"#28a745", padding:12, borderRadius:8, alignItems:"center", marginTop:10, width: "80%" },
   modalOverlay: { flex:1, backgroundColor:"rgba(0,0,0,0.5)", justifyContent:"center", alignItems:"center" },
   modal: { backgroundColor:"white", padding:20, borderRadius:10, width:"85%", gap: 10 },
   modalTitle: { fontSize:18, fontFamily: "Montt", marginBottom:15, textAlign:"center" },

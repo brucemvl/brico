@@ -315,6 +315,7 @@ Alert.alert(
   scrollEventThrottle={6}
 > 
 
+<View style={{alignItems: "center", gap: 10, backgroundColor: "#d8d8d8", padding: 15, borderRadius: 20, width: "100%"}}>
       <Text style={{fontFamily: "Mont", color: "#000000"}}>Photo de profil</Text>
       {profileImage && (
     <Image
@@ -332,6 +333,7 @@ Alert.alert(
     >
       <Text style={{ color: "white", fontFamily: "Mont" }}>Supprimer</Text>
     </TouchableOpacity>
+    </View>
     </View>
 
 <View style={styles.box}>
@@ -477,7 +479,7 @@ Alert.alert(
 const styles = StyleSheet.create({
   container: {
     alignItems: "center",
-    paddingTop: 160,
+    paddingTop: 120,
     paddingHorizontal: 20,
     paddingBottom: 80,
     gap: 15
@@ -490,7 +492,7 @@ const styles = StyleSheet.create({
   height: 90,
   zIndex: 10,
   justifyContent: "flex-end",
-  padding: 15,
+  padding: 10,
 },
   title: { fontSize: 22, fontFamily: "Montt" },
   box: {
