@@ -288,7 +288,7 @@ export default function RequestDetailPro() {
           
         }}
       >
-        <LinearGradient colors={["#5ce757",  "#3e9040", "#3e9040"]} style={{padding: 20, borderRadius: 20, width: "100%", flexDirection: "row", justifyContent: "space-between"}}>
+        <LinearGradient colors={[ "#30a590", "#1a5b4f" ]} style={{padding: 20, borderRadius: 20, width: "100%", flexDirection: "row", justifyContent: "space-between"}}>
           <View style={{gap: 5}}>
                   <Text style={styles.title}>{request.title}</Text>
         <Text style={{fontFamily: "Montt", color: "#fff"}}>Catégorie: {request.category}</Text>
@@ -302,7 +302,7 @@ export default function RequestDetailPro() {
         </LinearGradient>
         </Animated.View>
         {request.description &&
-        <View style={{backgroundColor: "#3e9040", width: "100%", borderRadius: 20, padding: 10}}>
+        <View style={{backgroundColor: "#237163" , width: "100%", borderRadius: 20, padding: 10}}>
         <View style={{alignItems: "center", gap: 10}}>
           <Text style={{fontFamily: "Montt", fontSize: 20, marginTop: 10, textAlign: "center"}}>Description</Text>
           <View style={{backgroundColor: "#f3F3F3", width: "100%", padding: 12, borderRadius: 10}}>

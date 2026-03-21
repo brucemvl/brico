@@ -9,6 +9,8 @@ export const useApi = () => {
 const { user, logout, loading } = context; // 🔹 récupérer ici
 const router = useRouter()
   const token = user?.token ?? null;
+  const API_BASE_URL = "http://192.168.1.11:5000/api";
+  const MAMAN = "http://192.168.1.74:5000/api";
 
 
 

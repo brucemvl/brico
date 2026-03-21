@@ -47,30 +47,36 @@ router.get("/client", auth, async (req, res) => {
 // =======================
 router.get("/pro", auth, async (req, res) => {
   try {
-    // 🔹 Récupérer l'ID du pro depuis le token
     const proId = req.user.id || req.user._id;
+    console.log("PRO ID:", proId);
 
-    // 🔹 Vérifier que l'utilisateur existe
     const user = await User.findById(proId);
-    if (!user) return res.status(404).json({ message: "Utilisateur introuvable" });
+    if (!user) {
+      return res.status(404).json({ message: "Utilisateur introuvable" });
+    }
 
-    // 🔹 Récupérer toutes les demandes ouvertes ou en cours
-    // "in_progress" si le pro est assigné, "open" pour toutes
     const requests = await Request.find({
-      $or: [
-        { status: { $in: ["open"] } },
-        { status: "in_progress", proAssigned: proId }
-      ]
-    });
+  $or: [
+    { status: "open" },
+    { status: "in_progress" },
+    { status: "completed", proAssigned: proId },
+  ]
+});
 
-    // 🔹 Récupérer les conversations du pro pour calculer hasUnread
+
     const conversations = await Conversation.find({ pro: proId });
 
-    // 🔹 Préparer les demandes avec hasUnread
     const requestsWithUnread = requests.map(r => {
-      const conv = conversations.find(c => c.request.toString() === r._id.toString());
+      const conv = conversations.find(
+        c => c.request.toString() === r._id.toString()
+      );
+
       const hasUnread =
-        conv?.messages?.some(msg => msg.from.toString() !== proId && !msg.readBy.includes(proId)) || false;
+        conv?.messages?.some(
+          msg =>
+            msg.from.toString() !== proId.toString() &&
+            !msg.readBy.map(id => id.toString()).includes(proId.toString())
+        ) || false;
 
       return {
         _id: r._id,
@@ -81,15 +87,14 @@ router.get("/pro", auth, async (req, res) => {
         status: r.status,
         hasUnread,
         proAssigned: r.proAssigned ? r.proAssigned.toString() : undefined,
+        createdAt: r.createdAt,
       };
     });
 
-    // 🔹 Retourner à l’API frontend
     res.json({
       requests: requestsWithUnread,
-      skills: user.skills || []
+      skills: user.skills || [],
     });
-
   } catch (err) {
     console.error("GET /requests/pro error:", err);
     res.status(500).json({ message: "Erreur serveur" });

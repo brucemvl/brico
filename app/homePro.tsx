@@ -25,9 +25,10 @@ type RequestType = {
   status: "open" | "in_progress" | "completed";
   hasUnread?: boolean;
   proAssigned?: string;
+  createdAt?: string;
 };
 
-const categories = ["Plomberie", "Peinture", "Agencement", "Electricité", "Carrelage", "divers"];
+const categories = ["Plomberie", "Peinture", "Agencement", "Electricité", "Carrelage", "Divers"];
 
 const defaultAvatar = "https://res.cloudinary.com/dwjssp2pd/image/upload/v1773074497/default_pro.jpg";
 
@@ -88,6 +89,11 @@ const scale = scrollY.interpolate({
     "Montt": require("../assets/fonts/Montserrat/Montserrat-Bold.ttf"), 
   });
 
+  const formatDate = (dateString?: string) => {
+  if (!dateString) return "";
+  return new Date(dateString).toLocaleDateString("fr-FR");
+};
+
   // 🔹 Charger le profil
   useEffect(() => {
     const loadProfile = async () => {
@@ -113,6 +119,7 @@ const scale = scrollY.interpolate({
       return;
     }
 
+    console.log("REQUESTS APIIII:", data.requests);
     console.log("REQUESTS API:", data);
 
     setRequests(data.requests || []);
@@ -151,7 +158,9 @@ const changeRequestView = (view: "requests" | "deals" | "completed") => {
 
   switch (requestView) {
     case "requests":
-      baseFiltered = requests.filter(r => r.status === "open");
+      baseFiltered = requests.filter(
+        r => r.status === "open" || r.status === "in_progress"
+      );
       break;
 
     case "deals":
@@ -175,8 +184,10 @@ const changeRequestView = (view: "requests" | "deals" | "completed") => {
       return requestView === "requests"
         ? baseFiltered.filter(r => skills.includes(r.category))
         : baseFiltered;
+
     case "all":
       return baseFiltered;
+
     default:
       return baseFiltered.filter(r => r.category === activeFilter);
   }
@@ -258,7 +269,7 @@ const changeRequestView = (view: "requests" | "deals" | "completed") => {
         <Image source={modifier} style={{width: 20, height: 20}}/>
       </TouchableOpacity>
       </View>
-      <LinearGradient colors={["#5ce757",  "#3e9040", "#3e9040"]} style={{width: "100%", alignItems: "center", paddingInline: 20, paddingTop: 54, paddingBottom: 24, borderRadius: 20, gap: 4}}>
+      <LinearGradient colors={["#1a5b4f", "#30a590" ]} style={{width: "100%", alignItems: "center", paddingInline: 20, paddingTop: 54, paddingBottom: 24, borderRadius: 20, gap: 4}}>
       <Text style={{fontFamily: "Londrinak", fontSize: 16 }}>{profile?.name}</Text>
       {profile?.location && 
       <Text style={{fontFamily: "Londrinak", fontSize: 16 }}>{profile?.location}</Text>
@@ -362,16 +373,19 @@ const changeRequestView = (view: "requests" | "deals" | "completed") => {
           filteredRequests.map(item => {
             const isMatchingSkill = skills.includes(item.category);
             const isAssignedToMe =
-            item.status === "in_progress" &&
-            item.proAssigned &&
-            profile?._id &&
-            item.proAssigned === profile._id;
+  item.status === "in_progress" &&
+  !!item.proAssigned &&
+  !!profile?._id &&
+  item.proAssigned === profile._id;
 
             return (
               <TouchableOpacity key={item._id} onPress={() => openRequest(item)} style={{ width: "95%" }}>
                 <View style={styles.card}>
-                  <View style={{ flexDirection: "row", justifyContent: "space-between", backgroundColor: "#3E9040", paddingBlock: 6, paddingInline: 4 }}>
+                  <View style={{ flexDirection: "row", justifyContent: "space-between", backgroundColor: "#1a5b4f", paddingBlock: 6, paddingInline: 6 }}>
                     <Text style={styles.cardTitle}>{item.title}</Text>
+                    <Text style={{ fontFamily: "Montt", fontSize: 11, color: "#ffffff" }}>
+  {formatDate(item.createdAt)}
+</Text>
                   </View>
 <View style={styles.cardContainer}>
 <View style={{gap: 4}}>
@@ -409,7 +423,7 @@ const changeRequestView = (view: "requests" | "deals" | "completed") => {
 }
 
 const styles = StyleSheet.create({
-  container: { paddingTop: 60, alignItems: "center", paddingBottom: 60 },
+  container: { paddingTop: 60, alignItems: "center", paddingBottom: 90 },
   center: { flex: 1, justifyContent: "center", alignItems: "center" },
   title: { fontSize: 24, fontFamily: "Montt", marginBottom: 15 },
   avatar: { height: 90, width: 90, resizeMode: "contain", borderRadius: 45, borderWidth: 2, borderColor: "#f3f3f3" },
@@ -438,11 +452,11 @@ header: {
   activeFilter: { backgroundColor: "#a4a4a4" },
 
   requestsContainer: { width: "100%", paddingHorizontal: 20, alignItems: "center" },
-  card: { borderWidth: 5, borderColor: "#3e9040", borderRadius: 16, marginBottom: 12, width: "100%" },
-  cardTitle: { color: "#ffffff", fontSize: 16, marginBottom: 5, fontFamily: "Montt" },
+  card: { borderWidth: 5, borderColor: "#1a5b4f", borderRadius: 16, marginBottom: 12, width: "100%" },
+  cardTitle: { color: "#ffffff", fontSize: 15, marginBottom: 5, fontFamily: "Montt" },
   cardContainer: {padding: 15,  flexDirection: "row", justifyContent: "space-between", alignItems: "center"},
   skillBadge: { margin: 5, backgroundColor: "#e2db1c", padding: 8, borderRadius: 8 },
-  badgeText: { fontSize: 12, color: "#155724", fontFamily: "Mont" },
+  badgeText: { fontSize: 12, color: "#1a5b4f", fontFamily: "Mont" },
   acceptedBadge: { margin: 5, backgroundColor: "#ffeeba", padding: 8, borderRadius: 8, alignItems: "center" },
 
   messageBadge: { width: 16, height: 16, borderRadius: 8, backgroundColor: "red", marginLeft: 6 },
@@ -455,7 +469,7 @@ header: {
 
 pickerButton: {
   borderWidth: 1,
-  borderColor: "#3e9040",
+  borderColor: "#1a5b4f",
   borderRadius: 12,
   paddingHorizontal: 14,
   paddingVertical: 12,
@@ -472,7 +486,7 @@ pickerButtonText: {
 },
 
 pickerArrow: {
-  fontSize: 14,
+  fontSize: 16,
   color: "#3e9040",
   fontFamily: "Montt",
 },
@@ -504,6 +518,6 @@ pickerOptionText: {
 
 pickerOptionTextActive: {
   fontFamily: "Montt",
-  color: "#3e9040",
+  color: "#1a5b4f",
 },
 });

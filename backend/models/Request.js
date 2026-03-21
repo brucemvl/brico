@@ -55,13 +55,10 @@ reviewByPro: { type: Boolean, default: false },
   ratingGiven: { type: Boolean, default: false },
   scheduledDate: Date,
 
-  createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now }
+  }, {
+  timestamps: true
 });
 
-// 🔹 Mise à jour de `updatedAt` automatiquement
-requestSchema.pre("save", function () {
-  this.updatedAt = Date.now();
-});
+
 
 module.exports = mongoose.models.Request || mongoose.model("Request", requestSchema);

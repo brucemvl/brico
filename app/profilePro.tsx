@@ -1,6 +1,5 @@
 import * as ImageManipulator from "expo-image-manipulator";
 import * as ImagePicker from "expo-image-picker";
-import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
@@ -42,7 +41,7 @@ export default function ProfilePro() {
   
     const headerOpacity = scrollY.interpolate({
     inputRange: [0, 100],
-    outputRange: [1, 0],
+    outputRange: [0, 1],
     extrapolate: "clamp",
   });
 
@@ -303,9 +302,7 @@ Alert.alert(
 
   return (
     <View>
-      <LinearGradient colors={["#f3f3f3", "#f3f3f3", "#f3f3f3", "#f3f3f3de"]}  style={styles.header}>
-        <Animated.Text style={{ fontFamily: "Montt", opacity: headerOpacity }}>Mon Profil</Animated.Text>
-      </LinearGradient>
+        <Animated.Text style={{ fontFamily: "Montt", opacity: headerOpacity, marginTop: 55, marginLeft: 10 }}>Modifier mon Profil</Animated.Text>
 <Animated.ScrollView
   contentContainerStyle={styles.container}
   onScroll={Animated.event(
@@ -479,9 +476,9 @@ Alert.alert(
 const styles = StyleSheet.create({
   container: {
     alignItems: "center",
-    paddingTop: 120,
+    paddingTop: 60,
     paddingHorizontal: 20,
-    paddingBottom: 80,
+    paddingBottom: 100,
     gap: 15
   },
   header: {
@@ -496,7 +493,7 @@ const styles = StyleSheet.create({
 },
   title: { fontSize: 22, fontFamily: "Montt" },
   box: {
-backgroundColor: "#609c4e",
+backgroundColor: "#247868",
 width: "100%",
 alignItems: "center",
 justifyContent: "center",

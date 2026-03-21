@@ -133,7 +133,7 @@ useEffect(() => {
           }}
           style={styles.avatar}
         />
-              <LinearGradient colors={["#5ce757",  "#3e9040", "#3e9040"]} style={{width: "85%", alignItems: "center", paddingInline: 20, paddingTop: 54, paddingBottom: 24, borderRadius: 20, gap: 4, left: 25}}>
+              <LinearGradient colors={["#1a5b4f", "#30a590"]} style={{width: "85%", alignItems: "center", paddingInline: 20, paddingTop: 54, paddingBottom: 24, borderRadius: 20, gap: 4, left: 25}}>
         
 <View style={{alignItems: "center"}}>
         <Text style={styles.name}>{user.name}</Text>
@@ -346,7 +346,7 @@ paddingBottom: 60  },
   },
 
   skill: {
-    backgroundColor: "#3e9040",
+    backgroundColor: "#1a5b4f",
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 8,
