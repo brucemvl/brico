@@ -34,12 +34,24 @@ type ConversationType = {
   dealAcceptedByClient?: boolean;
   dealAcceptedByPro?: boolean;
 };
+
+type AssignedPro = {
+  pro: string | { _id: string; name?: string; profileImage?: { url?: string } };
+  reviewByClient?: boolean;
+  reviewByPro?: boolean;
+  status?: "active" | "completed" | "cancelled";
+  completedAt?: string;
+  cancelledAt?: string;
+};
+
 type RequestType = {
      _id: string; clientValidated: boolean;
      proValidated: boolean;
       status: string;
        reviewByClient?: boolean;
-reviewByPro?: boolean; };
+reviewByPro?: boolean;
+assignedPros?: AssignedPro[];
+ };
 
 export default function Conversation() {
   const { apiFetch } = useApi();
@@ -180,12 +192,11 @@ const [comment, setComment] = useState("");
 };
 
   const submitReview = async () => {
-  if (!conversation || !request) return;
+  if (!conversation || !request || !conversation.pro?._id) return;
 
   try {
-    const targetUser = conversation.pro?._id; // le pro à reviewer
+    const targetUser = conversation.pro._id;
 
-    // 1️⃣ Envoyer l'avis
     await apiFetch(`/users/${targetUser}/review`, {
       method: "POST",
       body: JSON.stringify({
@@ -195,19 +206,15 @@ const [comment, setComment] = useState("");
       }),
     });
 
-    // 2️⃣ Mettre à jour la request (review-complete)
     await apiFetch(`/requests/${request._id}/review-complete`, {
       method: "POST",
       body: JSON.stringify({ proId: targetUser }),
     });
 
-    // 3️⃣ Recharger la request pour UI
-    const updatedRequest = await apiFetch(`/requests/${request._id}`);
-    setRequest(updatedRequest);
-
     setReviewModal(false);
     Alert.alert("Merci !", "Votre avis a été enregistré");
 
+    await loadConversation();
   } catch (err) {
     console.log(err);
     Alert.alert(
@@ -220,10 +227,31 @@ const [comment, setComment] = useState("");
   if (loading) return <Text>Chargement...</Text>;
   if (!conversation) return <Text>Conversation introuvable</Text>;
 
-  const clientProposed = conversation.dealProposedByClient && !conversation.dealAcceptedByClient;
-  const proProposed = conversation.dealProposedByPro && !conversation.dealAcceptedByPro;
 
-  const canReview = dealAccepted && !request?.reviewByClient;
+  const getProId = (pro: string | { _id: string } | undefined) => {
+  if (!pro) return "";
+  return typeof pro === "string" ? pro : pro._id;
+};
+
+  // Pour savoir si le client a déjà noté ce pro
+const currentProId = getProId(conversation?.pro);
+
+const currentAssignment =
+  request?.assignedPros?.find(
+    ap => getProId(ap.pro) === currentProId
+  ) ?? null;
+
+const clientHasReviewed = currentAssignment?.reviewByClient ?? false;
+const proHasReviewed = currentAssignment?.reviewByPro ?? false;
+const missionCompleted = clientHasReviewed && proHasReviewed;
+
+const clientProposed =
+  !!conversation.dealProposedByClient && !conversation.dealAcceptedByClient;
+
+const proProposed =
+  !!conversation.dealProposedByPro && !conversation.dealAcceptedByPro;
+
+const canReview = !!currentAssignment && dealAccepted && !clientHasReviewed;
 
   return (
     <View style={{ flex: 1, paddingTop: 40 }}>
@@ -266,13 +294,25 @@ const [comment, setComment] = useState("");
         </View>
       )}
 
+{dealAccepted && !missionCompleted && clientHasReviewed && (
+  <Text style={{ textAlign: "center", margin: 10, color: "#555" }}>
+    ✅ Avis envoyé ! En attente que le pro note.
+  </Text>
+)}
+
 {canReview && (
-<TouchableOpacity
-style={styles.completeButton}
-onPress={() => setReviewModal(true)}
->
-<Text style={{color:"black"}}>Terminer la Mission</Text>
-</TouchableOpacity>
+  <TouchableOpacity
+    style={styles.completeButton}
+    onPress={() => setReviewModal(true)}
+  >
+    <Text style={{ color: "black" }}>Terminer la mission</Text>
+  </TouchableOpacity>
+)}
+
+{missionCompleted && (
+  <Text style={{ textAlign: "center", margin: 10, color: "green", fontWeight:"bold" }}>
+    🎉 Mission terminée !
+  </Text>
 )}
 
 <Modal

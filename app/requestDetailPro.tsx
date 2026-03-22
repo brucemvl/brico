@@ -1,6 +1,6 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams } from "expo-router";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   Alert,
   Animated,
@@ -35,6 +35,16 @@ type ConversationType = {
   dealAcceptedByPro?: boolean;
 };
 
+type AssignedProType = {
+  pro: string | { _id: string; name?: string; profileImage?: { url?: string } };
+  status: "active" | "cancelled" | "completed";
+  agreedAt?: string;
+  cancelledAt?: string;
+  completedAt?: string;
+  reviewByClient?: boolean;
+  reviewByPro?: boolean;
+};
+
 type RequestType = {
   _id: string;
   title: string;
@@ -46,6 +56,7 @@ type RequestType = {
   conversation?: ConversationType;
   images?: { url: string }[];
   status: string;
+  assignedPros?: AssignedProType[]; // 🔹 ajouté
   reviewByClient?: boolean;
   reviewByPro?: boolean;
 };
@@ -55,7 +66,17 @@ export default function RequestDetailPro() {
   const params = useLocalSearchParams<{ id: string }>();
   const requestId = params.id;
 
-  const [request, setRequest] = useState<RequestType | null>(null);
+const [request, setRequest] = useState<RequestType>({
+  _id: "",
+  title: "",
+  category: "",
+  location: "",
+  budget: 0,
+  client: { _id: "", name: "" },
+  status: "open",
+  assignedPros: [],
+});
+
   const [currentUserId, setCurrentUserId] = useState("");
   const [message, setMessage] = useState("");
   const scrollRef = useRef<ScrollView>(null);
@@ -108,8 +129,10 @@ export default function RequestDetailPro() {
   }, []);
 
   const dealAccepted =
-    (request?.conversation?.dealProposedByPro && request?.conversation?.dealAcceptedByClient) ||
-    (request?.conversation?.dealProposedByClient && request?.conversation?.dealAcceptedByPro);
+  (request?.conversation?.dealProposedByPro && request?.conversation?.dealAcceptedByClient) ||
+  (request?.conversation?.dealProposedByClient && request?.conversation?.dealAcceptedByPro);
+
+  
 
   useEffect(() => {
     const fetchContact = async () => {
@@ -197,29 +220,22 @@ export default function RequestDetailPro() {
   }
 };
 
-  const submitReview = async () => {
+ const submitReview = async () => {
   if (!request) return;
   try {
-    // 1️⃣ Envoie la note
     await apiFetch(`/users/${request.client._id}/review`, {
       method: "POST",
-      body: JSON.stringify({
-        score: rating,
-        comment,
-        requestId: request._id,
-      }),
+      body: JSON.stringify({ score: rating, comment, requestId: request._id }),
     });
 
-    // 2️⃣ Informe le backend que le review est terminé
     await apiFetch(`/requests/${request._id}/review-complete`, {
       method: "POST",
-      body: JSON.stringify({
-        proId: currentUserId,
-      }),
+      body: JSON.stringify({ proId: currentUserId }),
     });
 
-    // 3️⃣ Recharge la demande pour avoir le status mis à jour
-    fetchRequest();
+    // 🔹 Rafraîchir request et recalculer assignment
+    const updatedRequest = await apiFetch(`/requests/${request._id}`);
+    setRequest(updatedRequest);
 
     setReviewModal(false);
     Alert.alert("Merci !", "Votre avis a été enregistré");
@@ -257,11 +273,49 @@ export default function RequestDetailPro() {
   };
 }, []);
 
-  if (!request) return <Text>Chargement...</Text>;
+
+const getProId = (pro: string | { _id: string } | undefined) => {
+  if (!pro) return "";
+  return typeof pro === "string" ? pro : pro._id;
+};
+
+// récupérer l'assignement correspondant au pro courant
+const { proHasReviewed, clientHasReviewed, missionCompleted, canReview } = useMemo(() => {
+  if (!request || !request.assignedPros || !currentUserId) {
+    return {
+      proHasReviewed: false,
+      clientHasReviewed: false,
+      missionCompleted: false,
+      canReview: false,
+    };
+  }
+
+  const assign =
+    request.assignedPros.find(
+      ap => getProId(ap.pro) === currentUserId
+    ) ?? null;
+
+  const proReviewed = assign?.reviewByPro ?? false;
+  const clientReviewed = assign?.reviewByClient ?? false;
+
+  const accepted =
+    !!request.conversation &&
+    (
+      (request.conversation.dealProposedByPro && request.conversation.dealAcceptedByClient) ||
+      (request.conversation.dealProposedByClient && request.conversation.dealAcceptedByPro)
+    );
+
+  return {
+    proHasReviewed: proReviewed,
+    clientHasReviewed: clientReviewed,
+    missionCompleted: proReviewed && clientReviewed,
+    canReview: accepted && !!assign && !proReviewed,
+  };
+}, [request, currentUserId]);
+
+if (!request) return <Text>Chargement...</Text>;
 
   const messages = request.conversation?.messages || [];
-
-  const canReview = dealAccepted && !request.reviewByPro;
 
   const clientProposed =
     request?.conversation?.dealProposedByClient && !request?.conversation?.dealAcceptedByClient;
@@ -384,22 +438,34 @@ export default function RequestDetailPro() {
           {dealAccepted && <Text style={styles.dealStatus}>✅ Accord validé</Text>}
         </View>
 
-        {canReview && (
-          <TouchableOpacity
-            style={styles.reviewButton}
-            onPress={() => setReviewModal(true)}
-          >
-<Animated.Text
-    style={{
-      color: "#fefefe",
-      fontFamily: "Mont",
-      transform: [{ scale: reviewScale }],
-    }}
+        {dealAccepted && !missionCompleted && proHasReviewed && (
+  <Text style={{ textAlign: "center", margin: 10, color: "#555" }}>
+    ✅ Avis envoyé ! En attente que le client note.
+  </Text>
+)}
+
+{dealAccepted && canReview && (
+  <TouchableOpacity
+    style={styles.reviewButton}
+    onPress={() => setReviewModal(true)}
   >
-    Donner un avis ⭐
-  </Animated.Text>
-            </TouchableOpacity>
-        )}
+    <Animated.Text
+      style={{
+        color: "#fefefe",
+        fontFamily: "Mont",
+        transform: [{ scale: reviewScale }],
+      }}
+    >
+      Donner un avis ⭐
+    </Animated.Text>
+  </TouchableOpacity>
+)}
+
+{dealAccepted && missionCompleted && (
+  <Text style={{ textAlign: "center", margin: 10, color: "green", fontWeight: "bold" }}>
+    🎉 Mission terminée !
+  </Text>
+)}
 
         {/* Modal review */}
         <Modal visible={reviewModal} transparent animationType="slide">
