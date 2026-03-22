@@ -105,6 +105,12 @@ const scale = scrollY.interpolate({
   return new Date(dateString).toLocaleDateString("fr-FR");
 };
 
+const formatRating = (value?: number) => {
+  if (value == null) return "0";
+  const rounded = Math.round((value + Number.EPSILON) * 10) / 10;
+  return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1);
+};
+
   // 🔹 Charger le profil
   useEffect(() => {
     const loadProfile = async () => {
@@ -295,7 +301,7 @@ const changeRequestView = (view: "requests" | "deals" | "completed") => {
     ))}
   </View>
 )}
-    <Text style={{fontFamily: "Mont"}}>({profile?.averageRating})</Text>
+    <Text style={{fontFamily: "Mont"}}>({formatRating(profile?.averageRating)})</Text>
     </LinearGradient>
 
 </Animated.View>
@@ -347,6 +353,7 @@ const changeRequestView = (view: "requests" | "deals" | "completed") => {
 </Text>
 
       {/* 🔹 Boutons filtres */}
+      {requestView === "requests" &&
       <View style={styles.filtersContainer}>
         <TouchableOpacity
           style={[styles.filterButton, activeFilter === "skills" && styles.activeFilter]}
@@ -375,6 +382,7 @@ const changeRequestView = (view: "requests" | "deals" | "completed") => {
           </TouchableOpacity>
         ))}
       </View>
+}
 
       {/* 🔹 Liste des demandes */}
       <View style={styles.requestsContainer}>

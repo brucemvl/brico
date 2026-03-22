@@ -78,11 +78,9 @@ router.get("/pro", auth, async (req, res) => {
       );
 
       const hasUnread =
-        conv?.messages?.some(
-          msg =>
-            msg.from.toString() !== proId.toString() &&
-            !msg.readBy.map(id => id.toString()).includes(proId.toString())
-        ) || false;
+  !!conv &&
+  !!conv.lastInteractionBy &&
+  conv.lastInteractionBy.toString() !== proId.toString();
 
       const myAssignment = r.assignedPros?.find(
         ap => ap.pro.toString() === proId.toString()
@@ -160,8 +158,24 @@ router.get("/:id", auth, async (req, res) => {
     .populate("client", "name profileImage")
     .populate("messages.from", "name profileImage");
 
+  if (conversation) {
+    await Conversation.updateOne(
+      { _id: conversation._id },
+      {
+        $set: {
+          lastInteractionBy: req.user.id,
+          lastInteractionAt: new Date()
+        },
+        $addToSet: {
+          "messages.$[].readBy": req.user.id
+        }
+      }
+    );
+  }
+
   return res.json({ ...request.toObject(), conversation: conversation || null });
 }
+
   } catch (err) {
     console.error("GET /requests/:id error:", err);
     res.status(500).json({ error: err.message });
@@ -375,12 +389,16 @@ router.post("/:id/message", auth, async (req, res) => {
       }
     }
 
+
     conversation.messages.push({
       from: req.user.id,
       content,
       readBy: [req.user.id],
       createdAt: new Date(),
     });
+
+    conversation.lastInteractionBy = req.user.id;
+conversation.lastInteractionAt = new Date();
 
     await conversation.save();
     await conversation.populate("messages.from", "name profileImage");
@@ -496,6 +514,10 @@ router.post("/:id/accept/:offerId", auth, async (req, res) => {
         pro: offer.pro,
         messages: []
       });
+
+      conversation.lastInteractionBy = req.user.id;
+conversation.lastInteractionAt = new Date();
+
       await conversation.save();
     }
 
@@ -618,6 +640,18 @@ router.post("/:id/review-complete", auth, async (req, res) => {
     }
 
     await request.save();
+
+    const conversation = await Conversation.findOne({
+  request: request._id,
+  pro: proId,
+  client: request.client,
+});
+
+if (conversation) {
+  conversation.lastInteractionBy = req.user.id;
+  conversation.lastInteractionAt = new Date();
+  await conversation.save();
+}
 
     return res.json({
       message: "Statut de notation mis à jour",

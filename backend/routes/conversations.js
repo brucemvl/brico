@@ -140,6 +140,9 @@ router.post("/:id/mark-read", auth, async (req, res) => {
       if (!msg.readBy.includes(req.user.id)) msg.readBy.push(req.user.id);
     });
 
+    conversation.lastInteractionBy = req.user.id;
+conversation.lastInteractionAt = new Date();
+
     await conversation.save();
     res.json({ success: true });
   } catch (err) {
@@ -156,20 +159,22 @@ router.post("/:id/propose-deal", auth, async (req, res) => {
     if (!conversation) return res.status(404).json({ error: "Conversation introuvable" });
 
     if (req.user.id === conversation.client.toString()) {
-      // 🔹 Client propose un deal
-      conversation.dealProposedByClient = true;
-      await conversation.save();
+  conversation.dealProposedByClient = true;
+  conversation.lastInteractionAt = new Date();
+  conversation.lastInteractionBy = req.user.id;
 
-      await createNotification({
-        userId: conversation.pro,
-        type: "new_offer",
-        content: "Le client propose un deal",
-        relatedRequest: conversation.request,
-        conversation: conversation._id
-      });
+  await conversation.save();
 
-      return res.json({ message: "Proposition envoyée au pro" });
-    }
+  await createNotification({
+    userId: conversation.pro,
+    type: "new_offer",
+    content: "Le client propose un deal",
+    relatedRequest: conversation.request,
+    conversation: conversation._id
+  });
+
+  return res.json({ message: "Proposition envoyée au pro" });
+}
 
     if (req.user.id === conversation.pro.toString()) {
       // 🔹 Propose un deal

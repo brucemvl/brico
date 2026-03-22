@@ -22,6 +22,12 @@ export default function Profile() {
   const [user, setUser] = useState<any>(null);
 
   const scrollY = new Animated.Value(0);
+
+  const formatRating = (value?: number) => {
+  if (value == null) return "0";
+  const rounded = Math.round((value + Number.EPSILON) * 10) / 10;
+  return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1);
+};
   
     const headerOpacity = scrollY.interpolate({
     inputRange: [0, 60],
@@ -166,7 +172,7 @@ useEffect(() => {
 
         {user.averageRating > 0 && (
           <Text style={styles.rating}>
-            ⭐ {user.averageRating === 5 ? "5" : user.averageRating.toFixed(1)}/5
+            ⭐ {formatRating(user?.averageRating)}/5
           </Text>
         )}
 </LinearGradient>
