@@ -1,17 +1,17 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
-    Alert,
-    Button,
-    Image,
-    Linking,
-    Modal,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+  Alert,
+  Button,
+  Image,
+  Linking,
+  Modal,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from "react-native";
 import { useApi } from "../services/api";
 
@@ -183,32 +183,37 @@ const [comment, setComment] = useState("");
   if (!conversation || !request) return;
 
   try {
+    const targetUser = conversation.pro?._id; // le pro à reviewer
 
-    const targetUser =
-      conversation.client?._id === currentUserId
-        ? conversation.pro?._id
-        : conversation.client?._id;
-
-    if (!targetUser) {
-      Alert.alert("Erreur", "Utilisateur introuvable");
-      return;
-    }
-
+    // 1️⃣ Envoyer l'avis
     await apiFetch(`/users/${targetUser}/review`, {
       method: "POST",
       body: JSON.stringify({
         score: rating,
         comment,
-        requestId: request._id
-      })
+        requestId: request._id,
+      }),
     });
 
-    setReviewModal(false);
+    // 2️⃣ Mettre à jour la request (review-complete)
+    await apiFetch(`/requests/${request._id}/review-complete`, {
+      method: "POST",
+      body: JSON.stringify({ proId: targetUser }),
+    });
 
+    // 3️⃣ Recharger la request pour UI
+    const updatedRequest = await apiFetch(`/requests/${request._id}`);
+    setRequest(updatedRequest);
+
+    setReviewModal(false);
     Alert.alert("Merci !", "Votre avis a été enregistré");
 
   } catch (err) {
     console.log(err);
+    Alert.alert(
+      "Erreur",
+      err instanceof Error ? err.message : "Impossible d'envoyer l'avis"
+    );
   }
 };
 
@@ -218,9 +223,7 @@ const [comment, setComment] = useState("");
   const clientProposed = conversation.dealProposedByClient && !conversation.dealAcceptedByClient;
   const proProposed = conversation.dealProposedByPro && !conversation.dealAcceptedByPro;
 
-  const canReview =
-request?.status === "in_progress" && dealAccepted &&
-!request.reviewByClient;
+  const canReview = dealAccepted && !request?.reviewByClient;
 
   return (
     <View style={{ flex: 1, paddingTop: 40 }}>

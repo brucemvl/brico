@@ -323,7 +323,7 @@ paddingBottom: 60  },
   section: {
     padding: 20,
     borderTopWidth: 1,
-    borderColor: "#eee"
+    borderColor: "#d0d0d0"
   },
 
   title: {

@@ -198,23 +198,36 @@ export default function RequestDetailPro() {
 };
 
   const submitReview = async () => {
-    if (!request) return;
-    try {
-      await apiFetch(`/users/${request.client._id}/review`, {
-        method: "POST",
-        body: JSON.stringify({
-          score: rating,
-          comment,
-          requestId: request._id,
-        }),
-      });
-      setReviewModal(false);
-      Alert.alert("Merci !", "Votre avis a été enregistré");
-    } catch (err) {
-      console.log(err);
-      Alert.alert("Erreur", "Impossible d'envoyer l'avis");
-    }
-  };
+  if (!request) return;
+  try {
+    // 1️⃣ Envoie la note
+    await apiFetch(`/users/${request.client._id}/review`, {
+      method: "POST",
+      body: JSON.stringify({
+        score: rating,
+        comment,
+        requestId: request._id,
+      }),
+    });
+
+    // 2️⃣ Informe le backend que le review est terminé
+    await apiFetch(`/requests/${request._id}/review-complete`, {
+      method: "POST",
+      body: JSON.stringify({
+        proId: currentUserId,
+      }),
+    });
+
+    // 3️⃣ Recharge la demande pour avoir le status mis à jour
+    fetchRequest();
+
+    setReviewModal(false);
+    Alert.alert("Merci !", "Votre avis a été enregistré");
+  } catch (err) {
+    console.log(err);
+    Alert.alert("Erreur", "Impossible d'envoyer l'avis");
+  }
+};
 
   const openPreview = (url: string) => {
     setPreviewImage(url);
@@ -248,9 +261,7 @@ export default function RequestDetailPro() {
 
   const messages = request.conversation?.messages || [];
 
-  const canReview =
-    request?.status === "in_progress" && dealAccepted &&
-    !request.reviewByPro;
+  const canReview = dealAccepted && !request.reviewByPro;
 
   const clientProposed =
     request?.conversation?.dealProposedByClient && !request?.conversation?.dealAcceptedByClient;
@@ -305,8 +316,8 @@ export default function RequestDetailPro() {
         <View style={{backgroundColor: "#237163" , width: "100%", borderRadius: 20, padding: 10}}>
         <View style={{alignItems: "center", gap: 10}}>
           <Text style={{fontFamily: "Montt", fontSize: 20, marginTop: 10, textAlign: "center"}}>Description</Text>
-          <View style={{backgroundColor: "#f3F3F3", width: "100%", padding: 12, borderRadius: 10}}>
-        <Text  style={{fontFamily: "Londrina", fontSize: 16, color: "#783516"}}>{request.description}</Text>
+          <View style={{width: "100%", padding: 12}}>
+        <Text  style={{fontFamily: "Montt", fontSize: 14, color: "#ffffff"}}>{request.description}</Text>
         </View>
         </View>
 

@@ -24,8 +24,19 @@ type RequestType = {
   budget: number;
   status: "open" | "in_progress" | "completed";
   hasUnread?: boolean;
-  proAssigned?: string;
-  createdAt?: string;
+assignedPros?: {
+  pro: string;
+  status: "active" | "cancelled" | "completed";
+  agreedAt?: string;
+  cancelledAt?: string;
+  completedAt?: string;
+  reviewByClient?: boolean;
+  reviewByPro?: boolean;
+}[];
+
+myAssignmentStatus?: "active" | "cancelled" | "completed" | null;
+
+createdAt?: string;
 };
 
 const categories = ["Plomberie", "Peinture", "Agencement", "Electricité", "Carrelage", "Divers"];
@@ -152,8 +163,6 @@ const changeRequestView = (view: "requests" | "deals" | "completed") => {
 
   // 🔹 Logique de filtrage
   const filteredRequests = (() => {
-  const myId = profile?._id;
-
   let baseFiltered: RequestType[] = [];
 
   switch (requestView) {
@@ -165,13 +174,17 @@ const changeRequestView = (view: "requests" | "deals" | "completed") => {
 
     case "deals":
       baseFiltered = requests.filter(
-        r => r.status === "in_progress" && r.proAssigned === myId
+        r => r.assignedPros?.some(
+          ap => ap.pro === profile?._id && ap.status === "active"
+        )
       );
       break;
 
     case "completed":
       baseFiltered = requests.filter(
-        r => r.status === "completed" && r.proAssigned === myId
+        r => r.assignedPros?.some(
+          ap => ap.pro === profile?._id && ap.status === "completed"
+        )
       );
       break;
 
@@ -184,10 +197,8 @@ const changeRequestView = (view: "requests" | "deals" | "completed") => {
       return requestView === "requests"
         ? baseFiltered.filter(r => skills.includes(r.category))
         : baseFiltered;
-
     case "all":
       return baseFiltered;
-
     default:
       return baseFiltered.filter(r => r.category === activeFilter);
   }
@@ -372,11 +383,9 @@ const changeRequestView = (view: "requests" | "deals" | "completed") => {
         ) : (
           filteredRequests.map(item => {
             const isMatchingSkill = skills.includes(item.category);
-            const isAssignedToMe =
-  item.status === "in_progress" &&
-  !!item.proAssigned &&
-  !!profile?._id &&
-  item.proAssigned === profile._id;
+            const isAssignedToMe = item.assignedPros?.some(
+  ap => ap.pro === profile?._id && ap.status === "active"
+);
 
             return (
               <TouchableOpacity key={item._id} onPress={() => openRequest(item)} style={{ width: "95%" }}>
