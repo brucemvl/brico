@@ -165,10 +165,21 @@ router.get("/:id", auth, async (req, res) => {
         $set: {
           lastInteractionBy: req.user.id,
           lastInteractionAt: new Date()
-        },
-        $addToSet: {
-          "messages.$[].readBy": req.user.id
         }
+      }
+    );
+
+    await Conversation.updateOne(
+      { _id: conversation._id },
+      {
+        $addToSet: {
+          "messages.$[msg].readBy": req.user.id
+        }
+      },
+      {
+        arrayFilters: [
+          { "msg.readBy": { $ne: req.user.id } }
+        ]
       }
     );
   }

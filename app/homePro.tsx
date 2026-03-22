@@ -111,6 +111,25 @@ const formatRating = (value?: number) => {
   return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1);
 };
 
+const badgeBlink = React.useRef(new Animated.Value(1)).current;
+
+useEffect(() => {
+  Animated.loop(
+    Animated.sequence([
+      Animated.timing(badgeBlink, {
+        toValue: 0,
+        duration: 400,
+        useNativeDriver: true,
+      }),
+      Animated.timing(badgeBlink, {
+        toValue: 1,
+        duration: 1000,
+        useNativeDriver: true,
+      }),
+    ])
+  ).start();
+}, [badgeBlink]);
+
   // 🔹 Charger le profil
   useEffect(() => {
     const loadProfile = async () => {
@@ -410,7 +429,14 @@ const changeRequestView = (view: "requests" | "deals" | "completed") => {
                   <Text style={{fontFamily: "Londrina", fontSize: 16, color: "#783516"}}>Lieu : {item.location}</Text>
                   <Text style={{fontFamily: "Londrina", fontSize: 16, color: "#783516"}}>Budget : {item.budget}€</Text>
                  </View>
-                 {item.hasUnread && <View style={styles.messageBadge} />}
+{item.hasUnread && (
+  <Animated.View
+    style={[
+      styles.messageBadge,
+      { opacity: badgeBlink }
+    ]}
+  />
+)}
                   </View>
 
                   {isAssignedToMe && (

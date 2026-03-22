@@ -134,16 +134,34 @@ router.post("/:id/message", auth, async (req, res) => {
 router.post("/:id/mark-read", auth, async (req, res) => {
   try {
     const conversation = await Conversation.findById(req.params.id);
-    if (!conversation) return res.status(404).json({ error: "Conversation introuvable" });
+    if (!conversation) {
+      return res.status(404).json({ error: "Conversation introuvable" });
+    }
 
-    conversation.messages.forEach(msg => {
-      if (!msg.readBy.includes(req.user.id)) msg.readBy.push(req.user.id);
-    });
+    await Conversation.updateOne(
+      { _id: conversation._id },
+      {
+        $set: {
+          lastInteractionBy: req.user.id,
+          lastInteractionAt: new Date()
+        }
+      }
+    );
 
-    conversation.lastInteractionBy = req.user.id;
-conversation.lastInteractionAt = new Date();
+    await Conversation.updateOne(
+      { _id: conversation._id },
+      {
+        $addToSet: {
+          "messages.$[msg].readBy": req.user.id
+        }
+      },
+      {
+        arrayFilters: [
+          { "msg.readBy": { $ne: req.user.id } }
+        ]
+      }
+    );
 
-    await conversation.save();
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
