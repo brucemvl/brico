@@ -6,6 +6,7 @@ import {
   Animated,
   Dimensions,
   Image,
+  ImageBackground,
   KeyboardAvoidingView,
   Linking,
   Modal,
@@ -17,7 +18,9 @@ import {
   TouchableOpacity,
   View
 } from "react-native";
+import fond from "../assets/convert_1.png";
 import { useApi } from "../services/api";
+
 
 type MessageType = {
   from: { _id: string; name: string; profileImage?: string };
@@ -343,8 +346,8 @@ if (!request) return <Text>Chargement...</Text>;
   behavior={Platform.OS === "ios" ? "padding" : "height"}
   keyboardVerticalOffset={85} // ajuste selon ton header
 >
-  <View style={{  }}>
-          <Animated.Text style={{ fontFamily: "Montt", opacity: headerOpacity, marginTop: 50, marginLeft: 10 }}>{request.title}</Animated.Text>
+  <ImageBackground source={fond}>
+          <Animated.Text style={{ fontFamily: "Montt", opacity: headerOpacity, marginTop: 50, marginLeft: 10, fontSize: 16 }}>{request.title}</Animated.Text>
       <Animated.ScrollView
         contentContainerStyle={styles.container}
         onScroll={Animated.event(
@@ -466,8 +469,8 @@ if (!request) return <Text>Chargement...</Text>;
         </View>
 
         {dealAccepted && !missionCompleted && proHasReviewed && (
-  <Text style={{ textAlign: "center", margin: 10, color: "#555" }}>
-    ✅ Avis envoyé ! En attente que le client note.
+  <Text style={{ textAlign: "center", margin: 10, color: "#555", fontFamily: "Montt" }}>
+    ✅ Avis envoyé! En attente que le client note.
   </Text>
 )}
 
@@ -579,7 +582,7 @@ if (!request) return <Text>Chargement...</Text>;
           <Image source={{ uri: previewImage }} style={{ width: "90%", height: "80%", resizeMode: "contain", borderRadius: 12 }} />
         </TouchableOpacity>
       </Modal>
-    </View>
+    </ImageBackground>
     </KeyboardAvoidingView>
   );
 }
@@ -588,15 +591,14 @@ const { width } = Dimensions.get("window");
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: "#f3f3f3",
     paddingTop: 20,
     paddingInline: 10,
-paddingBottom: 120, alignItems: "center"  },
+paddingBottom: 140, alignItems: "center"  },
   title: { fontSize: 22, fontFamily: "Montt", marginBlock: 10 },
   chatTitle: { marginTop: 20, marginBottom: 10, fontFamily: "Montt", textAlign: "center" },
-  dealBox: {  borderRadius: 8, backgroundColor: "#f3f3f3", marginVertical: 10, alignItems: "center" },
+  dealBox: {  borderRadius: 8,  marginVertical: 10, alignItems: "center" },
   dealAction: { color: "#fff", fontFamily: "Mont" },
-  dealStatus: { color: "#555", fontFamily: "Mont" },
+  dealStatus: { color: "#555", fontFamily: "Montt" },
   contactBox: { padding: 10, backgroundColor: "#e5e5e5", borderRadius: 8, marginVertical: 10, width: "100%" },
   contactText: { fontSize: 16, marginBottom: 5, color: "#007AFF", fontFamily: "Kanito" },
   messageRow: { flexDirection: "row", marginBottom: 8, alignItems: "flex-end", width: "100%" },
@@ -612,7 +614,7 @@ paddingBottom: 120, alignItems: "center"  },
   readStatus: { fontSize: 10, color: "#777", marginLeft: 5, fontFamily: "Londrina" },
   inputRow: { flexDirection: "row", alignItems: "center", marginTop: 10, width: "100%" },
   input: { borderWidth: 1, borderColor: "#ccc", borderRadius: 8, padding: 10 },
-  inputMsg: { borderWidth: 1, borderColor: "#ccc", borderRadius: 8, padding: 10, width: "78%", fontFamily: "Mont" },
+  inputMsg: { borderWidth: 1, borderColor: "#ccc", borderRadius: 8, padding: 10, width: "78%", fontFamily: "Mont", backgroundColor: "#ffffff" },
   sendButton: { padding: 10, backgroundColor: "#007AFF", borderRadius: 8, marginLeft: "2%", width: "20%", alignItems: "center", justifyContent: "center" },
   reviewButton: { backgroundColor:"#28a745", padding:12, borderRadius:8, alignItems:"center", marginTop:10, width: "80%" },
   modalOverlay: { flex:1, backgroundColor:"rgba(0,0,0,0.5)", justifyContent:"center", alignItems:"center" },

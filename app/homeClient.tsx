@@ -1,30 +1,98 @@
 import { useFocusEffect } from '@react-navigation/native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import React, { useCallback, useContext, useState } from 'react';
-import { Alert, Button, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
+import { Alert, Animated, Button, Image, ImageBackground, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import fond from "../assets/convert_1.png";
+import modifier from "../assets/icons/modifier.png";
+import trash from "../assets/icons/trash.png";
 import { AuthContext } from '../context/AuthContext';
 import { useApi } from "../services/api";
 
 type RequestType = {
   _id: string;
   category: string;
-  status: string;
+  status: "open" | "in_progress" | "completed";
   client: string;
   title: string;
   hasUnread: boolean;
   // ajoute d'autres champs selon ton modèle
 };
 
+type ProfileType = {
+    _id?: string;
+  name?: string;
+  location?: string;
+  profileImage?: { url?: string };
+  averageRating?: number;
+};
+
+const defaultAvatar = "https://res.cloudinary.com/dwjssp2pd/image/upload/v1773074497/default_client.jpg";
+
+
 export default function HomeClient() {
   const router = useRouter();
   const { logout } = useContext(AuthContext)!;
   const { apiFetch } = useApi();
+    const [profile, setProfile] = useState<ProfileType | null>(null);
+  
+    const [requestView, setRequestView] = useState<"requests" | "completed">("requests");
+    const [pickerOpen, setPickerOpen] = useState(false);
+
+   const scrollY = new Animated.Value(0);
+  
+    const headerOpacity = scrollY.interpolate({
+    inputRange: [0, 60],
+    outputRange: [0, 1],
+    extrapolate: "clamp",
+  });
+  
+  const fadeOut = scrollY.interpolate({
+    inputRange: [0, 100],
+    outputRange: [1, 0],
+    extrapolate: "clamp",
+  });
+  
+  const translateY = scrollY.interpolate({
+    inputRange: [0, 100],
+    outputRange: [0, -40],
+    extrapolate: "clamp",
+  });
+  
+  const scale = scrollY.interpolate({
+    inputRange: [0, 100],
+    outputRange: [1, 0.90],
+    extrapolate: "clamp",
+  });
+
+  const formatDate = (dateString?: string) => {
+  if (!dateString) return "";
+  return new Date(dateString).toLocaleDateString("fr-FR");
+};
+
+const formatRating = (value?: number) => {
+  if (value == null) return "0";
+  const rounded = Math.round((value + Number.EPSILON) * 10) / 10;
+  return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1);
+};
 
   const [requests, setRequests] = useState<RequestType[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const activeRequests = requests.filter(r => r.status !== "completed");
-const historyRequests = requests.filter(r => r.status === "completed");
+
+useEffect(() => {
+    const loadProfile = async () => {
+      try {
+        const data = await apiFetch("/users/me");
+        setProfile(data);
+      } catch (err) {
+        console.log("Erreur profil", err);
+      }
+    };
+    loadProfile();
+  }, []);
+
+  
 
   // 🔹 Fonction pour récupérer les demandes
 const fetchRequests = useCallback(async () => {
@@ -77,6 +145,32 @@ const fetchRequests = useCallback(async () => {
     router.replace('/');
   };
 
+  const requestViewLabels: Record<"requests" | "completed", string> = {
+  requests: "Demandes",
+  completed: "Terminées",
+};
+
+  const changeRequestView = (view: "requests" | "completed") => {
+  setRequestView(view);
+  setPickerOpen(false);
+};
+
+const filteredRequests = (() => {
+  switch (requestView) {
+    case "requests":
+      return requests.filter(
+        r => r.status === "open" || r.status === "in_progress"
+      );
+    case "completed":
+      return requests.filter(
+        r => r.status === "completed"
+      );
+    default:
+      return requests;
+  }
+})();
+
+
   if (loading) {
     return (
       <View style={styles.container}>
@@ -86,66 +180,129 @@ const fetchRequests = useCallback(async () => {
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-
-      <TouchableOpacity
-onPress={()=>router.push("/profileClient")}
+        <ImageBackground source={fond} >
+            <Animated.Text style={{ fontFamily: "Montt", opacity: headerOpacity, marginTop: 50, marginLeft: 10, fontSize: 16 }}>Accueil</Animated.Text>
+          
+    
+<Animated.ScrollView
+  contentContainerStyle={styles.container}
+  onScroll={Animated.event(
+    [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+    { useNativeDriver: false }
+  )}
+  scrollEventThrottle={6}
+> 
+<Animated.View
+  style={{
+    alignItems: "center",
+    marginBlock: 20,
+    width: "100%",
+    paddingInline: 20,
+    opacity: fadeOut,
+    transform: [{ translateY }, { scale }],
+  }}
 >
-<Text style={{marginBottom:20,color:"blue"}}>
-Modifier mon profil
-</Text>
-</TouchableOpacity>
+  <View style={{width: "100%", alignItems: "center", position: "absolute", zIndex: 99, bottom: profile?.location ? 120 : 100}}>
+  <Image
+    source={{ uri: profile?.profileImage?.url || defaultAvatar }}
+    style={styles.avatar}
+  />
+        <TouchableOpacity
+          onPress={() => router.push({ pathname: "/profileClient" })}
+          style={styles.profileButton}
+        >
+          <Image source={modifier} style={{width: 20, height: 20}}/>
+        </TouchableOpacity>
+        </View>
+        <LinearGradient colors={[ "#30a590", "#1a5b4f","#1a5b4f" ]} style={{width: "100%", alignItems: "center", paddingInline: 20, paddingTop: 54, paddingBottom: 24, borderRadius: 20, gap: 4}}>
+              <Text style={{fontFamily: "Londrinak", fontSize: 16, color: "white", letterSpacing: 0.3 }}>{profile?.name}</Text>
+              {profile?.location && 
+              <Text style={{fontFamily: "Londrinak", fontSize: 16, color: "white", letterSpacing: 0.3 }}>{profile?.location}</Text>
+              }
+              {/* ⭐ Rating pro */}
+        {typeof profile?.averageRating === "number" && (
+          <View style={{ flexDirection: "row"}}>
+            {[1,2,3,4,5].map(i => (
+              <Text key={i} style={{ fontSize: 16, color: "white" }}>
+                {i <= Math.round(profile?.averageRating ?? 0) ? "⭐" : "☆"}
+              </Text>
+            ))}
+          </View>
+        )}
+            <Text style={{fontFamily: "Mont", color: "white"}}>({formatRating(profile?.averageRating)})</Text>
+            </LinearGradient>
 
-      <Text style={styles.title}>Accueil Particulier</Text>
+</Animated.View>
       <Text style={styles.title}>Mes demandes</Text>
 
-      <Text style={styles.subtitle}>Demandes actives</Text>
+      <View style={styles.pickerWrapper}>
+        <TouchableOpacity
+          style={styles.pickerButton}
+          onPress={() => setPickerOpen(prev => !prev)}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.pickerButtonText}>
+            {requestViewLabels[requestView]}
+          </Text>
+          <Text style={styles.pickerArrow}>{pickerOpen ? "▲" : "▼"}</Text>
+        </TouchableOpacity>
+      
+        {pickerOpen && (
+          <View style={styles.pickerDropdown}>
+            {(["requests", "completed"] as const).map(option => (
+              <TouchableOpacity
+                key={option}
+                style={[
+                  styles.pickerOption,
+                  requestView === option && styles.pickerOptionActive
+                ]}
+                onPress={() => changeRequestView(option)}
+              >
+                <Text
+                  style={[
+                    styles.pickerOptionText,
+                    requestView === option && styles.pickerOptionTextActive
+                  ]}
+                >
+                  {requestViewLabels[option]}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
+      </View>
 
-{activeRequests.length === 0 ? (
+      <Text style={styles.title}>
+        {requestView === "requests"
+          ? "Demandes en cours"
+          : "Demandes terminées"}
+      </Text>
+
+      <View style={styles.requestsContainer}>
+
+{filteredRequests.length === 0 ? (
   <Text>Aucune demande active</Text>
 ) : (
-  activeRequests.map((item) => (
-    <TouchableOpacity
+  filteredRequests.map((item) => (
+    <View
       key={item._id}
-      style={{ flexDirection: "row", alignItems: "center", gap: 10 }}
-      onPress={() => router.push(`/requestDetailClient?id=${item._id}`)}
+      style={{ flexDirection: "row", alignItems: "center", gap: 10, width: "90%" }}
     >
-      <View style={styles.card}>
+      <TouchableOpacity style={styles.card} onPress={() => router.push(`/requestDetailClient?id=${item._id}`)}>
         <Text style={{ fontWeight: "bold" }}>{item.title}</Text>
         <Text>Catégorie: {item.category}</Text>
         <Text>Statut: {item.status}</Text>
 
         {item.hasUnread && <View style={styles.redDot} />}
-      </View>
+      </TouchableOpacity>
 
       <TouchableOpacity onPress={() => handleDelete(item._id)}>
-        <Text style={{ color: "red" }}>Supprimer</Text>
+        <Image source={trash} style={{height:20, width: 20}}/>
       </TouchableOpacity>
-    </TouchableOpacity>
+    </View>
   ))
 )}
-
-<Text style={styles.subtitle}>Historique</Text>
-
-{historyRequests.length === 0 ? (
-  <Text>Aucune mission terminée</Text>
-) : (
-  historyRequests.map((item) => (
-    <TouchableOpacity
-      key={item._id}
-      style={{ flexDirection: "row", alignItems: "center", gap: 10 }}
-      onPress={() => router.push(`/requestDetailClient?id=${item._id}`)}
-    >
-      <View style={styles.card}>
-        <Text style={{ fontWeight: "bold" }}>{item.title}</Text>
-        <Text>Catégorie: {item.category}</Text>
-        <Text>Statut: {item.status}</Text>
-
-        {item.hasUnread && <View style={styles.redDot} />}
-      </View>
-    </TouchableOpacity>
-  ))
-)}
+</View>
 
       <TouchableOpacity onPress={() => router.push('/createRequestForm')} style={{ marginTop: 20 }}>
         <Text style={{ color: "black", fontSize: 16 }}>+ Nouvelle Demande</Text>
@@ -153,13 +310,16 @@ Modifier mon profil
 
       <Text style={{ marginTop: 10 }}>Créer une demande, voir l'historique...</Text>
       <Button title="Déconnexion" onPress={handleLogout} />
-    </ScrollView>
+    </Animated.ScrollView>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flexGrow: 1, justifyContent: 'center', alignItems: 'center', padding: 16 },
-  title: { fontSize: 24, fontWeight: 'bold', marginBottom: 20, textAlign: 'center' },
+  container: { justifyContent: 'center', alignItems: 'center', paddingTop: 60, paddingBottom: 160 },
+    avatar: { height: 90, width: 90,  borderRadius: 45, borderWidth: 2, borderColor: "#f3f3f3" },
+    profileButton: { padding: 5, borderRadius: 50, backgroundColor: "#999999", position: "absolute", bottom: 5, right: 8, borderColor: "#f5f5f5", borderWidth: 1 },
+    title: { fontSize: 24, fontWeight: 'bold', marginBottom: 20, textAlign: 'center' },
   card: { padding: 12, marginBottom: 10, borderWidth: 1, borderRadius: 8, flex: 1 },
   redDot: {
     width: 12,
@@ -176,4 +336,64 @@ const styles = StyleSheet.create({
   marginTop: 20,
   marginBottom: 10
 },
+pickerWrapper: {
+  width: "90%",
+  marginBottom: 10,
+  zIndex: 50,
+},
+pickerButton: {
+  borderWidth: 1,
+  borderColor: "#1a5b4f",
+  borderRadius: 12,
+  paddingHorizontal: 14,
+  paddingVertical: 12,
+  backgroundColor: "#fff",
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center",
+},
+
+pickerButtonText: {
+  fontFamily: "Montt",
+  fontSize: 15,
+  color: "#333",
+},
+
+pickerArrow: {
+  fontSize: 16,
+  color: "#1a5b4f",
+  fontFamily: "Montt",
+},
+
+pickerDropdown: {
+  marginTop: 6,
+  backgroundColor: "#fff",
+  borderWidth: 1,
+  borderColor: "#d6d6d6",
+  borderRadius: 12,
+  overflow: "hidden",
+},
+
+pickerOption: {
+  paddingHorizontal: 14,
+  paddingVertical: 12,
+  borderBottomWidth: 1,
+  borderBottomColor: "#ececec",
+},
+
+pickerOptionActive: {
+  backgroundColor: "#eef8ee",
+},
+
+pickerOptionText: {
+  fontFamily: "Mont",
+  color: "#333",
+},
+
+pickerOptionTextActive: {
+  fontFamily: "Montt",
+  color: "#1a5b4f",
+},
+  requestsContainer: { width: "100%", paddingHorizontal: 20, alignItems: "center" },
+
 });

@@ -13,7 +13,7 @@ import {
   View
 } from "react-native";
 import fond from "../assets/convert_1.png";
-import modifier from "../assets/modifier.png";
+import modifier from "../assets/icons/modifier.png";
 import { useApi } from "../services/api";
 
 
@@ -278,9 +278,8 @@ const changeRequestView = (view: "requests" | "deals" | "completed") => {
 
 
   return (
-    <View>
     <ImageBackground source={fond} >
-  <Animated.Text style={{ fontFamily: "Montt", opacity: headerOpacity, marginTop: 50, marginLeft: 10 }}>Accueil</Animated.Text>
+  <Animated.Text style={{ fontFamily: "Montt", opacity: headerOpacity, marginTop: 50, marginLeft: 10, fontSize: 16 }}>Accueil</Animated.Text>
 <Animated.ScrollView
   contentContainerStyle={styles.container}
   onScroll={Animated.event(
@@ -312,22 +311,22 @@ const changeRequestView = (view: "requests" | "deals" | "completed") => {
         <Image source={modifier} style={{width: 20, height: 20}}/>
       </TouchableOpacity>
       </View>
-      <LinearGradient colors={["#1a5b4f", "#30a590" ]} style={{width: "100%", alignItems: "center", paddingInline: 20, paddingTop: 54, paddingBottom: 24, borderRadius: 20, gap: 4}}>
-      <Text style={{fontFamily: "Londrinak", fontSize: 16 }}>{profile?.name}</Text>
+      <LinearGradient colors={[ "#30a590", "#1a5b4f","#1a5b4f" ]} style={{width: "100%", alignItems: "center", paddingInline: 20, paddingTop: 54, paddingBottom: 24, borderRadius: 20, gap: 4}}>
+      <Text style={{fontFamily: "Londrinak", fontSize: 16, color: "white", letterSpacing: 0.3 }}>{profile?.name}</Text>
       {profile?.location && 
-      <Text style={{fontFamily: "Londrinak", fontSize: 16 }}>{profile?.location}</Text>
+      <Text style={{fontFamily: "Londrinak", fontSize: 16, color: "white", letterSpacing: 0.3 }}>{profile?.location}</Text>
       }
       {/* ⭐ Rating pro */}
 {typeof profile?.averageRating === "number" && (
   <View style={{ flexDirection: "row"}}>
     {[1,2,3,4,5].map(i => (
-      <Text key={i} style={{ fontSize: 16 }}>
+      <Text key={i} style={{ fontSize: 16, color: "white" }}>
         {i <= Math.round(profile?.averageRating ?? 0) ? "⭐" : "☆"}
       </Text>
     ))}
   </View>
 )}
-    <Text style={{fontFamily: "Mont"}}>({formatRating(profile?.averageRating)})</Text>
+    <Text style={{fontFamily: "Mont", color: "white"}}>({formatRating(profile?.averageRating)})</Text>
     </LinearGradient>
 
 </Animated.View>
@@ -483,12 +482,11 @@ const changeRequestView = (view: "requests" | "deals" | "completed") => {
       </TouchableOpacity>
     </Animated.ScrollView>
     </ImageBackground>
-    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { paddingTop: 60, alignItems: "center", paddingBottom: 90 },
+  container: { paddingTop: 60, alignItems: "center", paddingBottom: 160},
   center: { flex: 1, justifyContent: "center", alignItems: "center" },
   title: { fontSize: 24, fontFamily: "Montt", marginBottom: 15 },
   avatar: { height: 90, width: 90, resizeMode: "contain", borderRadius: 45, borderWidth: 2, borderColor: "#f3f3f3" },
@@ -553,7 +551,7 @@ pickerButtonText: {
 
 pickerArrow: {
   fontSize: 16,
-  color: "#3e9040",
+  color: "#1a5b4f",
   fontFamily: "Montt",
 },
 

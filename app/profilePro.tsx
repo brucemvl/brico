@@ -7,6 +7,7 @@ import {
   Alert,
   Animated,
   Image,
+  ImageBackground,
   StyleSheet,
   Text,
   TextInput,
@@ -14,7 +15,9 @@ import {
   View
 } from "react-native";
 import Autocomplete from "react-native-autocomplete-input";
+import fond from "../assets/convert_1.png";
 import { useApi } from "../services/api";
+
 
 
 const categories = ["Plomberie", "Electricité", "Peinture", "Agencement", "Carrelage", "Divers"];
@@ -301,8 +304,8 @@ Alert.alert(
   if (loading) return <ActivityIndicator size="large" />;
 
   return (
-    <View>
-        <Animated.Text style={{ fontFamily: "Montt", opacity: headerOpacity, marginTop: 55, marginLeft: 10 }}>Modifier mon Profil</Animated.Text>
+    <ImageBackground source={fond} >
+        <Animated.Text style={{ fontFamily: "Montt", opacity: headerOpacity, marginTop: 55, marginLeft: 10, fontSize: 16 }}>Modifier mon Profil</Animated.Text>
 <Animated.ScrollView
   contentContainerStyle={styles.container}
   onScroll={Animated.event(
@@ -469,7 +472,7 @@ Alert.alert(
         )}
       </View>
     </Animated.ScrollView>
-    </View>
+    </ImageBackground>
   );
 }
 

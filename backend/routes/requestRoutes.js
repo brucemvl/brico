@@ -73,39 +73,44 @@ router.get("/pro", auth, async (req, res) => {
     const conversations = await Conversation.find({ pro: proId });
 
     const requestsWithUnread = requests.map(r => {
-      const conv = conversations.find(
-        c => c.request.toString() === r._id.toString()
-      );
+  const conv = conversations.find(
+    c => c.request.toString() === r._id.toString()
+  );
 
-      const hasUnread = !!conv.lastClientUpdateAt &&
-                  (!conv.lastReadByPro || conv.lastClientUpdateAt > conv.lastReadByPro);
+  const hasUnread =
+    !!conv &&
+    !!conv.lastClientUpdateAt &&
+    (
+      !conv.lastReadByPro ||
+      new Date(conv.lastClientUpdateAt) > new Date(conv.lastReadByPro)
+    );
 
-      const myAssignment = r.assignedPros?.find(
-        ap => ap.pro.toString() === proId.toString()
-      );
+  const myAssignment = r.assignedPros?.find(
+    ap => ap.pro.toString() === proId.toString()
+  );
 
-      return {
-        _id: r._id,
-        title: r.title,
-        category: r.category,
-        location: r.location,
-        budget: r.budget,
-        status: r.status,
-        hasUnread,
-        createdAt: r.createdAt,
-        images: r.images || [],
-        assignedPros: r.assignedPros?.map(ap => ({
-          pro: ap.pro.toString(),
-          status: ap.status,
-          agreedAt: ap.agreedAt,
-          cancelledAt: ap.cancelledAt,
-          completedAt: ap.completedAt,
-          reviewByClient: ap.reviewByClient,
-          reviewByPro: ap.reviewByPro,
-        })) || [],
-        myAssignmentStatus: myAssignment?.status || null,
-      };
-    });
+  return {
+    _id: r._id,
+    title: r.title,
+    category: r.category,
+    location: r.location,
+    budget: r.budget,
+    status: r.status,
+    hasUnread,
+    createdAt: r.createdAt,
+    images: r.images || [],
+    assignedPros: r.assignedPros?.map(ap => ({
+      pro: ap.pro.toString(),
+      status: ap.status,
+      agreedAt: ap.agreedAt,
+      cancelledAt: ap.cancelledAt,
+      completedAt: ap.completedAt,
+      reviewByClient: ap.reviewByClient,
+      reviewByPro: ap.reviewByPro,
+    })) || [],
+    myAssignmentStatus: myAssignment?.status || null,
+  };
+});
 
     res.json({
       requests: requestsWithUnread,

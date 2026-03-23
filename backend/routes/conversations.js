@@ -140,11 +140,15 @@ router.post("/:id/mark-read", auth, async (req, res) => {
       return res.status(404).json({ error: "Conversation introuvable" });
     }
 
-    // 🔹 Met à jour uniquement le moment où le pro a lu la conversation
-    conversation.lastReadByPro = new Date();
-    await conversation.save();
+    await Conversation.updateOne(
+      { _id: conversation._id },
+      {
+        $set: {
+          lastReadByPro: new Date()
+        }
+      }
+    );
 
-    // Optionnel : si tu veux toujours marquer les messages comme lus
     await Conversation.updateOne(
       { _id: conversation._id },
       {
