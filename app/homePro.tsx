@@ -6,11 +6,13 @@ import React, { useCallback, useEffect, useState } from "react";
 import {
   Animated,
   Image,
+  ImageBackground,
   StyleSheet,
   Text,
   TouchableOpacity,
   View
 } from "react-native";
+import fond from "../assets/convert_1.png";
 import modifier from "../assets/modifier.png";
 import { useApi } from "../services/api";
 
@@ -277,6 +279,7 @@ const changeRequestView = (view: "requests" | "deals" | "completed") => {
 
   return (
     <View>
+    <ImageBackground source={fond} >
   <Animated.Text style={{ fontFamily: "Montt", opacity: headerOpacity, marginTop: 50, marginLeft: 10 }}>Accueil</Animated.Text>
 <Animated.ScrollView
   contentContainerStyle={styles.container}
@@ -479,6 +482,7 @@ const changeRequestView = (view: "requests" | "deals" | "completed") => {
         <Text style={{fontFamily: "Mont", color: "red"}}>Deconnexion</Text>
       </TouchableOpacity>
     </Animated.ScrollView>
+    </ImageBackground>
     </View>
   );
 }
@@ -502,18 +506,19 @@ header: {
   filtersContainer: { marginBottom: 15, flexWrap: "wrap", flexDirection: "row", gap: 6, justifyContent: "center" },
   filterButton: {
     paddingHorizontal: 10,
-    paddingVertical: 8,
     borderWidth: 1,
     borderRadius: 20,
     height: 40,
     alignItems: "center",
-    justifyContent: "center"
+    justifyContent: "center",
+    backgroundColor: "#f3f3f3"
+
   },
   filterText: {fontFamily: "Mont"},
   activeFilter: { backgroundColor: "#a4a4a4" },
 
   requestsContainer: { width: "100%", paddingHorizontal: 20, alignItems: "center" },
-  card: { borderWidth: 5, borderColor: "#1a5b4f", borderRadius: 16, marginBottom: 12, width: "100%" },
+  card: { borderWidth: 5, borderColor: "#1a5b4f", borderRadius: 16, marginBottom: 12, width: "100%", backgroundColor: "#f3f3f3" },
   cardTitle: { color: "#ffffff", fontSize: 15, marginBottom: 5, fontFamily: "Montt" },
   cardContainer: {padding: 10,  flexDirection: "row", justifyContent: "space-between", alignItems: "center"},
   skillBadge: { margin: 5, backgroundColor: "#e2db1c", padding: 8, borderRadius: 8 },
