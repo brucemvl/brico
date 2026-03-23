@@ -119,6 +119,8 @@ router.post("/:id/message", auth, async (req, res) => {
     conversation.lastInteractionAt = new Date();
     conversation.lastInteractionBy = req.user.id;
 
+    conversation.lastClientUpdateAt = new Date();
+
     await conversation.save();
     await conversation.populate("messages.from", "name profileImage");
 
@@ -138,16 +140,11 @@ router.post("/:id/mark-read", auth, async (req, res) => {
       return res.status(404).json({ error: "Conversation introuvable" });
     }
 
-    await Conversation.updateOne(
-      { _id: conversation._id },
-      {
-        $set: {
-          lastInteractionBy: req.user.id,
-          lastInteractionAt: new Date()
-        }
-      }
-    );
+    // 🔹 Met à jour uniquement le moment où le pro a lu la conversation
+    conversation.lastReadByPro = new Date();
+    await conversation.save();
 
+    // Optionnel : si tu veux toujours marquer les messages comme lus
     await Conversation.updateOne(
       { _id: conversation._id },
       {
@@ -156,9 +153,7 @@ router.post("/:id/mark-read", auth, async (req, res) => {
         }
       },
       {
-        arrayFilters: [
-          { "msg.readBy": { $ne: req.user.id } }
-        ]
+        arrayFilters: [{ "msg.readBy": { $ne: req.user.id } }]
       }
     );
 
@@ -200,6 +195,8 @@ router.post("/:id/propose-deal", auth, async (req, res) => {
 
       conversation.lastInteractionAt = new Date();
 conversation.lastInteractionBy = req.user.id;
+
+conversation.lastClientUpdateAt = new Date();
 
       await conversation.save();
 
@@ -244,6 +241,8 @@ router.post("/:id/accept-deal", auth, async (req, res) => {
 
     conversation.lastInteractionAt = new Date();
     conversation.lastInteractionBy = req.user.id;
+
+    conversation.lastClientUpdateAt = new Date();
 
     await conversation.save();
 

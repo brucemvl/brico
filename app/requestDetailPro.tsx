@@ -85,6 +85,7 @@ const [request, setRequest] = useState<RequestType>({
   const [reviewModal, setReviewModal] = useState(false);
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
+  const [proposingDeal, setProposingDeal] = useState(false);
 
   const reviewScale = useRef(new Animated.Value(1)).current;
 
@@ -173,15 +174,27 @@ const [request, setRequest] = useState<RequestType>({
     markAsRead();
   }, [request?.conversation?._id]);
 
-  const proposeDeal = async () => {
-    if (!request?.conversation?._id) return;
-    try {
-      await apiFetch(`/conversations/${request.conversation._id}/propose-deal`, { method: "POST" });
-      fetchRequest();
-    } catch (err) {
-      console.error(err);
-    }
-  };
+  const handleProposeDeal = async () => {
+  if (!request?._id || proposingDeal) return;
+
+  try {
+    setProposingDeal(true);
+
+    await apiFetch(`/requests/${request._id}/propose-deal`, {
+      method: "POST",
+    });
+
+    const updatedRequest = await apiFetch(`/requests/${request._id}`);
+    setRequest(updatedRequest);
+
+    Alert.alert("Accord proposé", "En attente de validation du client");
+  } catch (err) {
+    console.error("Erreur propose deal:", err);
+    Alert.alert("Erreur", "Impossible de proposer l'accord");
+  } finally {
+    setProposingDeal(false);
+  }
+};
 
   const acceptDeal = async () => {
     if (!request?.conversation?._id) return;
@@ -415,10 +428,24 @@ if (!request) return <Text>Chargement...</Text>;
         {/* Actions deal */}
         <View style={styles.dealBox}>
           {!clientProposed && !proProposed && !dealAccepted && (
-            <TouchableOpacity onPress={proposeDeal} style={{backgroundColor: "#007AFF", width: 160, padding: 10, alignItems: "center", justifyContent: "center", borderRadius: 20}}>
-              <Text style={styles.dealAction}>Proposer un accord</Text>
-            </TouchableOpacity>
-          )}
+  <TouchableOpacity
+    onPress={handleProposeDeal}
+    disabled={proposingDeal}
+    style={{
+      backgroundColor: proposingDeal ? "#8fb9ff" : "#007AFF",
+      width: 180,
+      padding: 10,
+      alignItems: "center",
+      justifyContent: "center",
+      borderRadius: 20
+    }}
+  >
+    <Text style={{ color: "#fff", fontFamily: "Mont" }}>
+      {proposingDeal ? "Envoi..." : "Proposer un accord"}
+    </Text>
+  </TouchableOpacity>
+)}
+
           {clientProposed && !dealAccepted && (
             <TouchableOpacity onPress={acceptDeal} style={{backgroundColor: "#007AFF", padding: 14, width: 300, alignItems: "center", justifyContent: "center", borderRadius: 20 }}>
 <Animated.Text
@@ -462,7 +489,7 @@ if (!request) return <Text>Chargement...</Text>;
 )}
 
 {dealAccepted && missionCompleted && (
-  <Text style={{ textAlign: "center", margin: 10, color: "green", fontWeight: "bold" }}>
+  <Text style={{ textAlign: "center", margin: 10, color: "green", fontFamily: "Montt" }}>
     🎉 Mission terminée !
   </Text>
 )}
@@ -571,7 +598,7 @@ paddingBottom: 120, alignItems: "center"  },
   dealAction: { color: "#fff", fontFamily: "Mont" },
   dealStatus: { color: "#555", fontFamily: "Mont" },
   contactBox: { padding: 10, backgroundColor: "#e5e5e5", borderRadius: 8, marginVertical: 10, width: "100%" },
-  contactText: { fontSize: 16, marginBottom: 5, color: "#007AFF", fontFamily: "Montt" },
+  contactText: { fontSize: 16, marginBottom: 5, color: "#007AFF", fontFamily: "Kanito" },
   messageRow: { flexDirection: "row", marginBottom: 8, alignItems: "flex-end", width: "100%" },
   myMessageRow: { justifyContent: "flex-end" },
   otherMessageRow: { justifyContent: "flex-start" },

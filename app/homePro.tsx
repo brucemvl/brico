@@ -24,6 +24,7 @@ type RequestType = {
   budget: number;
   status: "open" | "in_progress" | "completed";
   hasUnread?: boolean;
+  images?: { url: string }[];
 assignedPros?: {
   pro: string;
   status: "active" | "cancelled" | "completed";
@@ -98,6 +99,9 @@ const scale = scrollY.interpolate({
     "Londrinak": require("../assets/fonts/Londrina/LondrinaSolid-Black.ttf"), 
     "Mont": require("../assets/fonts/Montserrat/Montserrat-Regular.ttf"), 
     "Montt": require("../assets/fonts/Montserrat/Montserrat-Bold.ttf"), 
+    "Kanit": require("../assets/fonts/Kanit/Kanit-Regular.ttf"), 
+    "Kanitt": require("../assets/fonts/Kanit/Kanit-Bold.ttf"), 
+    "Kanito": require("../assets/fonts/Kanit/Kanit-Medium.ttf"), 
   });
 
   const formatDate = (dateString?: string) => {
@@ -429,6 +433,20 @@ const changeRequestView = (view: "requests" | "deals" | "completed") => {
                   <Text style={{fontFamily: "Londrina", fontSize: 16, color: "#783516"}}>Lieu : {item.location}</Text>
                   <Text style={{fontFamily: "Londrina", fontSize: 16, color: "#783516"}}>Budget : {item.budget}€</Text>
                  </View>
+                 {item.images && item.images.length > 0 && (
+  <View style={styles.thumbRow}>
+    {item.images.slice(0, 4).map((img, index) => (
+      <Image
+        key={`${item._id}-img-${index}`}
+        source={{ uri: img?.url }}
+        style={styles.thumb}
+      />
+    ))}
+
+    
+  </View>
+)}
+</View>
 {item.hasUnread && (
   <Animated.View
     style={[
@@ -437,7 +455,7 @@ const changeRequestView = (view: "requests" | "deals" | "completed") => {
     ]}
   />
 )}
-                  </View>
+                  
 
                   {isAssignedToMe && (
                     <View style={styles.acceptedBadge}>
@@ -497,12 +515,12 @@ header: {
   requestsContainer: { width: "100%", paddingHorizontal: 20, alignItems: "center" },
   card: { borderWidth: 5, borderColor: "#1a5b4f", borderRadius: 16, marginBottom: 12, width: "100%" },
   cardTitle: { color: "#ffffff", fontSize: 15, marginBottom: 5, fontFamily: "Montt" },
-  cardContainer: {padding: 15,  flexDirection: "row", justifyContent: "space-between", alignItems: "center"},
+  cardContainer: {padding: 10,  flexDirection: "row", justifyContent: "space-between", alignItems: "center"},
   skillBadge: { margin: 5, backgroundColor: "#e2db1c", padding: 8, borderRadius: 8 },
   badgeText: { fontSize: 12, color: "#1a5b4f", fontFamily: "Mont" },
   acceptedBadge: { margin: 5, backgroundColor: "#ffeeba", padding: 8, borderRadius: 8, alignItems: "center" },
 
-  messageBadge: { width: 16, height: 16, borderRadius: 8, backgroundColor: "red", marginLeft: 6 },
+  messageBadge: { width: 16, height: 16, borderRadius: 8, backgroundColor: "red", alignSelf: "flex-end", marginInline: 12 },
   categoryBadge: { width: 10, height: 10, borderRadius: 5, backgroundColor: "red", marginLeft: 4 },
   pickerWrapper: {
   width: "90%",
@@ -562,5 +580,20 @@ pickerOptionText: {
 pickerOptionTextActive: {
   fontFamily: "Montt",
   color: "#1a5b4f",
+},
+thumbRow: {
+  flexDirection: "row",
+  flexWrap: "wrap",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 4,
+  width: "34%",
+},
+
+thumb: {
+  width: 46,
+  height: 46,
+  borderRadius: 8,
+  backgroundColor: "#ddd",
 },
 });

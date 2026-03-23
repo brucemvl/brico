@@ -47,6 +47,16 @@ dealAcceptedByPro: { type: Boolean, default: false },
 lastInteractionBy: {
   type: mongoose.Schema.Types.ObjectId,
   ref: "User"
+},
+
+lastClientUpdateAt: {
+  type: Date,
+  default: null, // null si jamais aucune action
+},
+
+lastReadByPro: {
+  type: Date,
+  default: null,
 }
 
 }, { timestamps: true });

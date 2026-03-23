@@ -159,15 +159,24 @@ const [comment, setComment] = useState("");
 
   // Proposer accord
   const proposeDeal = async () => {
-    if (!conversation?._id) return;
-    try {
-      await apiFetch(`/conversations/${conversation._id}/propose-deal`, { method: "POST" });
-      Alert.alert("Accord proposé", "En attente de validation par l'autre utilisateur");
-      loadConversation();
-    } catch (err) {
-      console.log(err);
-    }
-  };
+  if (!request?._id || !conversation?.pro?._id) return;
+
+  try {
+    await apiFetch(`/requests/${request._id}/propose-deal`, {
+      method: "POST",
+      body: JSON.stringify({ proId: conversation.pro._id }),
+    });
+
+    Alert.alert("Accord proposé", "En attente de validation par l'autre utilisateur");
+    await loadConversation();
+  } catch (err) {
+    console.log(err);
+    Alert.alert(
+      "Erreur",
+      err instanceof Error ? err.message : "Impossible de proposer l'accord"
+    );
+  }
+};
 
   // Accepter accord
   const acceptDeal = async () => {

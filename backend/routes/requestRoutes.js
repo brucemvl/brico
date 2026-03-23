@@ -77,10 +77,8 @@ router.get("/pro", auth, async (req, res) => {
         c => c.request.toString() === r._id.toString()
       );
 
-      const hasUnread =
-  !!conv &&
-  !!conv.lastInteractionBy &&
-  conv.lastInteractionBy.toString() !== proId.toString();
+      const hasUnread = !!conv.lastClientUpdateAt &&
+                  (!conv.lastReadByPro || conv.lastClientUpdateAt > conv.lastReadByPro);
 
       const myAssignment = r.assignedPros?.find(
         ap => ap.pro.toString() === proId.toString()
@@ -95,6 +93,7 @@ router.get("/pro", auth, async (req, res) => {
         status: r.status,
         hasUnread,
         createdAt: r.createdAt,
+        images: r.images || [],
         assignedPros: r.assignedPros?.map(ap => ({
           pro: ap.pro.toString(),
           status: ap.status,
@@ -673,6 +672,101 @@ if (conversation) {
   } catch (err) {
     console.error("POST /requests/:id/review-complete error:", err);
     return res.status(500).json({ error: err.message });
+  }
+});
+
+//PROPOSER UN ACCORD DIRECTEMENT SANS MESSAGE
+router.post("/:id/propose-deal", auth, async (req, res) => {
+  try {
+    const request = await Request.findById(req.params.id);
+    if (!request) {
+      return res.status(404).json({ error: "Demande introuvable" });
+    }
+
+    let conversation;
+
+    if (req.user.role === "pro") {
+      conversation = await Conversation.findOne({
+        request: request._id,
+        pro: req.user.id,
+        client: request.client,
+      });
+
+      if (!conversation) {
+        conversation = new Conversation({
+          request: request._id,
+          client: request.client,
+          pro: req.user.id,
+          messages: [],
+        });
+      }
+
+      conversation.dealProposedByPro = true;
+      conversation.lastInteractionAt = new Date();
+      conversation.lastInteractionBy = req.user.id;
+
+      await conversation.save();
+
+      await createNotification({
+        userId: request.client,
+        type: "new_offer",
+        content: "Le pro propose un deal",
+        relatedRequest: request._id,
+        conversation: conversation._id,
+      });
+
+      return res.json({
+        message: "Proposition envoyée au client",
+        conversation,
+      });
+    }
+
+    if (req.user.role === "client") {
+      const { proId } = req.body;
+
+      if (!proId) {
+        return res.status(400).json({ error: "proId requis côté client" });
+      }
+
+      conversation = await Conversation.findOne({
+        request: request._id,
+        pro: proId,
+        client: req.user.id,
+      });
+
+      if (!conversation) {
+        conversation = new Conversation({
+          request: request._id,
+          client: req.user.id,
+          pro: proId,
+          messages: [],
+        });
+      }
+
+      conversation.dealProposedByClient = true;
+      conversation.lastInteractionAt = new Date();
+      conversation.lastInteractionBy = req.user.id;
+
+      await conversation.save();
+
+      await createNotification({
+        userId: proId,
+        type: "new_offer",
+        content: "Le client propose un deal",
+        relatedRequest: request._id,
+        conversation: conversation._id,
+      });
+
+      return res.json({
+        message: "Proposition envoyée au pro",
+        conversation,
+      });
+    }
+
+    return res.status(403).json({ error: "Non autorisé" });
+  } catch (err) {
+    console.error("POST /requests/:id/propose-deal error:", err);
+    res.status(500).json({ error: err.message });
   }
 });
 
