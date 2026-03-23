@@ -60,34 +60,59 @@ export default function Profile() {
 
 useEffect(() => {
   const geocode = async () => {
-  if (!user?.location) return;
+    if (!user?.location) return;
 
-  try {
-    const cleanLocation = user.location
-      .replace(/\(\d+\)/, "") // enlève (75)
-      .trim();
+    try {
+      const location = user.location.trim();
 
-    const query = `${cleanLocation}, France`;
+      // Ex: "Bagneux (92)"
+      const match = location.match(/^(.*?)\s*\((\d+)\)$/);
 
-    const res = await fetch(
-      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`
-    );
+      let query = `${location}, France`;
 
-    const data = await res.json();
+      if (match) {
+        const city = match[1].trim();
+        const dept = match[2].trim();
 
-    if (data.length > 0) {
-      setCoords({
-        latitude: parseFloat(data[0].lat),
-        longitude: parseFloat(data[0].lon)
-      });
+        query = `${city}`;
+
+        // fallback si un autre département arrive plus tard
+        if (dept === "75") query = `${city}, Paris, Île-de-France, France`;
+        if (dept === "93") query = `${city}, Seine-Saint-Denis, Île-de-France, France`;
+        if (dept === "94") query = `${city}, Val-de-Marne, Île-de-France, France`;
+        if (dept === "91") query = `${city}, Essonne, Île-de-France, France`;
+        if (dept === "77") query = `${city}, Seine-et-Marne, Île-de-France, France`;
+        if (dept === "78") query = `${city}, Yvelines, Île-de-France, France`;
+        if (dept === "95") query = `${city}, Val-d'Oise, Île-de-France, France`;
+        if (dept === "92") query = `${city}, Hauts-de-Seine, Île-de-France, France`;
+      }
+
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=fr&q=${encodeURIComponent(query)}`,
+        {
+          headers: {
+            Accept: "application/json",
+          },
+        }
+      );
+
+      const data = await res.json();
+
+      if (data.length > 0) {
+        setCoords({
+          latitude: parseFloat(data[0].lat),
+          longitude: parseFloat(data[0].lon),
+        });
+      } else {
+        console.log("Aucun résultat pour :", query);
+      }
+    } catch (err) {
+      console.log("Erreur géocodage", err);
     }
-  } catch (err) {
-    console.log("Erreur géocodage", err);
-  }
-};
+  };
 
   geocode();
-}, [user]);
+}, [user?.location]);
 
   useEffect(() => {
     const loadUser = async () => {
@@ -111,7 +136,7 @@ useEffect(() => {
 
   return (
 <View>
-  <Animated.Text style={{ fontFamily: "Montt", opacity: headerOpacity, marginTop: 50, marginLeft: 10 }}>Profil de {user?.name}</Animated.Text>
+  <Animated.Text style={{ fontFamily: "Montt", opacity: headerOpacity, marginTop: 50, marginLeft: 10, fontSize: 16 }}>Profil de {user?.name}</Animated.Text>
 <Animated.ScrollView
   contentContainerStyle={styles.container}
   onScroll={Animated.event(
@@ -237,6 +262,9 @@ useEffect(() => {
       {coords && (
 <View style={styles.section}>
 <Text style={styles.title}>Localisation</Text>
+<Text style={styles.locationText}>
+📍 {user.location}
+</Text>
 
 <MapView
 style={styles.map}
@@ -255,10 +283,6 @@ longitude: coords.longitude
 title={user.name}
 />
 </MapView>
-
-<Text style={styles.locationText}>
-📍 {user.location}
-</Text>
 
 </View>
 )}

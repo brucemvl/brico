@@ -12,6 +12,7 @@ import { useApi } from "../services/api";
 type RequestType = {
   _id: string;
   category: string;
+  budget: number,
   status: "open" | "in_progress" | "completed";
   client: string;
   title: string;
@@ -319,7 +320,7 @@ export default function HomeClient() {
         </View>
 
         <TouchableOpacity onPress={handleLogout} style={{marginBlock: 10}}>
-          <Text style={{fontFamily: "Mont", color: "red"}}>Deconnexion</Text>
+          <Text style={{fontFamily: "Mont", color: "red", fontSize: 15}}>Deconnexion</Text>
         </TouchableOpacity>
       </Animated.ScrollView>
     </ImageBackground>
