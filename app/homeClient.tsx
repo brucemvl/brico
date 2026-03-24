@@ -234,8 +234,8 @@ export default function HomeClient() {
           </LinearGradient>
 
         </Animated.View>
-        <TouchableOpacity onPress={() => router.push('/createRequestForm')} style={{ padding: 14, marginBottom: 20, backgroundColor: "#1a5b4f", borderRadius: 10 }}>
-          <Text style={{ color: "white", fontSize: 16, fontFamily: "Kanitt" }}>+ Nouvelle Demande</Text>
+        <TouchableOpacity onPress={() => router.push('/createRequestForm')} style={{ padding: 12, marginBottom: 20, backgroundColor: "#1a5b4f", borderRadius: 10 }}>
+          <Text style={{ color: "white", fontSize: 15, fontFamily: "Kanitt" }}>+ Nouvelle Demande</Text>
         </TouchableOpacity>
         <View style={styles.pickerWrapper}>
           <TouchableOpacity
@@ -288,7 +288,7 @@ export default function HomeClient() {
             filteredRequests.map((item) => (
               <View
                 key={item._id}
-                style={{ flexDirection: "row", alignItems: "center", gap: 10, width: "90%" }}
+                style={{ flexDirection: "row", alignItems: "center", gap: 10, width: "90%", justifyContent: "center" }}
               >
                 <TouchableOpacity style={{ width: "90%" }} onPress={() => router.push(`/requestDetailClient?id=${item._id}`)}>
                   <View style={styles.card}>
@@ -310,10 +310,10 @@ export default function HomeClient() {
                     </View>
                   </View>
                 </TouchableOpacity>
-
+{ item.status != "completed" &&
                 <TouchableOpacity onPress={() => handleDelete(item._id)}>
                   <Image source={trash} style={{ height: 20, width: 20 }} />
-                </TouchableOpacity>
+                </TouchableOpacity>}
               </View>
             ))
           )}
@@ -329,7 +329,7 @@ export default function HomeClient() {
 
 const styles = StyleSheet.create({
   container: { justifyContent: 'center', alignItems: 'center', paddingTop: 60, paddingBottom: 160 },
-  avatar: { height: 90, width: 90, borderRadius: 45, borderWidth: 2, borderColor: "#f3f3f3" },
+  avatar: { height: 90, width: 90, borderRadius: 45, borderWidth: 2, borderColor: "#fcfcfc" },
   profileButton: { padding: 5, borderRadius: 50, backgroundColor: "#999999", position: "absolute", bottom: 5, right: 8, borderColor: "#f5f5f5", borderWidth: 1 },
   title: { fontSize: 24, fontFamily: 'Montt', marginBottom: 20, textAlign: 'center' },
   card: { borderWidth: 5, borderColor: "#1a5b4f", borderRadius: 16, marginBottom: 12, backgroundColor: "#f3f3f3" },

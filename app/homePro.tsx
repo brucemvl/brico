@@ -266,6 +266,17 @@ const changeRequestView = (view: "requests" | "deals" | "completed") => {
     }
   };
 
+  const openProfile = () => {
+
+  router.push({
+    pathname: "/profile",
+    params: {
+      id: profile?._id,
+      
+    }
+  });
+};
+
   if (loading) {
     return (
       <View style={styles.center}>
@@ -300,10 +311,12 @@ const changeRequestView = (view: "requests" | "deals" | "completed") => {
   }}
 >
     <View style={{width: "100%", alignItems: "center", position: "absolute", zIndex: 99, bottom: profile?.location ? 120 : 100}}>
+<TouchableOpacity onPress={openProfile} >
 <Image
   source={{ uri: profile?.profileImage?.url || defaultAvatar }}
   style={styles.avatar}
 />
+</TouchableOpacity>
       <TouchableOpacity
         onPress={() => router.push({ pathname: "/profilePro" })}
         style={styles.profileButton}
@@ -489,7 +502,7 @@ const styles = StyleSheet.create({
   container: { paddingTop: 60, alignItems: "center", paddingBottom: 160},
   center: { flex: 1, justifyContent: "center", alignItems: "center" },
   title: { fontSize: 24, fontFamily: "Montt", marginBottom: 15 },
-  avatar: { height: 90, width: 90, resizeMode: "contain", borderRadius: 45, borderWidth: 2, borderColor: "#f3f3f3" },
+  avatar: { height: 90, width: 90, resizeMode: "contain", borderRadius: 45, borderWidth: 2, borderColor: "#fcfcfc" },
   profileButton: { padding: 5, borderRadius: 50, backgroundColor: "#999999", position: "absolute", bottom: 5, right: 8, borderColor: "#f5f5f5", borderWidth: 1 },
 header: {
   position: "absolute",

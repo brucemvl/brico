@@ -4,12 +4,17 @@ import React, { useEffect, useState } from "react";
 import {
   Animated,
   Image,
+  ImageBackground,
+  Modal,
+  Pressable,
   StyleSheet,
   Text,
-  View
+  View,
 } from "react-native";
 import MapView, { Marker } from "react-native-maps";
+import fond from "../assets/convert_1.png";
 import { useApi } from "../services/api";
+
 
 const defaultAvatar =
   "https://res.cloudinary.com/ton-cloud-name/image/upload/v123456/default-profile.png";
@@ -20,6 +25,36 @@ export default function Profile() {
   const userId = params.id as string;
 
   const [user, setUser] = useState<any>(null);
+
+  const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
+
+const isModalVisible = selectedImageIndex !== null;
+
+const openImageModal = (index: number) => {
+  setSelectedImageIndex(index);
+};
+
+const closeImageModal = () => {
+  setSelectedImageIndex(null);
+};
+
+const showPreviousImage = () => {
+  if (!user?.portfolio?.length || selectedImageIndex === null) return;
+
+  setSelectedImageIndex((prev) => {
+    if (prev === null) return null;
+    return prev === 0 ? user.portfolio.length - 1 : prev - 1;
+  });
+};
+
+const showNextImage = () => {
+  if (!user?.portfolio?.length || selectedImageIndex === null) return;
+
+  setSelectedImageIndex((prev) => {
+    if (prev === null) return null;
+    return prev === user.portfolio.length - 1 ? 0 : prev + 1;
+  });
+};
 
   const scrollY = new Animated.Value(0);
 
@@ -135,7 +170,7 @@ useEffect(() => {
     : user.equipment;
 
   return (
-<View>
+<ImageBackground source={fond}>
   <Animated.Text style={{ fontFamily: "Montt", opacity: headerOpacity, marginTop: 50, marginLeft: 10, fontSize: 16 }}>Profil de {user?.name}</Animated.Text>
 <Animated.ScrollView
   contentContainerStyle={styles.container}
@@ -248,13 +283,14 @@ useEffect(() => {
           <Text style={[styles.title, {paddingInline: 20}]}>Travaux réalisés</Text>
 
           <View style={styles.portfolio}>
-            {user.portfolio.map((img: any) => (
-              <Image
-                key={img._id}
-                source={{ uri: img.url }}
-                style={styles.portfolioImage}
-              />
-            ))}
+            {user.portfolio.map((img: any, index: number) => (
+  <Pressable key={img._id} onPress={() => openImageModal(index)}>
+    <Image
+      source={{ uri: img.url }}
+      style={styles.portfolioImage}
+    />
+  </Pressable>
+))}
           </View>
         </View>
       )}
@@ -311,14 +347,48 @@ title={user.name}
 )}
 
     </Animated.ScrollView>
-    </View>
+    <Modal
+  visible={isModalVisible}
+  transparent
+  animationType="fade"
+  onRequestClose={closeImageModal}
+>
+  <Pressable style={styles.modalOverlay} onPress={closeImageModal}>
+    <Pressable style={styles.modalContent} onPress={(e) => e.stopPropagation()}>
+      {selectedImageIndex !== null && user?.portfolio?.[selectedImageIndex] && (
+        <>
+          <Image
+            source={{ uri: user.portfolio[selectedImageIndex].url }}
+            style={styles.modalImage}
+          />
+
+          {user.portfolio.length > 1 && (
+            <View style={styles.modalNav}>
+              <Pressable style={styles.navButton} onPress={showPreviousImage}>
+                <Text style={styles.navButtonText}>‹</Text>
+              </Pressable>
+
+              <Text style={styles.imageCounter}>
+                {selectedImageIndex + 1} / {user.portfolio.length}
+              </Text>
+
+              <Pressable style={styles.navButton} onPress={showNextImage}>
+                <Text style={styles.navButtonText}>›</Text>
+              </Pressable>
+            </View>
+          )}
+        </>
+      )}
+    </Pressable>
+  </Pressable>
+</Modal>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
 
   container: {
-    backgroundColor: "#f3f3f3",
     paddingTop: 20,
     paddingInline: 10,
 paddingBottom: 60  },
@@ -330,7 +400,8 @@ paddingBottom: 60  },
     position: "absolute",
     zIndex: 99,
     left: 0,
-    borderWidth: 2, borderColor: "#F3F3F3"
+    borderWidth: 2,
+     borderColor: "#fcfcfc"
   },
 
   name: {
@@ -364,7 +435,7 @@ paddingBottom: 60  },
 
   text: {
     fontSize: 16,
-    color: "#444",
+    color: "#353535",
     fontFamily: "Londrina"
   },
 
@@ -393,15 +464,17 @@ paddingBottom: 60  },
   portfolio: {
     flexDirection: "row",
     flexWrap: "wrap",
-    justifyContent: "center"
+    justifyContent: "center",
+    backgroundColor: "#1a5b4f",
+    gap: 8,
+    padding: 12,
+    borderRadius: 20
   },
 
   portfolioImage: {
     width: 110,
     height: 110,
     borderRadius: 8,
-    marginRight: 10,
-    marginBottom: 10
   },
   badges:{
 flexDirection:"row",
@@ -442,12 +515,63 @@ marginTop:4
 map:{
 height:200,
 borderRadius:10,
-marginTop:10
+marginTop:10,
+borderWidth: 2,
+borderColor: "#1a5b4f"
 },
 
 locationText:{
 marginTop:8,
 color:"#666",
 fontFamily: "Mont"
+},
+modalOverlay: {
+  flex: 1,
+  backgroundColor: "rgba(0,0,0,0.65)",
+  justifyContent: "center",
+  alignItems: "center",
+  paddingHorizontal: 20,
+},
+
+modalContent: {
+  width: "100%",
+  maxWidth: 420,
+  alignItems: "center",
+  justifyContent: "center",
+},
+
+modalImage: {
+  width: "100%",
+  height: 420,
+  borderRadius: 18,
+  backgroundColor: "#fff",
+},
+
+modalNav: {
+  marginTop: 14,
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 18,
+},
+
+navButton: {
+  width: 44,
+  height: 44,
+  borderRadius: 22,
+  backgroundColor: "#1a5b4f",
+  alignItems: "center",
+  justifyContent: "center",
+},
+
+navButtonText: {
+  color: "#fff",
+  fontSize: 26,
+},
+
+imageCounter: {
+  color: "#fff",
+  fontSize: 14,
+  fontFamily: "Mont",
 }
 });
