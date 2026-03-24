@@ -88,6 +88,11 @@ const showNextImage = () => {
     extrapolate: "clamp",
   });
 
+  const formatDate = (dateString?: string) => {
+  if (!dateString) return "";
+  return new Date(dateString).toLocaleDateString("fr-FR");
+};
+
   const [coords, setCoords] = useState<{
   latitude: number;
   longitude: number;
@@ -329,7 +334,7 @@ title={user.name}
 
 {user.ratings.map((rating:any)=>(
 <View key={rating._id} style={styles.review}>
-
+<View>
 <Text style={styles.reviewStars}>
 {"⭐".repeat(rating.score)}
 </Text>
@@ -339,6 +344,8 @@ title={user.name}
 {rating.comment}
 </Text>
 )}
+</View>
+<Text style={{fontFamily: "Kanit"}}>{formatDate(rating.date)}</Text>
 
 </View>
 ))}
@@ -501,7 +508,10 @@ review:{
 marginBottom:12,
 paddingBottom:10,
 borderBottomWidth:1,
-borderColor:"#eee"
+borderColor:"#eee",
+flexDirection: "row",
+justifyContent: "space-between",
+alignItems: "baseline"
 },
 
 reviewStars:{
@@ -509,8 +519,10 @@ fontSize:16
 },
 
 reviewComment:{
-color:"#444",
-marginTop:4
+color:"#353535",
+marginTop:4,
+fontFamily: "Londrinak",
+fontSize: 15
 },
 map:{
 height:200,

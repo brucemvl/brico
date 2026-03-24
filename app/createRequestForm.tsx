@@ -7,14 +7,20 @@ import {
   Alert,
   Button,
   Image,
+  ImageBackground,
+  KeyboardAvoidingView,
+  Platform,
   ScrollView,
+  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 import Autocomplete from "react-native-autocomplete-input";
+import fond from "../assets/convert_1.png";
 import { useApi } from "../services/api";
+
 
 export default function CreateRequestForm() {
   const { apiFetch } = useApi();
@@ -118,15 +124,21 @@ const [location, setLocation] = useState("");
   };
 
   return (
-    <ScrollView style={{ padding: 20, paddingTop: 80 }}>
-      <Text>Titre*</Text>
-      <TextInput value={title} onChangeText={setTitle} style={{ borderWidth: 1, marginBottom: 10 }} />
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={20} // ajuste selon ton header
+    >
+      <ImageBackground source={fond} style={{flex: 1}}>
+    <ScrollView style={{ padding: 20, paddingTop: 120 }}>
+      <Text style={styles.title}>Titre*</Text>
+      <TextInput value={title} onChangeText={setTitle} style={styles.input} />
 
-      <Text>Description</Text>
-      <TextInput value={description} onChangeText={setDescription} multiline style={{ borderWidth: 1, marginBottom: 10 }} />
+      <Text style={styles.title}>Description</Text>
+      <TextInput value={description} onChangeText={setDescription} multiline style={styles.input} />
 
-      <Text>Catégorie*</Text>
-      <Picker selectedValue={category} onValueChange={setCategory}>
+      <Text style={styles.title}>Catégorie*</Text>
+      <Picker selectedValue={category} onValueChange={setCategory} style={{backgroundColor: "#fcfcfc", borderWidth: 1, marginBottom: 20, borderRadius: 20}}>
         <Picker.Item label="Plomberie" value="Plomberie" />
         <Picker.Item label="Peinture" value="Peinture" />
         <Picker.Item label="Agencement" value="Agencement" />
@@ -135,7 +147,7 @@ const [location, setLocation] = useState("");
         <Picker.Item label="Divers" value="Divers" />
       </Picker>
 
-      <Text>Ville*</Text>
+      <Text style={styles.title}>Ville*</Text>
 
 <Autocomplete
   data={cities}
@@ -161,10 +173,10 @@ const [location, setLocation] = useState("");
     ),
   }}
 />
-      <Text>Budget</Text>
-      <TextInput value={budget} onChangeText={setBudget} keyboardType="numeric" style={{ borderWidth: 1, marginBottom: 10 }} />
+      <Text style={styles.title}>Budget</Text>
+      <TextInput value={budget} onChangeText={setBudget} keyboardType="numeric" style={styles.input} />
 
-      <TouchableOpacity onPress={pickImages} style={{ backgroundColor: "#ddd", padding: 10, marginBottom: 10 }}>
+      <TouchableOpacity onPress={pickImages} style={{ backgroundColor: "#ddd", padding: 10, marginBottom: 20 }}>
         <Text>Ajouter des images</Text>
       </TouchableOpacity>
 
@@ -176,5 +188,22 @@ const [location, setLocation] = useState("");
 
       {loading ? <ActivityIndicator size="large" /> : <Button title="Créer la demande" onPress={handleSubmit} />}
     </ScrollView>
+    </ImageBackground>
+    </KeyboardAvoidingView>
   );
 }
+
+const styles = StyleSheet.create({
+  title: {
+    fontFamily: "Montt",
+    fontSize: 16,
+    marginBottom: 6
+  },
+  input: {
+    borderWidth: 1,
+    marginBottom: 20,
+    height: 30,
+    borderRadius: 8,
+    backgroundColor: "#fcfcfc"
+  }
+})

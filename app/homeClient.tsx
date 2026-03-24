@@ -1,4 +1,5 @@
 import { useFocusEffect } from '@react-navigation/native';
+import { useFonts } from "expo-font";
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
@@ -8,6 +9,7 @@ import modifier from "../assets/icons/modifier.png";
 import trash from "../assets/icons/trash2.png";
 import { AuthContext } from '../context/AuthContext';
 import { useApi } from "../services/api";
+
 
 type RequestType = {
   _id: string;
@@ -41,6 +43,16 @@ export default function HomeClient() {
   const [pickerOpen, setPickerOpen] = useState(false);
 
   const scrollY = new Animated.Value(0);
+
+  const [fontsLoaded] = useFonts({ 
+      "Londrina": require("../assets/fonts/Londrina/LondrinaSolid-Regular.ttf"), 
+      "Londrinak": require("../assets/fonts/Londrina/LondrinaSolid-Black.ttf"), 
+      "Mont": require("../assets/fonts/Montserrat/Montserrat-Regular.ttf"), 
+      "Montt": require("../assets/fonts/Montserrat/Montserrat-Bold.ttf"), 
+      "Kanit": require("../assets/fonts/Kanit/Kanit-Regular.ttf"), 
+      "Kanitt": require("../assets/fonts/Kanit/Kanit-Bold.ttf"), 
+      "Kanito": require("../assets/fonts/Kanit/Kanit-Medium.ttf"), 
+    });
 
   const headerOpacity = scrollY.interpolate({
     inputRange: [0, 60],
@@ -179,6 +191,8 @@ export default function HomeClient() {
       </View>
     );
   }
+
+      if (!fontsLoaded) return null;
 
   return (
     <ImageBackground source={fond} >
