@@ -15,6 +15,7 @@ import {
 } from "react-native";
 import { useApi } from "../services/api";
 
+
 type UserType = {
   _id: string;
   name: string;

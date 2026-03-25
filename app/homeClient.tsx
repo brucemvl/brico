@@ -248,7 +248,7 @@ export default function HomeClient() {
           </LinearGradient>
 
         </Animated.View>
-        <TouchableOpacity onPress={() => router.push('/createRequestForm')} style={{ padding: 12, marginBottom: 20, backgroundColor: "#1a5b4f", borderRadius: 10 }}>
+        <TouchableOpacity onPress={() => router.push('/createRequestForm')} style={{ padding: 12, marginBottom: 20, backgroundColor: "#1a5b4f", borderRadius: 14 }}>
           <Text style={{ color: "white", fontSize: 15, fontFamily: "Kanitt" }}>+ Nouvelle Demande</Text>
         </TouchableOpacity>
         <View style={styles.pickerWrapper}>

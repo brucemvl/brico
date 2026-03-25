@@ -5,7 +5,6 @@ import React, { useState } from "react";
 import {
   ActivityIndicator,
   Alert,
-  Button,
   Image,
   ImageBackground,
   KeyboardAvoidingView,
@@ -124,13 +123,14 @@ const [location, setLocation] = useState("");
   };
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      keyboardVerticalOffset={20} // ajuste selon ton header
-    >
+    
       <ImageBackground source={fond} style={{flex: 1}}>
-    <ScrollView style={{ padding: 20, paddingTop: 120 }}>
+        <KeyboardAvoidingView
+      style={{ }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={10} // ajuste selon ton header
+    >
+    <ScrollView style={{ padding: 20, paddingTop: 100 }}>
       <Text style={styles.title}>Titre*</Text>
       <TextInput value={title} onChangeText={setTitle} style={styles.input} />
 
@@ -166,18 +166,18 @@ const [location, setLocation] = useState("");
           setCities([]);
         }}
       >
-        <Text style={{ padding: 10 }}>
+        <Text style={{ padding: 10, fontFamily: "Montt" }}>
           {item.nom} ({item.departement.code})
         </Text>
       </TouchableOpacity>
     ),
   }}
 />
-      <Text style={styles.title}>Budget</Text>
+      <Text style={[styles.title, {marginTop: 15}]}>Budget</Text>
       <TextInput value={budget} onChangeText={setBudget} keyboardType="numeric" style={styles.input} />
 
-      <TouchableOpacity onPress={pickImages} style={{ backgroundColor: "#ddd", padding: 10, marginBottom: 20 }}>
-        <Text>Ajouter des images</Text>
+      <TouchableOpacity onPress={pickImages} style={{ backgroundColor: "#c8c8c8", padding: 10, marginBottom: 20, borderRadius: 8, alignItems: "center", justifyContent: "center" }}>
+        <Text style={{fontFamily: "Montt"}}>+ Ajouter des images</Text>
       </TouchableOpacity>
 
       <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
@@ -186,10 +186,11 @@ const [location, setLocation] = useState("");
         ))}
       </View>
 
-      {loading ? <ActivityIndicator size="large" /> : <Button title="Créer la demande" onPress={handleSubmit} />}
+      {loading ? <ActivityIndicator size="large" /> : <TouchableOpacity onPress={handleSubmit} style={{alignSelf: "center", marginTop: 10, backgroundColor: "#62b3e2", padding: 12, borderRadius: 20}} ><Text style={{fontFamily: "Kanitt", color: "white"}}>Créer la demande</Text></TouchableOpacity>}
     </ScrollView>
+        </KeyboardAvoidingView>
+
     </ImageBackground>
-    </KeyboardAvoidingView>
   );
 }
 
@@ -201,7 +202,7 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    marginBottom: 20,
+    marginBottom: 15,
     height: 30,
     borderRadius: 8,
     backgroundColor: "#fcfcfc"

@@ -105,13 +105,12 @@ export default function RequestImages({ request, setRequest }: { request: Reques
   };
 
   return (
-    <View style={{ marginVertical: 20 }}>
-      <Text style={styles.title}>{request.title}</Text>
+    <View style={{ marginVertical: 20, flex: 1, gap: 20, backgroundColor: "#1a5b4f", padding: 20, borderRadius: 20 }}>
 
       {uploading && (
         <View style={{ marginVertical: 10 }}>
-          <ActivityIndicator size="large" color="#007AFF" />
-          <Text style={{ textAlign: "center" }}>Chargement...</Text>
+          <ActivityIndicator size="large" color="#ffffff" />
+          <Text style={{ textAlign: "center", fontFamily: "Londrina", color: "white" }}>Chargement...</Text>
         </View>
       )}
 
@@ -120,7 +119,7 @@ export default function RequestImages({ request, setRequest }: { request: Reques
         data={request.images || []}
         keyExtractor={(item) => item.public_id || item._id}
         renderItem={({ item }) => (
-          <View style={{ marginRight: 10 }}>
+          <View style={{ margin: 5 }}>
             <TouchableOpacity onPress={() => openPreview(item.url)}>
               <Image source={{ uri: item.url }} style={styles.image} />
             </TouchableOpacity>
@@ -136,7 +135,7 @@ export default function RequestImages({ request, setRequest }: { request: Reques
       />
 
       <TouchableOpacity onPress={addImages} style={styles.uploadButton}>
-        <Text>Ajouter des images</Text>
+        <Text style={{color: "#1a5b4f", fontFamily: "Mont"}}>+ Ajouter des images</Text>
       </TouchableOpacity>
 
       {/* Modal preview */}
@@ -162,7 +161,7 @@ export default function RequestImages({ request, setRequest }: { request: Reques
 const styles = StyleSheet.create({
   title: { fontSize: 22, fontWeight: "bold", marginBottom: 10 },
   image: { width: 150, height: 150, borderRadius: 8, resizeMode: "cover" },
-  uploadButton: { backgroundColor: "#ddd", padding: 10, borderRadius: 8, marginVertical: 10, alignItems: "center" },
+  uploadButton: { backgroundColor: "#cbcbcb", padding: 10, borderRadius: 8, alignItems: "center" },
   deleteButton: { position: "absolute", top: 5, right: 5, backgroundColor: "red", padding: 5, borderRadius: 12 },
   modalBackground: { flex: 1, backgroundColor: "rgba(0,0,0,0.9)", justifyContent: "center", alignItems: "center" },
   previewImage: { width: "90%", height: "80%", resizeMode: "contain", borderRadius: 12 },
