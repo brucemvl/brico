@@ -1,9 +1,11 @@
+import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
   Alert,
   Button,
   Image,
+  ImageBackground,
   Linking,
   Modal,
   ScrollView,
@@ -13,7 +15,9 @@ import {
   TouchableOpacity,
   View
 } from "react-native";
+import fond from "../assets/convert_1.png";
 import { useApi } from "../services/api";
+
 
 
 type UserType = {
@@ -264,12 +268,9 @@ const proProposed =
 const canReview = !!currentAssignment && dealAccepted && !clientHasReviewed;
 
   return (
-    <View style={{ flex: 1, paddingTop: 40 }}>
+    <ImageBackground source={fond} style={{flex: 1, paddingBlock: 40, paddingInline: 10}}>
       {/* ACTIONS */}
       <View style={styles.actions}>
-        <TouchableOpacity style={styles.button} onPress={openProfile}>
-          <Text style={styles.buttonText}>Voir profil</Text>
-        </TouchableOpacity>
 
         {!clientProposed && !proProposed && !dealAccepted && (
           <TouchableOpacity style={styles.button} onPress={proposeDeal}>
@@ -372,15 +373,21 @@ onPress={()=>setReviewModal(false)}
 </Modal>
       
 
-      <View style={{ flexDirection: "row", alignItems: "center", padding: 10 }}>
+      <View style={{ flexDirection: "row", alignItems: "center", paddingBlock: 10, paddingInline: 20, justifyContent: "space-between" }}>
+        <View style={{flexDirection: "row", alignItems: "center"}}>
   <Image
     source={{ uri: conversation.pro?.profileImage?.url }}
     style={{ width: 50, height: 50, borderRadius: 25, marginRight: 10 }}
   />
   <Text style={{ fontSize: 18, fontWeight: "bold" }}>{conversation.pro?.name}</Text>
+  </View>
+  <TouchableOpacity style={styles.button} onPress={openProfile}>
+          <Text style={styles.buttonText}>Voir profil</Text>
+        </TouchableOpacity>
 </View>
 
        {/* MESSAGES */}
+       <LinearGradient colors={["#cecececb", "#7f7f7fec"]} style={{flex: 1, borderRadius: 20, padding: 4}}>
       <ScrollView
         ref={scrollRef}
         style={styles.messages}
@@ -440,6 +447,7 @@ const isRead = msg.readBy?.includes(otherUserId || "");
   );
 })}
       </ScrollView>
+      </LinearGradient>
 
       {/* INPUT */}
       <View style={styles.inputContainer}>
@@ -451,7 +459,7 @@ const isRead = msg.readBy?.includes(otherUserId || "");
         />
         <Button title="Envoyer" onPress={sendMessage} />
       </View>
-    </View>
+    </ImageBackground>
   );
 }
 
@@ -463,7 +471,7 @@ const styles = StyleSheet.create({
   dealAccepted: { textAlign: "center", color: "green", fontWeight: "bold", marginBottom: 5 },
   contactBox: { padding: 10, backgroundColor: "#f0f0f0", margin: 10, borderRadius: 8 },
   contactText: { fontSize: 16, marginBottom: 5 },
-  messages: { flex: 1, padding: 15 },
+  messages: {  padding: 15 },
   messageBubble: { padding: 10, borderRadius: 10, marginBottom: 8, maxWidth: "80%" },
   myMessage: { alignSelf: "flex-end", backgroundColor: "#DCF8C6" },
   otherMessage: { alignSelf: "flex-start", backgroundColor: "#eee" },

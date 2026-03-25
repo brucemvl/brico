@@ -52,6 +52,8 @@ type RequestType = {
   images?: ImageType[];
   client: UserType;
   conversations: ConversationType[];
+  createdAt?: string;
+
 };
 
 export default function RequestDetailClient() {
@@ -62,6 +64,11 @@ export default function RequestDetailClient() {
 
   const [request, setRequest] = useState<RequestType | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const formatDate = (dateString?: string) => {
+  if (!dateString) return "";
+  return new Date(dateString).toLocaleDateString("fr-FR");
+};
 
   const scrollY = new Animated.Value(0);
       
@@ -144,7 +151,7 @@ export default function RequestDetailClient() {
                     </View>
                     <View style={{flexDirection: "row-reverse", alignItems: "flex-end", gap: 5}}>
                     <Image source={{uri: request?.client?.profileImage?.url}} style={{height: 30, width: 30, borderRadius: 15}}/>
-                    <Text style={{fontSize: 15, color: "#fff", fontFamily: "Londrina"}}>{request?.client?.name}</Text>
+                    <Text style={{fontSize: 12, color: "#fff", fontFamily: "Montt"}}>{formatDate(request?.createdAt)}</Text>
                     </View>
                     </LinearGradient>
                     </Animated.View>
@@ -207,7 +214,7 @@ paddingBottom: 140,
  },
   title: { fontSize: 22, fontWeight: "bold", marginBottom: 10 },
   avatar: { width: 40, height: 40, borderRadius: 20 },
-  conversationCard: { flexDirection: "row", alignItems: "center", gap: 10, padding: 12, borderWidth: 3, borderColor: "#1a5b4f", borderRadius: 10, marginTop: 10, backgroundColor: "#F3F3F3", width: "90%" },
+  conversationCard: { flexDirection: "row", alignItems: "center", gap: 10, padding: 12, borderWidth: 4, borderColor: "#1a5b4f", borderRadius: 12, marginTop: 10, backgroundColor: "#F3F3F3", width: "90%" },
   unreadBadge: { backgroundColor: "red", borderRadius: 10, width: 20, height: 20, justifyContent: "center", alignItems: "center", marginLeft: 8 },
   unreadText: { color: "white", fontSize: 12, fontWeight: "bold" },
 });

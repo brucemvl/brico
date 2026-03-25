@@ -62,6 +62,8 @@ type RequestType = {
   assignedPros?: AssignedProType[]; // 🔹 ajouté
   reviewByClient?: boolean;
   reviewByPro?: boolean;
+  createdAt?: string;
+
 };
 
 export default function RequestDetailPro() {

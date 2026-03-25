@@ -11,7 +11,9 @@ import {
   TouchableOpacity,
   View
 } from "react-native";
+import trash from "../assets/icons/trash2.png";
 import { useApi } from "../services/api";
+
 
 type ImageType = {
   _id: string;
@@ -105,7 +107,7 @@ export default function RequestImages({ request, setRequest }: { request: Reques
   };
 
   return (
-    <View style={{ marginVertical: 20, flex: 1, gap: 20, backgroundColor: "#1a5b4f", padding: 20, borderRadius: 20 }}>
+    <View style={{ marginVertical: 20, flex: 1, gap: 20, backgroundColor: "#1a5b4f", padding: 20, borderRadius: 20, alignItems: "center" }}>
 
       {uploading && (
         <View style={{ marginVertical: 10 }}>
@@ -128,7 +130,7 @@ export default function RequestImages({ request, setRequest }: { request: Reques
               onPress={() => confirmDeleteImage(item._id)}
               style={styles.deleteButton}
             >
-              <Text style={{ color: "white", fontWeight: "bold" }}>X</Text>
+              <Image source={trash} style={{height: 20, width: 20}}/>
             </TouchableOpacity>
           </View>
         )}
@@ -161,8 +163,8 @@ export default function RequestImages({ request, setRequest }: { request: Reques
 const styles = StyleSheet.create({
   title: { fontSize: 22, fontWeight: "bold", marginBottom: 10 },
   image: { width: 150, height: 150, borderRadius: 8, resizeMode: "cover" },
-  uploadButton: { backgroundColor: "#cbcbcb", padding: 10, borderRadius: 8, alignItems: "center" },
-  deleteButton: { position: "absolute", top: 5, right: 5, backgroundColor: "red", padding: 5, borderRadius: 12 },
+  uploadButton: { backgroundColor: "#d4d4d4", padding: 10, borderRadius: 16, alignItems: "center", width: 260 },
+  deleteButton: { position: "absolute", top: 5, right: 5, backgroundColor: "white", padding: 4, borderRadius: 10 },
   modalBackground: { flex: 1, backgroundColor: "rgba(0,0,0,0.9)", justifyContent: "center", alignItems: "center" },
   previewImage: { width: "90%", height: "80%", resizeMode: "contain", borderRadius: 12 },
   closeButton: { position: "absolute", top: 40, right: 20, backgroundColor: "rgba(255,255,255,0.3)", padding: 10, borderRadius: 20 },
