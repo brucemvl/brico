@@ -1,22 +1,27 @@
+import * as Haptics from 'expo-haptics';
 import * as ImageManipulator from "expo-image-manipulator";
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
   Animated,
   Image,
   ImageBackground,
+  KeyboardAvoidingView,
+  Platform,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   View
 } from "react-native";
 import Autocomplete from "react-native-autocomplete-input";
 import fond from "../assets/convert_1.png";
 import { useApi } from "../services/api";
+
 
 
 
@@ -64,6 +69,27 @@ const [equipment, setEquipment] = useState<string[]>([]);
 
   const [locationQuery, setLocationQuery] = useState("");
   const [cities, setCities] = useState([]);
+
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+  
+    const onPressIn = () => {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      Animated.spring(scaleAnim, {
+        toValue: 1.3, 
+        useNativeDriver: true,
+        friction: 4,
+        tension: 100,
+      }).start();
+    };
+  
+    const onPressOut = () => {
+      Animated.spring(scaleAnim, {
+        toValue: 1, // Retour à la taille normale
+        useNativeDriver: true,
+        friction: 4,
+        tension: 100,
+      }).start();
+    };
 
   const containsForbiddenInfo = (text: string) => {
   const phoneRegex = /(\+?\d[\d\s.-]{7,})/;
@@ -304,7 +330,12 @@ Alert.alert(
   if (loading) return <ActivityIndicator size="large" />;
 
   return (
-    <ImageBackground source={fond} >
+    <ImageBackground source={fond} style={{ flex: 1 }} >
+      <KeyboardAvoidingView
+        style={{ paddingBottom: 40 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+         // ajuste selon ton header
+      >
         <Animated.Text style={{ fontFamily: "Montt", opacity: headerOpacity, marginTop: 55, marginLeft: 10, fontSize: 16 }}>Modifier mon Profil</Animated.Text>
 <Animated.ScrollView
   contentContainerStyle={styles.container}
@@ -348,7 +379,7 @@ Alert.alert(
 
 <View style={styles.box}>
       <Text style={{fontFamily: "Mont", color: "#ffffff"}}>Téléphone</Text>
-      <TextInput style={styles.input} value={phone} onChangeText={setPhone} />
+      <TextInput style={styles.input} value={phone} onChangeText={setPhone} keyboardType="numeric" maxLength={10} />
 </View>
 
 <View style={[styles.box, {paddingBottom: 20}]}>
@@ -405,7 +436,7 @@ Alert.alert(
       </View>
 
       <View style={styles.box}>
-      <Text style={{fontFamily: "Mont", color: "#ffffff"}}>Matériel</Text>
+      <Text style={{marginBottom: 15, fontFamily: "Mont", color: "#ffffff"}}>Matériel</Text>
 <View style={styles.skillsContainer}>
     {equipmentOptions.map((item) => (
       <TouchableOpacity
@@ -458,20 +489,31 @@ Alert.alert(
       </View>
 
       <TouchableOpacity style={[styles.addProfileButton, {marginBlock: 15, borderColor: "#2c6724", borderWidth: 1}]} onPress={handlePickPortfolioImages} >
-        <Text style={{color: "white", fontFamily: "Mont"}}>Ajouter des photos</Text>
+        <Text style={{color: "#fff", fontFamily: "Mont"}}>Ajouter des photos</Text>
       </TouchableOpacity>
       </View>
 
-      <View style={{ marginTop: 30 }}>
+      <View style={{ marginTop: 20 }}>
         {saving ? (
           <ActivityIndicator />
         ) : (
-<TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+          <TouchableWithoutFeedback
+              accessible
+            accessibilityRole="button"
+            accessibilityLabel="Enregistrer"
+            accessibilityHint={`Enregistrer les infos`}
+            onPress={handleSave}
+                onPressIn={onPressIn}
+                onPressOut={onPressOut}
+              >
+                <Animated.View style={[styles.saveButton, { transform: [{ scale: scaleAnim }] }]}>
   <Text style={styles.saveText}>Enregistrer</Text>
-</TouchableOpacity>
+  </Animated.View>
+</TouchableWithoutFeedback>
         )}
       </View>
     </Animated.ScrollView>
+    </KeyboardAvoidingView>
     </ImageBackground>
   );
 }
@@ -594,11 +636,13 @@ addProfileButton: {
 
 },
 saveButton: {
-  backgroundColor: "#42a6d5",
+  backgroundColor: "#007AFF",
   width: "100%",
   padding: 15,
   borderRadius: 25,
   alignItems: "center",
+  borderWidth: 1,
+  borderColor: "#0061ca"
 },
 
 saveText: {

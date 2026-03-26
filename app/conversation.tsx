@@ -387,7 +387,7 @@ const canReview = !!currentAssignment && dealAccepted && !clientHasReviewed;
 )}
 
 {missionCompleted && (
-  <Text style={{ textAlign: "center", margin: 10, color: "green", fontWeight:"bold" }}>
+  <Text style={{ textAlign: "center", margin: 10, color: "green", fontFamily: "Kanitt" }}>
     🎉 Mission terminée !
   </Text>
 )}

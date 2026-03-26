@@ -1,3 +1,4 @@
+import BackButton from "@/components/BackButton";
 import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams } from "expo-router";
 import React, { useEffect, useMemo, useRef, useState } from "react";
@@ -348,9 +349,10 @@ if (!request) return <Text>Chargement...</Text>;
     <KeyboardAvoidingView
   style={{ flex: 1 }}
   behavior={Platform.OS === "ios" ? "padding" : "height"}
-  keyboardVerticalOffset={85} // ajuste selon ton header
+   // ajuste selon ton header
 >
           <Animated.Text style={{ fontFamily: "Montt", opacity: headerOpacity, marginTop: 50, marginLeft: 10, fontSize: 16 }}>{request.title}</Animated.Text>
+      <BackButton />
       <Animated.ScrollView
         contentContainerStyle={styles.container}
         onScroll={Animated.event(
@@ -468,12 +470,12 @@ if (!request) return <Text>Chargement...</Text>;
           )}
 
           {proProposed && !dealAccepted && <Text style={styles.dealStatus}>⏳ Vous avez proposé un accord — en attente du client</Text>}
-          {dealAccepted && <Text style={styles.dealStatus}>✅ Accord validé</Text>}
+          {dealAccepted && <Text style={styles.dealStatus}>🤝 Accord validé</Text>}
         </View>
 
         {dealAccepted && !missionCompleted && proHasReviewed && (
-  <Text style={{ textAlign: "center", margin: 10, color: "#555", fontFamily: "Montt" }}>
-    ✅ Avis envoyé! En attente que le client note ⏳
+  <Text style={{ textAlign: "center", margin: 10, color: "#555", fontFamily: "Kanitt" }}>
+    ✅ Avis envoyé! En attente de la note du client ⏳
   </Text>
 )}
 
@@ -495,7 +497,7 @@ if (!request) return <Text>Chargement...</Text>;
 )}
 
 {dealAccepted && missionCompleted && (
-  <Text style={{ textAlign: "center", margin: 10, color: "green", fontFamily: "Montt" }}>
+  <Text style={{ textAlign: "center", margin: 10, color: "green", fontFamily: "Kanitt" }}>
     🎉 Mission terminée !
   </Text>
 )}
@@ -595,14 +597,14 @@ const { width } = Dimensions.get("window");
 
 const styles = StyleSheet.create({
   container: {
-    paddingTop: 20,
+    paddingTop: 30,
     paddingInline: 10,
 paddingBottom: 140, alignItems: "center"  },
-  title: { fontSize: 22, fontFamily: "Montt", marginBlock: 10 },
-  chatTitle: { marginTop: 20, marginBottom: 10, fontFamily: "Montt", textAlign: "center" },
+  title: { fontSize: 22, fontFamily: "Montt", marginBottom: 10 },
+  chatTitle: { marginTop: 20, marginBottom: 10, fontFamily: "Montt", textAlign: "center", fontSize: 16 },
   dealBox: {  borderRadius: 8,  marginVertical: 10, alignItems: "center" },
   dealAction: { color: "#fff", fontFamily: "Mont" },
-  dealStatus: { color: "#555", fontFamily: "Montt", fontSize: 12 },
+  dealStatus: { color: "#555", fontFamily: "Kanito" },
   contactBox: { padding: 10, backgroundColor: "#e5e5e5", borderRadius: 8, marginVertical: 10, width: "100%" },
   contactText: { fontSize: 16, marginBottom: 5, color: "#007AFF", fontFamily: "Kanito" },
   messageRow: { flexDirection: "row", marginBottom: 8, alignItems: "flex-end", width: "100%" },

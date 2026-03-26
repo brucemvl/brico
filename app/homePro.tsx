@@ -193,7 +193,7 @@ const changeRequestView = (view: "requests" | "deals" | "completed") => {
 };
 
   // 🔹 Logique de filtrage
-  const filteredRequests = (() => {
+const filteredRequests = (() => {
   let baseFiltered: RequestType[] = [];
 
   switch (requestView) {
@@ -223,16 +223,22 @@ const changeRequestView = (view: "requests" | "deals" | "completed") => {
       baseFiltered = requests;
   }
 
-  switch (activeFilter) {
-    case "skills":
-      return requestView === "requests"
+  // 🔹 filtre catégorie
+  let finalFiltered =
+    activeFilter === "skills"
+      ? requestView === "requests"
         ? baseFiltered.filter(r => skills.includes(r.category))
-        : baseFiltered;
-    case "all":
-      return baseFiltered;
-    default:
-      return baseFiltered.filter(r => r.category === activeFilter);
-  }
+        : baseFiltered
+      : activeFilter === "all"
+      ? baseFiltered
+      : baseFiltered.filter(r => r.category === activeFilter);
+
+  // 🔥 TRI PAR DATE (plus récent en haut)
+  return finalFiltered.sort((a, b) => {
+    const dateA = new Date(a.createdAt || 0).getTime();
+    const dateB = new Date(b.createdAt || 0).getTime();
+    return dateB - dateA;
+  });
 })();
 
   // 🔹 HasUnread par catégorie pour pastille rouge
@@ -491,7 +497,7 @@ const changeRequestView = (view: "requests" | "deals" | "completed") => {
       </View>
 
       <TouchableOpacity onPress={async () => { await logout(); router.replace("/"); }} style={{ marginTop: 20, padding: 8 }}>
-        <Text style={{fontFamily: "Mont", color: "red"}}>Deconnexion</Text>
+        <Text style={{fontFamily: "Kanito", color: "red", fontSize: 15}}>Deconnexion</Text>
       </TouchableOpacity>
     </Animated.ScrollView>
     </ImageBackground>
