@@ -62,7 +62,14 @@ export default function RequestImages({ request, setRequest }: { request: Reques
         body: formData,
       });
 
-      setRequest(updated);
+setRequest((prev: any) =>
+  prev
+    ? {
+        ...prev,
+        images: updated.images,
+      }
+    : prev
+);
     } catch (err) {
       console.log("Erreur ajout images:", err);
       Alert.alert("Erreur", "Impossible d'ajouter les images");

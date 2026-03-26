@@ -1,9 +1,10 @@
 import { useFocusEffect } from '@react-navigation/native';
 import { useFonts } from "expo-font";
+import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import React, { useCallback, useContext, useEffect, useState } from 'react';
-import { Alert, Animated, Image, ImageBackground, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { Alert, Animated, Image, ImageBackground, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import fond from "../assets/convert_1.png";
 import modifier from "../assets/icons/modifier.png";
 import trash from "../assets/icons/trash2.png";
@@ -43,6 +44,27 @@ export default function HomeClient() {
   const [pickerOpen, setPickerOpen] = useState(false);
 
   const scrollY = new Animated.Value(0);
+
+   const scaleAnim = useRef(new Animated.Value(1)).current;
+
+  const onPressIn = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    Animated.spring(scaleAnim, {
+      toValue: 1.3, 
+      useNativeDriver: true,
+      friction: 4,
+      tension: 100,
+    }).start();
+  };
+
+  const onPressOut = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 1, // Retour à la taille normale
+      useNativeDriver: true,
+      friction: 4,
+      tension: 100,
+    }).start();
+  };
 
   const [fontsLoaded] = useFonts({ 
       "Londrina": require("../assets/fonts/Londrina/LondrinaSolid-Regular.ttf"), 
@@ -248,9 +270,22 @@ export default function HomeClient() {
           </LinearGradient>
 
         </Animated.View>
-        <TouchableOpacity onPress={() => router.push('/createRequestForm')} style={{ padding: 12, marginBottom: 20, backgroundColor: "#1a5b4f", borderRadius: 14 }}>
-          <Text style={{ color: "white", fontSize: 15, fontFamily: "Kanitt" }}>+ Nouvelle Demande</Text>
-        </TouchableOpacity>
+        <TouchableWithoutFeedback
+    accessible
+  accessibilityRole="button"
+  accessibilityLabel="Nouvelle demande"
+  accessibilityHint="Poster une noueelle demande"
+      onPress={() => router.push('/createRequestForm')}
+      onPressIn={onPressIn}
+      onPressOut={onPressOut}
+      
+    >
+      <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
+      <LinearGradient colors={["#30a590", "#1a5b4f"]} style={{ padding: 12, marginBottom: 20, backgroundColor: "#1a5b4f", borderRadius: 14 }}>
+          <Text style={{ color: "white", fontSize: 15, fontFamily: "Kanitt" }}>+ Demande</Text>
+        </LinearGradient>
+        </Animated.View>
+        </TouchableWithoutFeedback>
         <View style={styles.pickerWrapper}>
           <TouchableOpacity
             style={styles.pickerButton}

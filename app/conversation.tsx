@@ -1,18 +1,23 @@
+import * as Haptics from 'expo-haptics';
 import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
   Alert,
+  Animated,
   Button,
   Image,
   ImageBackground,
+  KeyboardAvoidingView,
   Linking,
   Modal,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   View
 } from "react-native";
 import fond from "../assets/convert_1.png";
@@ -75,7 +80,30 @@ export default function Conversation() {
 const [rating, setRating] = useState(5);
 const [comment, setComment] = useState("");
 
+const reviewScale = useRef(new Animated.Value(1)).current;
+
   const scrollRef = useRef<ScrollView | null>(null);
+
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+
+  const onPressIn = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    Animated.spring(scaleAnim, {
+      toValue: 1.3, 
+      useNativeDriver: true,
+      friction: 4,
+      tension: 100,
+    }).start();
+  };
+
+  const onPressOut = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 1, // Retour à la taille normale
+      useNativeDriver: true,
+      friction: 4,
+      tension: 100,
+    }).start();
+  };
 
   // Charger utilisateur
   useEffect(() => {
@@ -126,6 +154,29 @@ const [comment, setComment] = useState("");
       fetchContact();
     }
   }, [dealAccepted, conversation?._id]);
+
+   useEffect(() => {
+    const animation = Animated.loop(
+      Animated.sequence([
+        Animated.timing(reviewScale, {
+          toValue: 1.06,
+          duration: 500,
+          useNativeDriver: true,
+        }),
+        Animated.timing(reviewScale, {
+          toValue: 1,
+          duration: 500,
+          useNativeDriver: true,
+        }),
+      ])
+    );
+  
+    animation.start();
+  
+    return () => {
+      animation.stop();
+    };
+  }, []);
 
   // Envoyer message
   const sendMessage = async () => {
@@ -268,8 +319,15 @@ const proProposed =
 const canReview = !!currentAssignment && dealAccepted && !clientHasReviewed;
 
   return (
-    <ImageBackground source={fond} style={{flex: 1, paddingBlock: 40, paddingInline: 10}}>
+    
+    <ImageBackground source={fond} style={{flex: 1, paddingTop: 60, paddingBottom: 30, paddingInline: 0, alignItems: "center"}}>
+      <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={85} // ajuste selon ton header
+    >
       {/* ACTIONS */}
+      
       <View style={styles.actions}>
 
         {!clientProposed && !proProposed && !dealAccepted && (
@@ -280,14 +338,22 @@ const canReview = !!currentAssignment && dealAccepted && !clientHasReviewed;
 
         {proProposed && !dealAccepted && (
           <TouchableOpacity style={styles.button} onPress={acceptDeal}>
+            <Animated.Text
+                  style={{
+                    color: "#fefefe",
+                    fontFamily: "Mont",
+                    transform: [{ scale: reviewScale }],
+                  }}
+                >
             <Text style={styles.buttonText}>Accepter accord</Text>
+            </Animated.Text>
           </TouchableOpacity>
         )}
       </View>
 
       {/* STATUT ACCORD */}
       {!dealAccepted && <Text style={styles.dealStatus}>Accord non validé — coordonnées bloquées</Text>}
-      {dealAccepted && <Text style={styles.dealAccepted}>Accord validé 🎉</Text>}
+      {dealAccepted && <Text style={styles.dealAccepted}>Accord validé 🤝</Text>}
 
       {/* COORDONNÉES */}
       {dealAccepted && contact && (
@@ -316,7 +382,7 @@ const canReview = !!currentAssignment && dealAccepted && !clientHasReviewed;
     style={styles.completeButton}
     onPress={() => setReviewModal(true)}
   >
-    <Text style={{ color: "black" }}>Terminer la mission</Text>
+    <Text style={{ color: "#fff", fontFamily: "Montt" }}>Terminer la mission</Text>
   </TouchableOpacity>
 )}
 
@@ -373,17 +439,30 @@ onPress={()=>setReviewModal(false)}
 </Modal>
       
 
-      <View style={{ flexDirection: "row", alignItems: "center", paddingBlock: 10, paddingInline: 20, justifyContent: "space-between" }}>
+      <View style={{ flexDirection: "row", alignItems: "center", paddingBlock: 10, paddingInline: 30, justifyContent: "space-between"}}>
         <View style={{flexDirection: "row", alignItems: "center"}}>
   <Image
     source={{ uri: conversation.pro?.profileImage?.url }}
     style={{ width: 50, height: 50, borderRadius: 25, marginRight: 10 }}
   />
-  <Text style={{ fontSize: 18, fontWeight: "bold" }}>{conversation.pro?.name}</Text>
+  <Text style={{ fontSize: 18, fontFamily: "Montt" }}>{conversation.pro?.name}</Text>
   </View>
-  <TouchableOpacity style={styles.button} onPress={openProfile}>
-          <Text style={styles.buttonText}>Voir profil</Text>
-        </TouchableOpacity>
+<TouchableWithoutFeedback
+    accessible
+  accessibilityRole="button"
+  accessibilityLabel="Profil"
+  accessibilityHint={`Voir le profil de ${conversation?.pro?.name}`}
+      onPress={openProfile}
+      onPressIn={onPressIn}
+      onPressOut={onPressOut}
+      
+    >
+      <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
+      <LinearGradient colors={["#30a590", "#1a5b4f"]} style={{ padding: 12, marginBottom: 20, backgroundColor: "#1a5b4f", borderRadius: 14 }}>
+                  <Text style={styles.buttonText}>Voir profil</Text>
+                  </LinearGradient>
+                  </Animated.View>
+        </TouchableWithoutFeedback>
 </View>
 
        {/* MESSAGES */}
@@ -457,27 +536,31 @@ const isRead = msg.readBy?.includes(otherUserId || "");
           placeholder="Votre message..."
           style={styles.input}
         />
-        <Button title="Envoyer" onPress={sendMessage} />
+        <TouchableOpacity onPress={sendMessage} style={styles.button}>
+          <Text style={{fontFamily: "Kanit", color: "#fff"}}>Envoyer</Text>
+        </TouchableOpacity>
       </View>
+          </KeyboardAvoidingView>
+
     </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
   actions: { flexDirection: "row", justifyContent: "space-around", padding: 10 },
-  button: { backgroundColor: "#007AFF", padding: 10, borderRadius: 8 },
-  buttonText: { color: "white", fontWeight: "bold" },
-  dealStatus: { textAlign: "center", color: "#888", marginBottom: 5 },
-  dealAccepted: { textAlign: "center", color: "green", fontWeight: "bold", marginBottom: 5 },
+  button: { backgroundColor: "#007AFF", padding: 10, borderRadius: 14 },
+  buttonText: { color: "white", fontFamily: "Mont" },
+  dealStatus: { textAlign: "center", color: "#1a5b4f", marginBottom: 5, fontFamily: "Mont" },
+  dealAccepted: { textAlign: "center", color: "green", fontFamily: "Kanito", marginBottom: 5 },
   contactBox: { padding: 10, backgroundColor: "#f0f0f0", margin: 10, borderRadius: 8 },
   contactText: { fontSize: 16, marginBottom: 5 },
   messages: {  padding: 15 },
-  messageBubble: { padding: 10, borderRadius: 10, marginBottom: 8, maxWidth: "80%" },
+  messageBubble: { padding: 10, borderRadius: 10,  maxWidth: "80%" },
   myMessage: { alignSelf: "flex-end", backgroundColor: "#DCF8C6" },
   otherMessage: { alignSelf: "flex-start", backgroundColor: "#eee" },
-  author: { fontWeight: "bold", marginBottom: 3 },
+  author: { fontFamily: "Londrinak", marginBottom: 3 },
   inputContainer: { flexDirection: "row", padding: 10 },
-  input: { flex: 1, borderWidth: 1, borderColor: "#ccc", borderRadius: 8, marginRight: 10, padding: 8 },
+  input: { flex: 1, borderWidth: 1, borderColor: "#ccc", backgroundColor: "#fff", fontFamily: "Mont", borderRadius: 8, marginRight: 10, padding: 8 },
 messageRow: {
   flexDirection: "row",
   marginBottom: 10,
@@ -489,7 +572,7 @@ myRow: {
 },
 
 otherRow: {
-  justifyContent: "flex-start"
+  justifyContent: "flex-start",
 },
 
 avatar: {
@@ -500,7 +583,8 @@ avatar: {
 },
 
 messageText: {
-  fontSize: 15
+fontFamily: "Mont",
+ letterSpacing: -0.6  
 },
 
 messageFooter: {
@@ -512,7 +596,8 @@ messageFooter: {
 time: {
   fontSize: 10,
   color: "#777",
-  marginRight: 4
+  marginRight: 4,
+  fontFamily: "Londrina"
 },
 
 readStatus: {
@@ -547,10 +632,12 @@ marginBottom:20
 },
 
 completeButton:{
-backgroundColor:"#28a745",
-padding:12,
-borderRadius:8,
+backgroundColor: "#007AFF",
+padding:10,
+borderRadius:14,
 alignItems:"center",
-margin:10
+margin:10,
+ width: 260,
+ alignSelf: "center"
 }
 });

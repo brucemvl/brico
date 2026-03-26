@@ -343,12 +343,13 @@ if (!request) return <Text>Chargement...</Text>;
   
 
   return (
-<KeyboardAvoidingView
+
+  <ImageBackground source={fond} style={{ flex: 1 }}>
+    <KeyboardAvoidingView
   style={{ flex: 1 }}
   behavior={Platform.OS === "ios" ? "padding" : "height"}
   keyboardVerticalOffset={85} // ajuste selon ton header
 >
-  <ImageBackground source={fond}>
           <Animated.Text style={{ fontFamily: "Montt", opacity: headerOpacity, marginTop: 50, marginLeft: 10, fontSize: 16 }}>{request.title}</Animated.Text>
       <Animated.ScrollView
         contentContainerStyle={styles.container}
@@ -466,13 +467,13 @@ if (!request) return <Text>Chargement...</Text>;
   </TouchableOpacity>
           )}
 
-          {proProposed && !dealAccepted && <Text style={styles.dealStatus}>Vous avez proposé un accord — en attente du client</Text>}
+          {proProposed && !dealAccepted && <Text style={styles.dealStatus}>⏳ Vous avez proposé un accord — en attente du client</Text>}
           {dealAccepted && <Text style={styles.dealStatus}>✅ Accord validé</Text>}
         </View>
 
         {dealAccepted && !missionCompleted && proHasReviewed && (
   <Text style={{ textAlign: "center", margin: 10, color: "#555", fontFamily: "Montt" }}>
-    ✅ Avis envoyé! En attente que le client note.
+    ✅ Avis envoyé! En attente que le client note ⏳
   </Text>
 )}
 
@@ -529,7 +530,7 @@ if (!request) return <Text>Chargement...</Text>;
 
         {/* Messages */}
         <Text style={styles.chatTitle}>Conversation avec {request.client.name}</Text>
-        <LinearGradient colors={["#cecece", "#8a8a8a"]} style={{padding: 5, borderRadius: 20}}>
+        <LinearGradient colors={["#cecece", "#8a8a8a"]} style={{padding: messages.length <= 0 ? 0 : 5, borderRadius: 20}}>
         {messages.map((msg, i) => {
           const isMe = msg.from._id === currentUserId;
           let status = "";
@@ -584,8 +585,9 @@ if (!request) return <Text>Chargement...</Text>;
           <Image source={{ uri: previewImage }} style={{ width: "90%", height: "80%", resizeMode: "contain", borderRadius: 12 }} />
         </TouchableOpacity>
       </Modal>
+          </KeyboardAvoidingView>
+
     </ImageBackground>
-    </KeyboardAvoidingView>
   );
 }
 
@@ -600,7 +602,7 @@ paddingBottom: 140, alignItems: "center"  },
   chatTitle: { marginTop: 20, marginBottom: 10, fontFamily: "Montt", textAlign: "center" },
   dealBox: {  borderRadius: 8,  marginVertical: 10, alignItems: "center" },
   dealAction: { color: "#fff", fontFamily: "Mont" },
-  dealStatus: { color: "#555", fontFamily: "Montt" },
+  dealStatus: { color: "#555", fontFamily: "Montt", fontSize: 12 },
   contactBox: { padding: 10, backgroundColor: "#e5e5e5", borderRadius: 8, marginVertical: 10, width: "100%" },
   contactText: { fontSize: 16, marginBottom: 5, color: "#007AFF", fontFamily: "Kanito" },
   messageRow: { flexDirection: "row", marginBottom: 8, alignItems: "flex-end", width: "100%" },
