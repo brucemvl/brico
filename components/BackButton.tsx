@@ -24,7 +24,7 @@ export default function BackButton({ style, label = "Retour" }: Props) {
 const styles = StyleSheet.create({
   button: {
     position: "absolute",
-    top: 70,
+    top: 80,
     left: 15,
     zIndex: 100,
     backgroundColor: "rgba(0, 0, 0, 0.5)",

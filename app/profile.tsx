@@ -1,3 +1,4 @@
+import BackButton from "@/components/BackButton";
 import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -177,6 +178,7 @@ useEffect(() => {
   return (
 <ImageBackground source={fond}>
   <Animated.Text style={{ fontFamily: "Montt", opacity: headerOpacity, marginTop: 50, marginLeft: 10, fontSize: 16 }}>Profil de {user?.name}</Animated.Text>
+<BackButton />
 <Animated.ScrollView
   contentContainerStyle={styles.container}
   onScroll={Animated.event(

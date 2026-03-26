@@ -1,3 +1,4 @@
+import BackButton from '@/components/BackButton';
 import * as Haptics from 'expo-haptics';
 import * as ImageManipulator from "expo-image-manipulator";
 import * as ImagePicker from "expo-image-picker";
@@ -337,6 +338,7 @@ Alert.alert(
          // ajuste selon ton header
       >
         <Animated.Text style={{ fontFamily: "Montt", opacity: headerOpacity, marginTop: 55, marginLeft: 10, fontSize: 16 }}>Modifier mon Profil</Animated.Text>
+<BackButton />
 <Animated.ScrollView
   contentContainerStyle={styles.container}
   onScroll={Animated.event(
