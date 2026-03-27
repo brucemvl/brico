@@ -153,7 +153,7 @@ export default function RequestDetailClient() {
                     </View>
                     <View style={{flexDirection: "row-reverse", alignItems: "flex-end", gap: 5}}>
                     <Image source={{uri: request?.client?.profileImage?.url}} style={{height: 30, width: 30, borderRadius: 15}}/>
-                    <Text style={{fontSize: 12, color: "#fff", fontFamily: "Montt"}}>{formatDate(request?.createdAt)}</Text>
+                    <Text style={{fontSize: 11, color: "#fff", fontFamily: "Montt"}}>{formatDate(request?.createdAt)}</Text>
                     </View>
                     </LinearGradient>
                     </Animated.View>

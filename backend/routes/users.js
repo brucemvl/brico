@@ -6,6 +6,8 @@ const upload = require("../middlewares/uploadCloudinary");
 const cloudinary = require("../config/cloudinary");
 const Conversation = require("../models/Conversation");
 const Request = require("../models/Request");
+const bcrypt = require("bcryptjs");
+
 
 // 🔹 GET /users/me → profil connecté
 router.get("/me", auth, async (req, res) => {
@@ -131,6 +133,39 @@ router.delete("/profile/pro/profile-image", auth, async (req, res) => {
     await cloudinary.uploader.destroy(user.profileImage.public_id);
 
     // supprimer dans la base
+    user.profileImage = null;
+
+    await user.save();
+
+    res.json({ message: "Photo supprimée" });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 🔹 Supprimer la photo de profil client
+router.delete("/profile/client/profile-image", auth, async (req, res) => {
+  try {
+    if (req.user.role !== "client") {
+      return res.status(403).json({ error: "Accès réservé aux clients" });
+    }
+
+    const user = await User.findById(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({ error: "Utilisateur introuvable" });
+    }
+
+    if (!user.profileImage?.public_id) {
+      return res.status(404).json({ error: "Aucune photo de profil" });
+    }
+
+    // 🔹 supprimer de cloudinary
+    await cloudinary.uploader.destroy(user.profileImage.public_id);
+
+    // 🔹 supprimer en base
     user.profileImage = null;
 
     await user.save();
@@ -347,6 +382,101 @@ if (conversation) {
 
   } catch (err) {
     console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 🔹 PUT /users/change-password
+router.put("/me/password", auth, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ error: "Champs requis" });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({ error: "Mot de passe trop court" });
+    }
+
+    const user = await User.findById(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({ error: "Utilisateur introuvable" });
+    }
+
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+
+    if (!isMatch) {
+      return res.status(400).json({ error: "Mot de passe actuel incorrect" });
+    }
+
+    user.password = await bcrypt.hash(newPassword, 10);
+
+    await user.save();
+
+    res.json({ message: "Mot de passe modifié" });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 🔹 PUT /users/change-email
+router.put("/change-email", auth, async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ error: "Email requis" });
+    }
+
+    const existing = await User.findOne({ email });
+
+    if (existing) {
+      return res.status(400).json({ error: "Email déjà utilisé" });
+    }
+
+    const user = await User.findById(req.user.id);
+    user.email = email;
+
+    await user.save();
+
+    res.json({ message: "Email modifié" });
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
+// 🔹 DELETE /users/delete-account
+router.delete("/delete-account", auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({ error: "Utilisateur introuvable" });
+    }
+
+    // 🔹 supprimer image profil
+    if (user.profileImage?.public_id) {
+      await cloudinary.uploader.destroy(user.profileImage.public_id);
+    }
+
+    // 🔹 supprimer portfolio
+    for (const img of user.portfolio || []) {
+      if (img.public_id) {
+        await cloudinary.uploader.destroy(img.public_id);
+      }
+    }
+
+    await user.deleteOne();
+
+    res.json({ message: "Compte supprimé" });
+
+  } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });

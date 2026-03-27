@@ -140,7 +140,7 @@ const [location, setLocation] = useState("");
       <TextInput value={description} onChangeText={setDescription} multiline style={styles.input} />
 
       <Text style={styles.title}>Catégorie*</Text>
-      <Picker selectedValue={category} onValueChange={setCategory} style={{backgroundColor: "#fcfcfc", borderWidth: 1, marginBottom: 20, borderRadius: 20}}>
+      <Picker selectedValue={category} onValueChange={setCategory} style={{backgroundColor: "#fcfcfc", borderWidth: 1, marginBottom: 20, borderRadius: 16}}>
         <Picker.Item label="Plomberie" value="Plomberie" />
         <Picker.Item label="Peinture" value="Peinture" />
         <Picker.Item label="Agencement" value="Agencement" />

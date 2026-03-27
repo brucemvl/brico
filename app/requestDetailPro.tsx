@@ -388,17 +388,16 @@ if (!request) return <Text>Chargement...</Text>;
         </LinearGradient>
         </Animated.View>
         {request.description &&
-        <View style={{backgroundColor: "#237163" , width: "100%", borderRadius: 20, padding: 10}}>
-        <View style={{alignItems: "center", gap: 10}}>
+        <View style={{alignItems: "center", gap: 10, flex: 1, borderBottomWidth: 1, borderBottomColor: "#7a7a7a", paddingBottom: 10, width: "100%"}}>
           <Text style={{fontFamily: "Montt", fontSize: 20, marginTop: 10, textAlign: "center"}}>Description</Text>
-          <View style={{width: "100%", padding: 12}}>
-        <Text  style={{fontFamily: "Montt", fontSize: 14, color: "#ffffff"}}>{request.description}</Text>
+          <View style={{width: "100%", paddingInline: 12, alignItems: "center"}}>
+        <Text  style={{fontFamily: "Londrina", fontSize: 16, color: "#000000"}}>{request.description}</Text>
         </View>
-        </View>
+        
 
         {/* 🔹 Images du client */}
         {request.images && request.images.length > 0 && (
-          <ScrollView horizontal style={{ marginVertical: 10,  padding: 10, borderRadius: 20, width: "100%" }} contentContainerStyle={{justifyContent: "center", alignItems: "center"}}>
+          <ScrollView horizontal style={{ marginVertical: 10,  padding: 10, borderRadius: 20, width: "100%", backgroundColor: "#1a5b4f" }} contentContainerStyle={{justifyContent: "center"}}>
             {request.images.map((img, idx) => (
               <TouchableOpacity key={idx} onPress={() => openPreview(img.url)} style={{ marginRight: 10 }}>
                 <Image source={{ uri: img.url }} style={{ width: 130, height: 130, borderRadius: 8 }} />
@@ -406,6 +405,7 @@ if (!request) return <Text>Chargement...</Text>;
             ))}
           </ScrollView>
         )}
+        
         </View>}
 
         {/* Coordonnées après accord */}

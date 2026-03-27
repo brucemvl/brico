@@ -22,16 +22,20 @@ router.get("/client", auth, async (req, res) => {
 
     const requests = await Request.find({ client: req.user.id })
   .populate("client", "name profileImage")
-  .populate("assignedPros.pro", "name profileImage");
+  .populate("assignedPros.pro", "name profileImage")
+  .sort({ createdAt: -1 }); 
 
     const conversations = await Conversation.find({ client: req.user.id });
 
     const formatted = requests.map(r => {
       const conv = conversations.find(c => c.request.toString() === r._id.toString());
       const hasUnread =
-        conv &&
-        conv.lastInteractionBy &&
-        conv.lastInteractionBy.toString() !== req.user.id;
+  conv &&
+  conv.messages?.some(
+    msg =>
+      msg.from.toString() !== req.user.id &&
+      !msg.readBy?.includes(req.user.id)
+  );
       return { ...r.toObject(), hasUnread };
     });
 
@@ -130,6 +134,7 @@ router.get("/:id", auth, async (req, res) => {
     const request = await Request.findById(req.params.id)
   .populate("client", "name profileImage")
   .populate("assignedPros.pro", "name profileImage");
+  
 
     if (!request) return res.status(404).json({ error: "Demande introuvable" });
 
@@ -144,12 +149,13 @@ router.get("/:id", auth, async (req, res) => {
 
          // 🔹 Marquer la conversation comme lue
   await Conversation.updateMany(
-    { request: req.params.id, client: req.user.id },
-    {
-      lastInteractionBy: req.user.id,
-      lastInteractionAt: new Date()
+  { request: req.params.id, client: req.user.id },
+  {
+    $addToSet: {
+      "messages.$[].readBy": req.user.id
     }
-  );
+  }
+);
 
       return res.json({ ...request.toObject(), conversations });
     }

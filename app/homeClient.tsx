@@ -7,6 +7,7 @@ import React, { useCallback, useContext, useEffect, useRef, useState } from 'rea
 import { Alert, Animated, Image, ImageBackground, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import fond from "../assets/convert_1.png";
 import modifier from "../assets/icons/modifier.png";
+import settings from "../assets/icons/settings.png";
 import trash from "../assets/icons/trash2.png";
 import { AuthContext } from '../context/AuthContext';
 import { useApi } from "../services/api";
@@ -219,8 +220,9 @@ export default function HomeClient() {
   return (
     <ImageBackground source={fond} >
       <Animated.Text style={{ fontFamily: "Montt", opacity: headerOpacity, marginTop: 50, marginLeft: 10, fontSize: 16 }}>Accueil</Animated.Text>
-
-
+      <TouchableOpacity onPress={() => router.push({ pathname: "/settings" })} style={{position: "absolute", top: 70, right: 15, zIndex: 99}}>
+      <Image source={settings} style={{height: 40, width: 40, }} />
+      </TouchableOpacity>
       <Animated.ScrollView
         contentContainerStyle={styles.container}
         onScroll={Animated.event(
@@ -229,6 +231,7 @@ export default function HomeClient() {
         )}
         scrollEventThrottle={6}
       >
+        
         <Animated.View
           style={{
             alignItems: "center",
@@ -282,7 +285,7 @@ export default function HomeClient() {
     >
       <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
       <LinearGradient colors={["#30a590", "#1a5b4f"]} style={{ padding: 12, marginBottom: 20, backgroundColor: "#1a5b4f", borderRadius: 14 }}>
-          <Text style={{ color: "white", fontSize: 15, fontFamily: "Kanitt" }}>+ Demande</Text>
+          <Text style={{ color: "white", fontSize: 12, fontFamily: "Kanitt" }}>+ DEMANDE</Text>
         </LinearGradient>
         </Animated.View>
         </TouchableWithoutFeedback>
@@ -337,7 +340,7 @@ export default function HomeClient() {
             filteredRequests.map((item) => (
               <View
                 key={item._id}
-                style={{ flexDirection: "row", alignItems: "center", gap: 10, width: "90%", justifyContent: "center" }}
+                style={{ flexDirection: "row", alignItems: "center", gap: 10, width: "95%", justifyContent: "center" }}
               >
                 <TouchableOpacity style={{ width: "90%" }} onPress={() => router.push(`/requestDetailClient?id=${item._id}`)}>
                   <View style={styles.card}>
@@ -350,8 +353,8 @@ export default function HomeClient() {
                     <View style={styles.cardContainer}>
                       <View style={{ gap: 4 }}>
 
-                        <Text style={{ fontFamily: "Londrina", fontSize: 16, color: "#783516" }}>Catégorie : {item.category}</Text>
-                        <Text style={{ fontFamily: "Londrina", fontSize: 16, color: "#783516" }}>Budget : {item.budget}€</Text>
+                        <Text style={{ fontFamily: "Londrina", fontSize: 16, color: "#000000" }}>Catégorie : {item.category}</Text>
+                        <Text style={{ fontFamily: "Londrina", fontSize: 16, color: "#000000" }}>Budget : {item.budget}€</Text>
                         <Text style={{fontFamily: "Kanito", color: item.status === "open" ? "green" : item.status === "in_progress" ? "#bdc008" : "red"}}>Statut: {item.status === "open" ? "Ouvert" : item.status === "in_progress" ? "En cours" : "Terminé"}</Text>
                       </View>
 

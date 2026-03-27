@@ -86,7 +86,7 @@ export default function Welcome() {
           },
         ]}
       >
-        <Text style={styles.title}>BricoConnect</Text>
+        <Text style={styles.title}>Briconnect</Text>
         <Text style={styles.subtitle}>
           Trouvez le bon professionnel en quelques secondes.
         </Text>

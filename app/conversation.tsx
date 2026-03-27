@@ -471,6 +471,7 @@ style={styles.inputModal}
 </View>
 
        {/* MESSAGES */}
+       {conversation.messages.length > 0 &&
        <LinearGradient colors={["#cecececb", "#7f7f7fec"]} style={{flex: 1, borderRadius: 20, padding: 4}}>
       <ScrollView
         ref={scrollRef}
@@ -532,6 +533,7 @@ const isRead = msg.readBy?.includes(otherUserId || "");
 })}
       </ScrollView>
       </LinearGradient>
+}
 
       {/* INPUT */}
       <View style={styles.inputContainer}>

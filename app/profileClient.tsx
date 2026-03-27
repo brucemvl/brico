@@ -1,20 +1,24 @@
+import * as Haptics from 'expo-haptics';
 import * as ImageManipulator from "expo-image-manipulator";
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
-    ActivityIndicator,
-    Alert,
-    Button,
-    Image,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  Animated,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View
 } from "react-native";
 import Autocomplete from "react-native-autocomplete-input";
+
+
 
 
 import { useApi } from "../services/api";
@@ -36,6 +40,27 @@ export default function ProfileClient() {
 
   const [locationQuery, setLocationQuery] = useState("");
     const [cities, setCities] = useState([]);
+
+    const scaleAnim = useRef(new Animated.Value(1)).current;
+      
+        const onPressIn = () => {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          Animated.spring(scaleAnim, {
+            toValue: 1.3, 
+            useNativeDriver: true,
+            friction: 4,
+            tension: 100,
+          }).start();
+        };
+      
+        const onPressOut = () => {
+          Animated.spring(scaleAnim, {
+            toValue: 1, // Retour à la taille normale
+            useNativeDriver: true,
+            friction: 4,
+            tension: 100,
+          }).start();
+        };
 
   const fetchProfile = async () => {
 
@@ -79,6 +104,32 @@ export default function ProfileClient() {
     if(!result.canceled){
       setProfileImage({uri: result.assets[0].uri});
     }
+  };
+
+  //SUPPRIMER LA PHOTO DE PROFIL
+    const handleDeleteProfileImage = async () => {
+    Alert.alert(
+      "Supprimer la photo",
+      "Voulez-vous supprimer votre photo de profil ?",
+      [
+        { text: "Annuler", style: "cancel" },
+        {
+          text: "Supprimer",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await apiFetch("/users/profile/client/profile-image", {
+                method: "DELETE",
+              });
+  
+              setProfileImage(null);
+            } catch {
+              Alert.alert("Erreur", "Impossible de supprimer la photo");
+            }
+          },
+        },
+      ]
+    );
   };
 
   const searchCities = async (text) => {
@@ -161,8 +212,9 @@ export default function ProfileClient() {
 <ScrollView contentContainerStyle={styles.container}>
 
 <Text style={styles.title}>Mon Profil</Text>
+<View style={{alignItems: "center", gap: 10, backgroundColor: "#d8d8d8", padding: 15, borderRadius: 20, width: "100%"}}>
 
-<Text>Photo</Text>
+<Text style={{fontFamily: "Mont"}}>Photo</Text>
 
 {profileImage && (
 <Image
@@ -171,24 +223,42 @@ style={styles.profileImage}
 />
 )}
 
-<Button title="Choisir une photo" onPress={pickImage}/>
+<View style={{flexDirection: "row", gap: 20}}>
+      <TouchableOpacity style={styles.addProfileButton} onPress={pickImage} >
+        <Text style={{ color: "white", fontFamily: "Mont" }}>Choisir une photo</Text>
+        </TouchableOpacity>
+      <TouchableOpacity
+      style={styles.deleteProfileButton}
+      onPress={handleDeleteProfileImage}
+    >
+      <Text style={{ color: "white", fontFamily: "Mont" }}>Supprimer</Text>
+    </TouchableOpacity>
+    </View>
+</View>
 
-<Text>Nom</Text>
-<TextInput style={styles.input} value={name} onChangeText={setName}/>
+<View style={styles.box}>
+      <Text style={{fontFamily: "Mont", color: "#ffffff"}}>Nom</Text>
+      <TextInput style={styles.input} value={name} onChangeText={setName} />
+</View>
 
-<Text>Email</Text>
-<TextInput style={styles.input} value={email} editable={false}/>
+<View style={styles.box}>
+      <Text style={{fontFamily: "Mont", color: "#ffffff"}}>Email</Text>
+      <TextInput style={styles.input} value={email} editable={false} />
+</View>
 
-<Text>Téléphone</Text>
-<TextInput style={styles.input} value={phone} onChangeText={setPhone}/>
+<View style={styles.box}>
+      <Text style={{fontFamily: "Mont", color: "#ffffff"}}>Téléphone</Text>
+      <TextInput style={styles.input} value={phone} onChangeText={setPhone} keyboardType="numeric" maxLength={10} />
+</View>
 
-<Text>Localisation</Text>
-<Autocomplete
+<View style={[styles.box, {paddingBottom: 20}]}>
+      <Text style={{fontFamily: "Mont", color: "#ffffff", marginBottom: 10}}>Localisation</Text>
+      <Autocomplete
         data={cities}
         value={locationQuery}
         onChangeText={searchCities}
         placeholder="Tapez une ville..."
-        style={{width: 300}}
+        style={{width: 300, fontFamily: "Londrina"}}
       
         flatListProps={{
           keyExtractor: (item) => item.code,
@@ -208,20 +278,27 @@ style={styles.profileImage}
           ),
         }}
       />
+      </View>
 
-<Text>Description</Text>
-<TextInput
-style={[styles.input,{height:100}]}
-value={description}
-onChangeText={setDescription}
-multiline
-/>
 
-<View style={{marginTop:30}}>
+
+<View style={{marginTop:20}}>
 
 {saving
 ? <ActivityIndicator/>
-: <Button title="Enregistrer" onPress={handleSave}/>
+: <TouchableWithoutFeedback
+              accessible
+            accessibilityRole="button"
+            accessibilityLabel="Enregistrer"
+            accessibilityHint={`Enregistrer les infos`}
+            onPress={handleSave}
+                onPressIn={onPressIn}
+                onPressOut={onPressOut}
+              >
+                <Animated.View style={[styles.saveButton, { transform: [{ scale: scaleAnim }] }]}>
+  <Text style={styles.saveText}>Enregistrer</Text>
+  </Animated.View>
+</TouchableWithoutFeedback>
 }
 
 </View>
@@ -236,28 +313,70 @@ container:{
 alignItems:"center",
 paddingTop:60,
 paddingHorizontal:30,
-paddingBottom:80
+paddingBottom:80,
+gap: 15
 },
 
 title:{
 fontSize:22,
-fontWeight:"bold",
-marginBottom:20
+fontFamily:"Montt",
 },
 
-input:{
-borderWidth:1,
-borderRadius:8,
-padding:10,
-marginBottom:15,
-width:"100%"
-},
+input: {
+    borderWidth: 1,
+    borderColor: "#ffffff",
+    borderRadius: 8,
+    padding: 10,
+    marginBottom: 15,
+    marginTop: 10,
+    width: "100%",
+    backgroundColor: "#ffffff",
+    
+    fontFamily: "Londrina",
+    fontSize: 15
+  },
+box: {
+backgroundColor: "#247868",
+width: "100%",
+alignItems: "center",
+justifyContent: "center",
+padding: 8,
+borderRadius: 20
+  },
 
 profileImage:{
-width:120,
-height:120,
-borderRadius:60,
-marginBottom:15
-}
+width:90,
+height:90,
+borderRadius:45,
+marginBottom:10
+},
+ deleteProfileButton: {
+  
+  backgroundColor: "#c03939",
+  padding: 10,
+  borderRadius: 20,
+},
+addProfileButton: {
+  
+  backgroundColor: "#72ca66",
+  padding: 10,
+  borderRadius: 20,
+
+},
+saveButton: {
+  backgroundColor: "#007AFF",
+  width: "100%",
+  padding: 15,
+  borderRadius: 25,
+  alignItems: "center",
+  borderWidth: 1,
+  borderColor: "#0061ca"
+},
+
+saveText: {
+  color: "white",
+  fontFamily: "Montt",
+  fontSize: 16,
+},
 
 });
