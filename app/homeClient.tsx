@@ -369,7 +369,7 @@ export default function HomeClient() {
         </View>
 
         <TouchableOpacity onPress={handleLogout} style={{marginBlock: 10}}>
-          <Text style={{fontFamily: "Mont", color: "red", fontSize: 15}}>Deconnexion</Text>
+          <Text style={{fontFamily: "Kanito", color: "red", fontSize: 15}}>Deconnexion</Text>
         </TouchableOpacity>
       </Animated.ScrollView>
     </ImageBackground>

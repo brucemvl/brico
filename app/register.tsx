@@ -1,6 +1,6 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useContext, useState } from 'react';
-import { ActivityIndicator, Alert, Button, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { AuthContext } from '../context/AuthContext';
 
 export default function Register() {
@@ -90,27 +90,33 @@ export default function Register() {
         {loading ? (
           <ActivityIndicator size="large" color="#007AFF" />
         ) : (
-          <Button title="Créer mon compte" onPress={handleRegister} />
+          <TouchableOpacity onPress={handleRegister} style={{backgroundColor: "#007AFF", padding: 10, borderRadius: 12, marginBlock: 10}} >
+            <Text style={{color: "#fff", fontFamily: "Mont", fontSize: 16}}>Créer mon compte</Text>
+          </TouchableOpacity>
         )}
       </View>
 
       {!loading && (
-        <Button
-          title="Déjà un compte ? Se connecter"
+        <TouchableOpacity
+          
           onPress={() => router.push({ pathname: '/login', params: { role } })}
-        />
+        >
+          <Text style={{color: "#007AFF", fontFamily: "Mont" }}>Déà un compte? Se connecter</Text>
+        </TouchableOpacity>
       )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', padding: 20 },
-  title: { fontSize: 24, marginBottom: 20, fontWeight: 'bold', textAlign: 'center' },
+  container: { flex: 1, justifyContent: 'center', padding: 20, alignItems: "center" },
+  title: { fontSize: 20, marginBottom: 20, fontFamily: "Montt", textAlign: 'center' },
   input: {
     borderWidth: 1,
     padding: 10,
     marginBottom: 15,
     borderRadius: 6,
+    fontFamily: "Mont",
+    width: 300
   },
 });

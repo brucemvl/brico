@@ -1,3 +1,4 @@
+import BackButton from "@/components/BackButton";
 import { useFocusEffect } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -14,6 +15,7 @@ import {
 import fond from "../assets/convert_1.png";
 import RequestImages from "../components/RequestImages"; // ← notre nouveau composant
 import { useApi } from "../services/api";
+
 
 
 type UserType = {
@@ -120,7 +122,7 @@ export default function RequestDetailClient() {
   return (
       <ImageBackground source={fond} style={{flex: 1}}>
               <Animated.Text style={{ fontFamily: "Montt", opacity: headerOpacity, marginTop: 50, marginLeft: 10, fontSize: 16 }}>{request.title}</Animated.Text>
-    
+    <BackButton />
 <Animated.ScrollView
         contentContainerStyle={styles.container}
         onScroll={Animated.event(
@@ -207,7 +209,7 @@ export default function RequestDetailClient() {
 }
 
 const styles = StyleSheet.create({
-  container: {paddingTop: 20,
+  container: {paddingTop: 40,
     paddingInline: 10,
 paddingBottom: 140,
  alignItems: "center"

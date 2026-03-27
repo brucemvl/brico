@@ -273,7 +273,7 @@ const [request, setRequest] = useState<RequestType>({
   const animation = Animated.loop(
     Animated.sequence([
       Animated.timing(reviewScale, {
-        toValue: 1.12,
+        toValue: 1.08,
         duration: 500,
         useNativeDriver: true,
       }),
@@ -469,8 +469,8 @@ if (!request) return <Text>Chargement...</Text>;
   </TouchableOpacity>
           )}
 
-          {proProposed && !dealAccepted && <Text style={styles.dealStatus}>⏳ Vous avez proposé un accord — en attente du client</Text>}
-          {dealAccepted && <Text style={styles.dealStatus}>🤝 Accord validé</Text>}
+          {proProposed && !dealAccepted && <Text style={styles.dealStatus}>Vous avez proposé un accord — en attente du client ⏳</Text>}
+          {dealAccepted && <Text style={[styles.dealStatus, {color: "green"}]}>🤝 Accord validé</Text>}
         </View>
 
         {dealAccepted && !missionCompleted && proHasReviewed && (
@@ -597,7 +597,7 @@ const { width } = Dimensions.get("window");
 
 const styles = StyleSheet.create({
   container: {
-    paddingTop: 30,
+    paddingTop: 40,
     paddingInline: 10,
 paddingBottom: 140, alignItems: "center"  },
   title: { fontSize: 22, fontFamily: "Montt", marginBottom: 10 },
@@ -622,7 +622,7 @@ paddingBottom: 140, alignItems: "center"  },
   input: { borderWidth: 1, borderColor: "#ccc", borderRadius: 8, padding: 10 },
   inputMsg: { borderWidth: 1, borderColor: "#ccc", borderRadius: 8, padding: 10, width: "78%", fontFamily: "Mont", backgroundColor: "#ffffff" },
   sendButton: { padding: 10, backgroundColor: "#007AFF", borderRadius: 8, marginLeft: "2%", width: "20%", alignItems: "center", justifyContent: "center" },
-  reviewButton: { backgroundColor:"#28a745", padding:12, borderRadius:8, alignItems:"center", marginTop:10, width: "80%" },
+  reviewButton: { backgroundColor: "#007AFF", padding:12, borderRadius:8, alignItems:"center", marginTop:10, width: "80%" },
   modalOverlay: { flex:1, backgroundColor:"rgba(0,0,0,0.5)", justifyContent:"center", alignItems:"center" },
   modal: { backgroundColor:"white", padding:20, borderRadius:10, width:"85%", gap: 10 },
   modalTitle: { fontSize:18, fontFamily: "Montt", marginBottom:15, textAlign:"center" },

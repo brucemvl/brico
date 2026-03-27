@@ -1,3 +1,4 @@
+import BackButton from '@/components/BackButton';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -5,7 +6,6 @@ import React, { useEffect, useRef, useState } from "react";
 import {
   Alert,
   Animated,
-  Button,
   Image,
   ImageBackground,
   KeyboardAvoidingView,
@@ -22,6 +22,7 @@ import {
 } from "react-native";
 import fond from "../assets/convert_1.png";
 import { useApi } from "../services/api";
+
 
 
 
@@ -320,14 +321,15 @@ const canReview = !!currentAssignment && dealAccepted && !clientHasReviewed;
 
   return (
     
-    <ImageBackground source={fond} style={{flex: 1, paddingTop: 60, paddingBottom: 30, paddingInline: 0, alignItems: "center"}}>
+    <ImageBackground source={fond} style={{flex: 1}}>
+            <BackButton />
+
       <KeyboardAvoidingView
       style={{ flex: 1 }}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
-      keyboardVerticalOffset={85} // ajuste selon ton header
     >
       {/* ACTIONS */}
-      
+      <ScrollView style={{flexGrow: 1, paddingInline: 20}} contentContainerStyle={{paddingBottom: 40, paddingTop: 100}}>
       <View style={styles.actions}>
 
         {!clientProposed && !proProposed && !dealAccepted && (
@@ -358,6 +360,11 @@ const canReview = !!currentAssignment && dealAccepted && !clientHasReviewed;
       {/* COORDONNÉES */}
       {dealAccepted && contact && (
         <View style={styles.contactBox}>
+          <View style={{alignItems: "center"}}>
+            <Image source={{ uri: conversation.pro?.profileImage?.url }} style={{height: 35, width: 35, borderRadius: 18}} />
+            <Text style={{fontFamily: "Londrina"}}>{conversation.pro?.name}</Text>
+          </View>
+          <View>
           {contact.phone && (
             <TouchableOpacity onPress={() => Linking.openURL(`tel:${contact.phone}`)}>
               <Text style={styles.contactText}>📞 {contact.phone}</Text>
@@ -368,6 +375,7 @@ const canReview = !!currentAssignment && dealAccepted && !clientHasReviewed;
               <Text style={styles.contactText}>✉️ {contact.email}</Text>
             </TouchableOpacity>
           )}
+          </View>
         </View>
       )}
 
@@ -382,7 +390,7 @@ const canReview = !!currentAssignment && dealAccepted && !clientHasReviewed;
     style={styles.completeButton}
     onPress={() => setReviewModal(true)}
   >
-    <Text style={{ color: "#fff", fontFamily: "Montt" }}>Terminer la mission</Text>
+    <Text style={{ color: "#fff", fontFamily: "Mont" }}>Terminer la mission</Text>
   </TouchableOpacity>
 )}
 
@@ -421,18 +429,15 @@ Comment s'est passée la mission ?
 placeholder="Votre commentaire (optionnel)"
 value={comment}
 onChangeText={setComment}
-style={styles.input}
+style={styles.inputModal}
 />
 
-<Button
-title="Envoyer l'avis"
-onPress={submitReview}
-/>
-
-<Button
-title="Fermer"
-onPress={()=>setReviewModal(false)}
-/>
+<TouchableOpacity style={styles.sendReview} onPress={submitReview}>
+                <Text style={{color:"#fff", fontFamily: "Mont"}}>Envoyer l'avis</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={()=>setReviewModal(false)}>
+                <Text style={{textAlign:"center", marginTop:10, fontFamily: "Mont"}}>Fermer</Text>
+              </TouchableOpacity>
 
 </View>
 </View>
@@ -458,7 +463,7 @@ onPress={()=>setReviewModal(false)}
       
     >
       <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
-      <LinearGradient colors={["#30a590", "#1a5b4f"]} style={{ padding: 12, marginBottom: 20, backgroundColor: "#1a5b4f", borderRadius: 14 }}>
+      <LinearGradient colors={["#30a590", "#1a5b4f"]} style={{ padding: 8, marginBottom: 20, backgroundColor: "#1a5b4f", borderRadius: 14 }}>
                   <Text style={styles.buttonText}>Voir profil</Text>
                   </LinearGradient>
                   </Animated.View>
@@ -540,6 +545,7 @@ const isRead = msg.readBy?.includes(otherUserId || "");
           <Text style={{fontFamily: "Kanit", color: "#fff"}}>Envoyer</Text>
         </TouchableOpacity>
       </View>
+      </ScrollView>
           </KeyboardAvoidingView>
 
     </ImageBackground>
@@ -549,11 +555,11 @@ const isRead = msg.readBy?.includes(otherUserId || "");
 const styles = StyleSheet.create({
   actions: { flexDirection: "row", justifyContent: "space-around", padding: 10 },
   button: { backgroundColor: "#007AFF", padding: 10, borderRadius: 14 },
-  buttonText: { color: "white", fontFamily: "Mont" },
+  buttonText: { color: "white", fontFamily: "Mont", fontSize: 13 },
   dealStatus: { textAlign: "center", color: "#1a5b4f", marginBottom: 5, fontFamily: "Mont" },
   dealAccepted: { textAlign: "center", color: "green", fontFamily: "Kanito", marginBottom: 5 },
-  contactBox: { padding: 10, backgroundColor: "#f0f0f0", margin: 10, borderRadius: 8 },
-  contactText: { fontSize: 16, marginBottom: 5 },
+  contactBox: { padding: 10, backgroundColor: "#dfdfdf", margin: 10, borderRadius: 8, flexDirection: "row", alignItems: "center", gap: 20 },
+  contactText: { fontSize: 16, marginBottom: 5, fontFamily: "Kanito", color: "#007AFF" },
   messages: {  padding: 15 },
   messageBubble: { padding: 10, borderRadius: 10,  maxWidth: "80%" },
   myMessage: { alignSelf: "flex-end", backgroundColor: "#DCF8C6" },
@@ -561,7 +567,10 @@ const styles = StyleSheet.create({
   author: { fontFamily: "Londrinak", marginBottom: 3 },
   inputContainer: { flexDirection: "row", padding: 10 },
   input: { flex: 1, borderWidth: 1, borderColor: "#ccc", backgroundColor: "#fff", fontFamily: "Mont", borderRadius: 8, marginRight: 10, padding: 8 },
-messageRow: {
+inputModal: {
+  borderColor: "#ccc", backgroundColor: "#fff", fontFamily: "Mont", padding: 8, borderWidth: 1, borderRadius: 8
+},
+  messageRow: {
   flexDirection: "row",
   marginBottom: 10,
   alignItems: "flex-end"
@@ -620,7 +629,7 @@ width:"85%"
 
 modalTitle:{
 fontSize:18,
-fontWeight:"bold",
+fontFamily: "Montt",
 marginBottom:15,
 textAlign:"center"
 },
@@ -630,6 +639,8 @@ flexDirection:"row",
 justifyContent:"center",
 marginBottom:20
 },
+  sendReview: { backgroundColor:"#007AFF", padding:12, borderRadius:8, alignItems:"center" },
+
 
 completeButton:{
 backgroundColor: "#007AFF",

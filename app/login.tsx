@@ -1,6 +1,6 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useContext, useState } from 'react';
-import { ActivityIndicator, Alert, Button, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { AuthContext } from '../context/AuthContext';
 
 export default function Login() {
@@ -57,7 +57,7 @@ export default function Login() {
         Connexion {role === 'pro' ? 'Professionnel' : 'Particulier'}
       </Text>
       <Text style={styles.subtitle}>
-        {role === 'pro' ? 'Rejoignez la plateforme et recevez des missions' : 'Trouvez rapidement un professionnel qualifié'}
+        {role === 'pro' ? 'Rejoignez la plateforme et recevez des missions' : 'Trouvez rapidement un bricoleur qualifié'}
       </Text>
 
       <TextInput
@@ -83,28 +83,32 @@ export default function Login() {
         {loading ? (
           <ActivityIndicator size="large" color="#007AFF" />
         ) : (
-          <Button title="Se connecter" onPress={handleLogin} />
+          <TouchableOpacity onPress={handleLogin} style={{backgroundColor: "#007AFF", padding: 10, borderRadius: 12, marginBlock: 10}} >
+            <Text style={{color: "#fff", fontFamily: "Mont", fontSize: 16}}>Se connecter</Text>
+          </TouchableOpacity>
         )}
       </View>
 
       {!loading && (
-        <Button
-          title="Créer un compte"
+        <TouchableOpacity
           onPress={() => router.push({ pathname: '/register', params: { role } })}
-        />
+        >
+          <Text style={{color: "#007AFF", fontFamily: "Mont" }}>Créer un compte</Text>
+        </TouchableOpacity>
       )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', padding: 20 },
-  title: { fontSize: 24, marginBottom: 20, textAlign: 'center' },
-  subtitle : {fontSize: 20, textAlign: "center", marginBottom: 20},
+  container: { flex: 1, justifyContent: 'center', padding: 20, alignItems: "center" },
+  title: { fontSize: 24, marginBottom: 20, textAlign: 'center', fontFamily: "Montt" },
+  subtitle : {fontSize: 16, textAlign: "center", marginBottom: 20, fontFamily: "Montt"},
   input: {
     borderWidth: 1,
     padding: 10,
     marginBottom: 15,
     borderRadius: 6,
+    width: 300, fontFamily: "Mont"
   },
 });

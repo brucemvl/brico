@@ -1,3 +1,4 @@
+import BackButton from "@/components/BackButton";
 import { Picker } from "@react-native-picker/picker";
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
@@ -125,12 +126,13 @@ const [location, setLocation] = useState("");
   return (
     
       <ImageBackground source={fond} style={{flex: 1}}>
+        <BackButton />
         <KeyboardAvoidingView
-      style={{ }}
+      style={{ flex: 1 }}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       keyboardVerticalOffset={10} // ajuste selon ton header
     >
-    <ScrollView style={{ padding: 20, paddingTop: 100 }}>
+    <ScrollView style={{ padding: 20, paddingTop: 120 }}>
       <Text style={styles.title}>Titre*</Text>
       <TextInput value={title} onChangeText={setTitle} style={styles.input} />
 
@@ -186,7 +188,7 @@ const [location, setLocation] = useState("");
         ))}
       </View>
 
-      {loading ? <ActivityIndicator size="large" /> : <TouchableOpacity onPress={handleSubmit} style={{alignSelf: "center", marginTop: 10, backgroundColor: "#62b3e2", padding: 12, borderRadius: 20}} ><Text style={{fontFamily: "Kanitt", color: "white"}}>Créer la demande</Text></TouchableOpacity>}
+      {loading ? <ActivityIndicator size="large" /> : <TouchableOpacity onPress={handleSubmit} style={{alignSelf: "center", marginTop: 10, backgroundColor: "#007AFF", padding: 12, borderRadius: 20}} ><Text style={{fontFamily: "Kanitt", color: "white"}}>Créer la demande</Text></TouchableOpacity>}
     </ScrollView>
         </KeyboardAvoidingView>
 
