@@ -236,8 +236,8 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     padding: 10,
     borderRadius: 8,
-    marginBottom: 10,
-    fontFamily: "Londrina"
+    marginBottom: 15,
+    fontFamily: "Mont"
   },
   button: {
     backgroundColor: "#72ca66",
@@ -253,7 +253,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#c03939",
     padding: 15,
     borderRadius: 25,
-    alignItems: "center"
+    alignItems: "center",
   },
   deleteText: {
     color: "white",

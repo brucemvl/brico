@@ -380,7 +380,7 @@ const canReview = !!currentAssignment && dealAccepted && !clientHasReviewed;
       )}
 
 {dealAccepted && !missionCompleted && clientHasReviewed && (
-  <Text style={{ textAlign: "center", margin: 10, color: "#555" }}>
+  <Text style={{ textAlign: "center", margin: 10, color: "#555", fontFamily: "Kanito" }}>
     ✅ Avis envoyé ! En attente que le pro note.
   </Text>
 )}
@@ -452,6 +452,7 @@ style={styles.inputModal}
   />
   <Text style={{ fontSize: 18, fontFamily: "Montt" }}>{conversation.pro?.name}</Text>
   </View>
+  <View style={{alignItems: "center", justifyContent: "center", marginTop: 20}}>
 <TouchableWithoutFeedback
     accessible
   accessibilityRole="button"
@@ -462,12 +463,13 @@ style={styles.inputModal}
       onPressOut={onPressOut}
       
     >
-      <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
+      <Animated.View style={{ transform: [{ scale: scaleAnim }], alignItems: "center", justifyContent: "center" }}>
       <LinearGradient colors={["#30a590", "#1a5b4f"]} style={{ padding: 8, marginBottom: 20, backgroundColor: "#1a5b4f", borderRadius: 14 }}>
                   <Text style={styles.buttonText}>Voir profil</Text>
                   </LinearGradient>
                   </Animated.View>
         </TouchableWithoutFeedback>
+        </View>
 </View>
 
        {/* MESSAGES */}
@@ -641,7 +643,7 @@ flexDirection:"row",
 justifyContent:"center",
 marginBottom:20
 },
-  sendReview: { backgroundColor:"#007AFF", padding:12, borderRadius:8, alignItems:"center" },
+  sendReview: { backgroundColor:"#007AFF", padding:12, borderRadius:8, alignItems:"center", marginBlock: 10 },
 
 
 completeButton:{

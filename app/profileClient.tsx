@@ -1,3 +1,4 @@
+import BackButton from '@/components/BackButton';
 import * as Haptics from 'expo-haptics';
 import * as ImageManipulator from "expo-image-manipulator";
 import * as ImagePicker from "expo-image-picker";
@@ -8,7 +9,9 @@ import {
   Alert,
   Animated,
   Image,
-  ScrollView,
+  ImageBackground,
+  KeyboardAvoidingView,
+  Platform,
   StyleSheet,
   Text,
   TextInput,
@@ -17,6 +20,8 @@ import {
   View
 } from "react-native";
 import Autocomplete from "react-native-autocomplete-input";
+import fond from "../assets/convert_1.png";
+
 
 
 
@@ -42,6 +47,14 @@ export default function ProfileClient() {
     const [cities, setCities] = useState([]);
 
     const scaleAnim = useRef(new Animated.Value(1)).current;
+
+    const scrollY = new Animated.Value(0);
+      
+        const headerOpacity = scrollY.interpolate({
+        inputRange: [0, 100],
+        outputRange: [0, 1],
+        extrapolate: "clamp",
+      });
       
         const onPressIn = () => {
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -209,8 +222,22 @@ export default function ProfileClient() {
 
   return(
 
-<ScrollView contentContainerStyle={styles.container}>
-
+<ImageBackground source={fond} style={{ flex: 1 }} >
+      <KeyboardAvoidingView
+        style={{ paddingBottom: 40 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+         // ajuste selon ton header
+      >
+        <Animated.Text style={{ fontFamily: "Montt", opacity: headerOpacity, marginTop: 55, marginLeft: 10, fontSize: 16 }}>Modifier mon Profil</Animated.Text>
+<BackButton />
+<Animated.ScrollView
+  contentContainerStyle={styles.container}
+  onScroll={Animated.event(
+    [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+    { useNativeDriver: false }
+  )}
+  scrollEventThrottle={6}
+> 
 <Text style={styles.title}>Mon Profil</Text>
 <View style={{alignItems: "center", gap: 10, backgroundColor: "#d8d8d8", padding: 15, borderRadius: 20, width: "100%"}}>
 
@@ -239,11 +266,6 @@ style={styles.profileImage}
 <View style={styles.box}>
       <Text style={{fontFamily: "Mont", color: "#ffffff"}}>Nom</Text>
       <TextInput style={styles.input} value={name} onChangeText={setName} />
-</View>
-
-<View style={styles.box}>
-      <Text style={{fontFamily: "Mont", color: "#ffffff"}}>Email</Text>
-      <TextInput style={styles.input} value={email} editable={false} />
 </View>
 
 <View style={styles.box}>
@@ -303,15 +325,17 @@ style={styles.profileImage}
 
 </View>
 
-</ScrollView>
-  );
+</Animated.ScrollView>
+    </KeyboardAvoidingView>
+    </ImageBackground>
+      );
 }
 
 const styles = StyleSheet.create({
 
 container:{
 alignItems:"center",
-paddingTop:60,
+paddingTop:40,
 paddingHorizontal:30,
 paddingBottom:80,
 gap: 15

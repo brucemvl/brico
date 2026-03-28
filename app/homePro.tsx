@@ -14,7 +14,9 @@ import {
 } from "react-native";
 import fond from "../assets/convert_1.png";
 import modifier from "../assets/icons/modifier.png";
+import settings from "../assets/icons/settings.png";
 import { useApi } from "../services/api";
+
 
 
 
@@ -297,6 +299,9 @@ const filteredRequests = (() => {
   return (
     <ImageBackground source={fond} >
   <Animated.Text style={{ fontFamily: "Montt", opacity: headerOpacity, marginTop: 50, marginLeft: 10, fontSize: 16 }}>Accueil</Animated.Text>
+<TouchableOpacity onPress={() => router.push({ pathname: "/settings" })} style={{position: "absolute", top: 70, right: 15, zIndex: 99}}>
+      <Image source={settings} style={{height: 40, width: 40, }} />
+      </TouchableOpacity>
 <Animated.ScrollView
   contentContainerStyle={styles.container}
   onScroll={Animated.event(

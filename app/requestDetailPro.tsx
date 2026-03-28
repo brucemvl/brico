@@ -407,7 +407,9 @@ if (!request) return <Text>Chargement...</Text>;
         )}
         
         </View>}
-
+{proProposed && !dealAccepted && <Text style={styles.dealStatus}>Vous avez proposé un accord — en attente du client ⏳</Text>}
+          {dealAccepted && <Text style={[styles.dealStatus, {color: "green"}]}>🤝 Accord validé</Text>}
+          
         {/* Coordonnées après accord */}
         {dealAccepted && contact && (
           <View style={styles.contactBox}>
@@ -469,8 +471,7 @@ if (!request) return <Text>Chargement...</Text>;
   </TouchableOpacity>
           )}
 
-          {proProposed && !dealAccepted && <Text style={styles.dealStatus}>Vous avez proposé un accord — en attente du client ⏳</Text>}
-          {dealAccepted && <Text style={[styles.dealStatus, {color: "green"}]}>🤝 Accord validé</Text>}
+          
         </View>
 
         {dealAccepted && !missionCompleted && proHasReviewed && (

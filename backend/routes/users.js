@@ -315,32 +315,33 @@ router.get("/:id", auth, async (req, res) => {
 //AVIS
 router.post("/:id/review", auth, async (req, res) => {
   try {
-
     const { score, comment, requestId } = req.body;
 
+    // 🔹 Vérifier user cible (le pro noté)
     const user = await User.findById(req.params.id);
-
     if (!user) {
       return res.status(404).json({ error: "Utilisateur introuvable" });
     }
 
+    // 🔹 Vérifier la demande
     const request = await Request.findById(requestId);
-
     if (!request) {
       return res.status(404).json({ error: "Demande introuvable" });
     }
 
-    const alreadyRated = user.ratings.find(
-      r =>
-        r.fromUser.toString() === req.user.id &&
-        r.request.toString() === requestId
-    );
+    // 🔴 NOUVELLE SÉCURITÉ : empêcher plusieurs avis pour UNE demande
+    const existingReview = await User.findOne({
+      "ratings.fromUser": req.user.id,
+      "ratings.request": requestId
+    });
 
-    if (alreadyRated) {
-      return res.status(400).json({ error: "Avis déjà donné" });
+    if (existingReview) {
+      return res.status(400).json({
+        error: "Vous avez déjà donné un avis pour cette demande"
+      });
     }
 
-    // 🔹 Ajouter le rating
+    // 🔹 Ajouter le rating au pro
     user.ratings.push({
       fromUser: req.user.id,
       request: requestId,
@@ -365,20 +366,22 @@ router.post("/:id/review", auth, async (req, res) => {
       request.status = "completed";
     }
 
+    // 🔹 Mettre à jour la dernière interaction conversation
     const conversation = await Conversation.findOne({ request: requestId });
 
-if (conversation) {
-  conversation.lastInteractionAt = new Date();
-  conversation.lastInteractionBy = req.user.id;
-  await conversation.save();
+    if (conversation) {
+      conversation.lastInteractionAt = new Date();
+      conversation.lastInteractionBy = req.user.id;
+      await conversation.save();
+    }
 
+    // 🔹 Sauvegarde de la request
     await request.save();
 
     res.json({
       message: "Avis enregistré",
       requestStatus: request.status
     });
-  }
 
   } catch (err) {
     console.error(err);
