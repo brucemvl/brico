@@ -15,7 +15,7 @@ const router = useRouter()
 
 
   const apiFetch = async (url: string, options: RequestInit = {}) => {
-    console.log("API CALL:", url);
+    
     if (loading) {
     // attend que le contexte charge user
     await new Promise(resolve => setTimeout(resolve, 50));
@@ -28,34 +28,37 @@ const router = useRouter()
 
     try {
       const res = await fetch(`http://192.168.1.11:5000/api${url}`, {
+        
         ...options,
         headers: {
           "Content-Type": "application/json",
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
           ...options.headers,
         },
+        
       });
 
-      let data: any = {};
-      try {
-        data = await res.json();
-      } catch {
-        data = { error: "Réponse non JSON" };
-      }
+const text = await res.text();
 
-      if (res.status === 401) {
-  await logout();
-  router.replace("/login");
-  return; // ne throw plus d’erreur, le router s’occupe de tout
+let data;
+
+try {
+  data = JSON.parse(text);
+} catch (e) {
+  console.log("Réponse non JSON :", text);
+  throw new Error("Réponse non JSON");
 }
 
-      if (!res.ok) {
-        throw new Error(data.error || data.message || "Erreur API");
-      }
+if (!res.ok) {
+  console.log("STATUS:", res.status);
+  console.log("BODY:", text);
+  throw new Error(text);
+}
 
-      return data;
+return data;
     } catch (err: any) {
       console.error("API ERROR:", err.message);
+      
       throw new Error(err.message || "Erreur inconnue");
     }
   };

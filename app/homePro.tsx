@@ -13,8 +13,11 @@ import {
   View
 } from "react-native";
 import fond from "../assets/convert_1.png";
+import msg from "../assets/icons/enveloppe.png";
 import modifier from "../assets/icons/modifier.png";
+import notifIcon from "../assets/icons/notif.png";
 import settings from "../assets/icons/settings.png";
+import star from "../assets/icons/star.png";
 import { useApi } from "../services/api";
 
 
@@ -28,6 +31,7 @@ type RequestType = {
   budget: number;
   status: "open" | "in_progress" | "completed";
   hasUnread?: boolean;
+  unreadType?: "message" | "deal" | "update" | "review";
   images?: { url: string }[];
 assignedPros?: {
   pro: string;
@@ -97,6 +101,17 @@ const scale = scrollY.interpolate({
   outputRange: [1, 0.90],
   extrapolate: "clamp",
 });
+
+const getUnreadIcon = (type?: string) => {
+  switch (type) {
+    case "message":
+      return msg;
+      case "review":
+      return star;
+    default:
+      return notifIcon;
+  }
+};
 
   const [fontsLoaded] = useFonts({ 
     "Londrina": require("../assets/fonts/Londrina/LondrinaSolid-Regular.ttf"), 
@@ -474,9 +489,10 @@ const filteredRequests = (() => {
 )}
 </View>
 {item.hasUnread && (
-  <Animated.View
+  <Animated.Image
+    source={getUnreadIcon(item.unreadType)}
     style={[
-      styles.messageBadge,
+      styles.unreadIcon,
       { opacity: badgeBlink }
     ]}
   />
@@ -623,4 +639,10 @@ thumb: {
   borderRadius: 8,
   backgroundColor: "#ddd",
 },
+unreadIcon: {
+  width: 24,
+  height: 24,
+  alignSelf: "flex-end",
+  marginRight: 12,
+}
 });

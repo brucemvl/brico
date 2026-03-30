@@ -59,10 +59,11 @@ type RequestType = {
 };
 
 export default function RequestDetailClient() {
-  const { apiFetch } = useApi();
+  const { apiFetch, user } = useApi();
   const router = useRouter();
   const params = useLocalSearchParams<{ id: string }>();
   const id = params.id;
+  const userId = user?.userId;
 
   const [request, setRequest] = useState<RequestType | null>(null);
   const [loading, setLoading] = useState(true);
@@ -116,6 +117,7 @@ export default function RequestDetailClient() {
     }, [id])
   );
 
+
   if (loading) return <Text>Chargement...</Text>;
   if (!request) return <Text>Demande introuvable</Text>;
 
@@ -152,7 +154,9 @@ export default function RequestDetailClient() {
                     <Text style={{fontFamily: "Montt", color: "#fff"}}>Budget: {request.budget}€</Text>
                     </View>
                     <View style={{flexDirection: "row-reverse", alignItems: "flex-end", gap: 5}}>
+                      {request?.client?.profileImage?.url && (
                     <Image source={{uri: request?.client?.profileImage?.url}} style={{height: 30, width: 30, borderRadius: 15}}/>
+                      )}
                     <Text style={{fontSize: 11, color: "#fff", fontFamily: "Montt"}}>{formatDate(request?.createdAt)}</Text>
                     </View>
                     </LinearGradient>
@@ -164,29 +168,39 @@ export default function RequestDetailClient() {
       {/* 🔹 Conversations */}
       <Text style={{ marginTop: 20, fontFamily: "Montt" }}>Conversations avec les pros</Text>
       {request.conversations?.map((conv) => {
-        const unread = conv.messages?.filter(
-          (m) => !m.readBy?.includes(request.client._id) && m.from._id !== request.client._id
-        ).length || 0;
+        const unread = userId
+  ? conv.messages?.filter(
+      (m) =>
+        !m.readBy?.includes(userId) &&
+        m.from._id !== userId
+    ).length || 0
+  : 0;
 
         const openConversation = async () => {
-          try {
-            await apiFetch(`/conversations/${conv._id}/mark-read`, { method: "POST" });
-          } catch (err) { console.error(err); }
+  await apiFetch(`/conversations/${conv._id}/mark-read`, { method: "POST" });
 
-          router.push({ pathname: "/conversation", params: { id: conv._id } });
+  // 🔥 force refresh
+  setRequest(prev => {
+    if (!prev) return prev;
 
-          setRequest(prev => {
-            if (!prev) return prev;
-            return {
-              ...prev,
-              conversations: prev.conversations.map(c =>
-                c._id === conv._id
-                  ? { ...c, messages: c.messages.map(m => ({ ...m, readBy: [...m.readBy, request.client._id] })) }
-                  : c
-              )
-            };
-          });
-        };
+    return {
+      ...prev,
+      conversations: prev.conversations.map(c =>
+        c._id === conv._id
+          ? {
+              ...c,
+              messages: c.messages.map(m => ({
+                ...m,
+                readBy: [...(m.readBy || [])]
+              }))
+            }
+          : c
+      )
+    };
+  });
+
+  router.push({ pathname: "/conversation", params: { id: conv._id } });
+};
 
         return (
           <TouchableOpacity key={conv._id} style={styles.conversationCard} onPress={openConversation}>

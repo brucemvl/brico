@@ -433,7 +433,7 @@ paddingBottom: 60  },
   section: {
     padding: 20,
     borderTopWidth: 1,
-    borderColor: "#d0d0d0"
+    borderColor: "#c5c5c5"
   },
 
   title: {
@@ -510,7 +510,7 @@ review:{
 marginBottom:12,
 paddingBottom:10,
 borderBottomWidth:1,
-borderColor:"#eee",
+borderColor:"#e1e1e1",
 flexDirection: "row",
 justifyContent: "space-between",
 alignItems: "baseline"

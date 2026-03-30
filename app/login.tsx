@@ -38,7 +38,11 @@ export default function Login() {
       }
 
       // Stocke le token et le rôle dans le contexte et AsyncStorage
-      await login({ token: data.token, role: data.role });
+      await login({
+  token: data.token,
+  role: data.role,
+  userId: data.userId,
+});
 
       // Redirection selon le rôle
       router.replace(data.role === 'pro' ? '/homePro' : '/homeClient');

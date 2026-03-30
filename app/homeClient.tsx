@@ -6,11 +6,16 @@ import { useRouter } from 'expo-router';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { Alert, Animated, Image, ImageBackground, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import fond from "../assets/convert_1.png";
+import msg from "../assets/icons/enveloppe.png";
 import modifier from "../assets/icons/modifier.png";
+import notifIcon from "../assets/icons/notif.png";
 import settings from "../assets/icons/settings.png";
+import star from "../assets/icons/star.png";
 import trash from "../assets/icons/trash2.png";
 import { AuthContext } from '../context/AuthContext';
 import { useApi } from "../services/api";
+
+
 
 
 type RequestType = {
@@ -21,6 +26,7 @@ type RequestType = {
   client: string;
   title: string;
   hasUnread: boolean;
+  unreadType?: "message" | "deal" | "update" ;
   createdAt?: string;
 };
 
@@ -40,9 +46,23 @@ export default function HomeClient() {
   const { logout } = useContext(AuthContext)!;
   const { apiFetch } = useApi();
   const [profile, setProfile] = useState<ProfileType | null>(null);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [notifications, setNotifications] = useState<any[]>([]);
 
   const [requestView, setRequestView] = useState<"requests" | "completed">("requests");
   const [pickerOpen, setPickerOpen] = useState(false);
+
+  const fetchNotifications = useCallback(async () => {
+  try {
+    const res = await apiFetch("/notifications"); // ✅ PAS unread-count
+    setNotifications(res); // ✅ on remplit le tableau
+    setUnreadCount(res.filter((n: any) => !n.isRead).length);
+  } catch (err) {
+    console.error("Erreur notifications", err);
+  }
+}, []);
+
+
 
   const scrollY = new Animated.Value(0);
 
@@ -76,6 +96,30 @@ export default function HomeClient() {
       "Kanitt": require("../assets/fonts/Kanit/Kanit-Bold.ttf"), 
       "Kanito": require("../assets/fonts/Kanit/Kanit-Medium.ttf"), 
     });
+
+   const getUnreadIcon = (type?: string) => {
+  switch (type) {
+    case "message":
+      return msg;
+      case "review":
+      return star;
+      case "deal":
+      return notifIcon;
+    default:
+      return notifIcon;
+  }
+};
+
+
+const getRequestUnreadType = (requestId: string) => {
+  const notif = notifications.find(
+    n =>
+      n.data?.requestId?.toString() === requestId &&
+      !n.isRead
+  );
+
+  return notif?.type || null;
+};
 
   const headerOpacity = scrollY.interpolate({
     inputRange: [0, 60],
@@ -128,7 +172,11 @@ export default function HomeClient() {
     loadProfile();
   }, []);
 
-
+  console.log("NOTIFICATIONS:", notifications);
+console.log(
+  "UNREAD:",
+  notifications.filter(n => !n.isRead)
+);
 
   // 🔹 Fonction pour récupérer les demandes
   const fetchRequests = useCallback(async () => {
@@ -145,10 +193,11 @@ export default function HomeClient() {
 
   // 🔹 Rafraîchit la liste à chaque retour sur cet écran
   useFocusEffect(
-    useCallback(() => {
-      fetchRequests();
-    }, [fetchRequests])
-  );
+  useCallback(() => {
+    fetchRequests();
+    fetchNotifications(); // ✅ AJOUT ICI
+  }, [fetchRequests, fetchNotifications])
+);
 
   // 🔹 Supprimer une demande
   const handleDelete = async (id: string) => {
@@ -207,6 +256,7 @@ export default function HomeClient() {
   })();
 
 
+
   if (loading) {
     return (
       <View style={styles.container}>
@@ -218,7 +268,7 @@ export default function HomeClient() {
       if (!fontsLoaded) return null;
 
   return (
-    <ImageBackground source={fond} >
+    <ImageBackground source={fond} style={{flex: 1}}>
       <Animated.Text style={{ fontFamily: "Montt", opacity: headerOpacity, marginTop: 50, marginLeft: 10, fontSize: 16 }}>Accueil</Animated.Text>
       <TouchableOpacity onPress={() => router.push({ pathname: "/settings" })} style={{position: "absolute", top: 70, right: 15, zIndex: 99}}>
       <Image source={settings} style={{height: 40, width: 40, }} />
@@ -335,9 +385,12 @@ export default function HomeClient() {
         <View style={styles.requestsContainer}>
 
           {filteredRequests.length === 0 ? (
-            <Text>Aucune demande active</Text>
+            <Text style={{fontFamily: "Londrina", fontSize: 16}}>Aucune demande active</Text>
           ) : (
-            filteredRequests.map((item) => (
+            filteredRequests.map((item) => {
+              const unreadType = getRequestUnreadType(item._id);
+              return (
+              
               <View
                 key={item._id}
                 style={{ flexDirection: "row", alignItems: "center", gap: 10, width: "95%", justifyContent: "center" }}
@@ -358,7 +411,10 @@ export default function HomeClient() {
                         <Text style={{fontFamily: "Kanito", color: item.status === "open" ? "green" : item.status === "in_progress" ? "#bdc008" : "red"}}>Statut: {item.status === "open" ? "Ouvert" : item.status === "in_progress" ? "En cours" : "Terminé"}</Text>
                       </View>
 
-                      {item.hasUnread && <View style={styles.redDot} />}
+
+{unreadType && (
+  <Image source={getUnreadIcon(unreadType)} style={styles.unreadIcon} />
+)}
                     </View>
                   </View>
                 </TouchableOpacity>
@@ -367,7 +423,8 @@ export default function HomeClient() {
                   <Image source={trash} style={{ height: 20, width: 20 }} />
                 </TouchableOpacity>}
               </View>
-            ))
+            )}
+          )
           )}
         </View>
 
@@ -454,6 +511,13 @@ const styles = StyleSheet.create({
     fontFamily: "Montt",
     color: "#1a5b4f",
   },
+  unreadIcon: {
+  width: 22,
+  height: 22,
+  position: "absolute",
+  top: 8,
+  right: 8,
+},
   requestsContainer: { width: "100%", paddingHorizontal: 20, alignItems: "center" },
   cardContainer: { padding: 10, flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
 

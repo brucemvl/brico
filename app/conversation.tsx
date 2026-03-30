@@ -106,6 +106,8 @@ const reviewScale = useRef(new Animated.Value(1)).current;
     }).start();
   };
 
+  
+
   // Charger utilisateur
   useEffect(() => {
     const loadUser = async () => {
@@ -136,6 +138,24 @@ const reviewScale = useRef(new Animated.Value(1)).current;
   useEffect(() => {
     loadConversation();
   }, [conversationId]);
+
+  useEffect(() => {
+  const markAsRead = async () => {
+    if (!conversation?._id) return;
+
+    try {
+      await apiFetch(`/conversations/${conversation._id}/mark-read`, {
+        method: "POST",
+      });
+
+      console.log("Messages marqués comme lus");
+    } catch (err) {
+      console.log("Erreur mark as read:", err);
+    }
+  };
+
+  markAsRead();
+}, [conversation?._id]);
 
   // Récupérer les coordonnées automatiquement après accord
   const dealAccepted =
@@ -317,7 +337,11 @@ const clientProposed =
 const proProposed =
   !!conversation.dealProposedByPro && !conversation.dealAcceptedByPro;
 
-const canReview = !!currentAssignment && dealAccepted && !clientHasReviewed;
+const canReview =
+  !!currentAssignment &&
+  dealAccepted &&
+  !request?.reviewByClient;
+
 
   return (
     
@@ -385,7 +409,7 @@ const canReview = !!currentAssignment && dealAccepted && !clientHasReviewed;
   </Text>
 )}
 
-{canReview && (
+{canReview && !missionCompleted &&(
   <TouchableOpacity
     style={styles.completeButton}
     onPress={() => setReviewModal(true)}

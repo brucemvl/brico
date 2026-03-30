@@ -100,6 +100,11 @@ const [request, setRequest] = useState<RequestType>({
   const [previewImage, setPreviewImage] = useState<string>("");
   const [uploading, setUploading] = useState(false);
 
+  const formatDate = (dateString?: string) => {
+  if (!dateString) return "";
+  return new Date(dateString).toLocaleDateString("fr-FR");
+};
+
   const scrollY = new Animated.Value(0);
     
       const headerOpacity = scrollY.interpolate({
@@ -374,16 +379,19 @@ if (!request) return <Text>Chargement...</Text>;
           
         }}
       >
-        <LinearGradient colors={[ "#30a590", "#1a5b4f" ]} style={{padding: 20, borderRadius: 20, width: "100%", flexDirection: "row", justifyContent: "space-between"}}>
+        <LinearGradient colors={[ "#30a590", "#1a5b4f" ]} style={{padding: 18, borderRadius: 20, width: "100%", flexDirection: "row", justifyContent: "space-between"}}>
           <View style={{gap: 5}}>
                   <Text style={styles.title}>{request.title}</Text>
         <Text style={{fontFamily: "Montt", color: "#fff"}}>Catégorie: {request.category}</Text>
         <Text style={{fontFamily: "Montt", color: "#fff"}}>Lieu: {request.location}</Text>
         <Text style={{fontFamily: "Montt", color: "#fff"}}>Budget: {request.budget}€</Text>
         </View>
+        <View style={{alignSelf: "flex-end"}}>
         <View style={{flexDirection: "row-reverse", alignItems: "flex-end", gap: 5}}>
         <Image source={{uri: request?.client?.profileImage?.url}} style={{height: 30, width: 30, borderRadius: 15}}/>
         <Text style={{fontSize: 15, color: "#fff", fontFamily: "Londrina"}}>{request?.client?.name}</Text>
+        </View>
+        <Text style={{fontSize: 15, color: "#fff", fontFamily: "Londrina"}}>{formatDate(request?.createdAt)}</Text>
         </View>
         </LinearGradient>
         </Animated.View>
@@ -409,7 +417,7 @@ if (!request) return <Text>Chargement...</Text>;
         </View>}
 {proProposed && !dealAccepted && <Text style={styles.dealStatus}>Vous avez proposé un accord — en attente du client ⏳</Text>}
           {dealAccepted && <Text style={[styles.dealStatus, {color: "green"}]}>🤝 Accord validé</Text>}
-          
+
         {/* Coordonnées après accord */}
         {dealAccepted && contact && (
           <View style={styles.contactBox}>

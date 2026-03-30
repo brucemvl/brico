@@ -1,73 +1,61 @@
-const router = require("express").Router();
-const User = require("../models/User");
-const jwt = require("jsonwebtoken");
+const express = require("express");
+const router = express.Router();
+const auth = require("../middlewares/auth");
+const Notification = require("../models/Notification");
 
-// JWT Middleware
-const auth = (req, res, next) => {
-  const token = req.header("Authorization")?.replace("Bearer ", "");
-  if (!token) return res.status(401).json({ error: "Non autorisé" });
-
-  try {
-    req.user = jwt.verify(token, process.env.JWT_SECRET);
-    next();
-  } catch {
-    res.status(401).json({ error: "Token invalide" });
-  }
-};
-
-// ================= GET ALL =================
+// 🔹 GET mes notifications
 router.get("/", auth, async (req, res) => {
+  console.log("GET /notifications appelé");
   try {
-    const user = await User.findById(req.user.id).select("notifications");
+    const notifications = await Notification.find({
+      userId: req.user.id
+    })
+      .sort({ createdAt: -1 })
+      .limit(50);
 
-    res.json(user.notifications.sort((a, b) =>
-      new Date(b.createdAt) - new Date(a.createdAt)
-    ));
+    res.json(notifications);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// ================= COUNT UNREAD =================
+// 🔹 COUNT non lues (badge)
 router.get("/unread-count", auth, async (req, res) => {
   try {
-    const user = await User.findById(req.user.id);
-
-    const count = user.notifications.filter(n => !n.read).length;
-
-    res.json({ unread: count });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// ================= MARK AS READ =================
-router.patch("/:notifId/read", auth, async (req, res) => {
-  try {
-    await User.updateOne(
-      {
-        _id: req.user.id,
-        "notifications._id": req.params.notifId
-      },
-      {
-        $set: { "notifications.$.read": true }
-      }
-    );
-
-    res.json({ message: "Notification marquée comme lue" });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// ================= DELETE NOTIFICATION =================
-router.delete("/:notifId", auth, async (req, res) => {
-  try {
-    await User.findByIdAndUpdate(req.user.id, {
-      $pull: { notifications: { _id: req.params.notifId } }
+    const count = await Notification.countDocuments({
+      userId: req.user.id,
+      isRead: false
     });
 
-    res.json({ message: "Notification supprimée" });
+    res.json({ count });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 🔹 mark all read
+router.post("/mark-all-read", auth, async (req, res) => {
+  try {
+    await Notification.updateMany(
+      { userId: req.user.id, isRead: false },
+      { $set: { isRead: true } }
+    );
+
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 🔹 mark one read
+router.post("/:id/read", auth, async (req, res) => {
+  try {
+    await Notification.updateOne(
+      { _id: req.params.id, userId: req.user.id },
+      { $set: { isRead: true } }
+    );
+
+    res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

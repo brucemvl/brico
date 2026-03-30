@@ -21,22 +21,47 @@ router.get("/client", auth, async (req, res) => {
     }
 
     const requests = await Request.find({ client: req.user.id })
-  .populate("client", "name profileImage")
-  .populate("assignedPros.pro", "name profileImage")
-  .sort({ createdAt: -1 }); 
+      .populate("client", "name profileImage")
+      .populate("assignedPros.pro", "name profileImage")
+      .sort({ createdAt: -1 });
 
     const conversations = await Conversation.find({ client: req.user.id });
 
     const formatted = requests.map(r => {
-      const conv = conversations.find(c => c.request.toString() === r._id.toString());
-      const hasUnread =
-  conv &&
-  conv.messages?.some(
-    msg =>
-      msg.from.toString() !== req.user.id &&
-      !msg.readBy?.includes(req.user.id)
-  );
-      return { ...r.toObject(), hasUnread };
+      const conv = conversations.find(
+        c => c.request.toString() === r._id.toString()
+      );
+
+      let unreadType = null;
+
+      if (conv) {
+        const isUnread =
+          conv.lastProUpdateAt &&
+          (!conv.lastReadByClient ||
+            new Date(conv.lastProUpdateAt) > new Date(conv.lastReadByClient));
+
+        if (isUnread) {
+          if (conv.dealProposedByPro && !conv.dealAcceptedByClient) {
+            unreadType = "deal";
+          } else if (
+            conv.messages?.some(
+              msg =>
+                msg.from.toString() !== req.user.id.toString() &&
+                !msg.readBy.includes(req.user.id)
+            )
+          ) {
+            unreadType = "message";
+          } else {
+            unreadType = "update";
+          }
+        }
+      }
+
+      return {
+        ...r.toObject(),
+        hasUnread: !!unreadType,
+        unreadType
+      };
     });
 
     res.json(formatted);
@@ -77,44 +102,63 @@ router.get("/pro", auth, async (req, res) => {
     const conversations = await Conversation.find({ pro: proId });
 
     const requestsWithUnread = requests.map(r => {
-  const conv = conversations.find(
-    c => c.request.toString() === r._id.toString()
-  );
+      const conv = conversations.find(
+        c => c.request.toString() === r._id.toString()
+      );
 
-  const hasUnread =
-    !!conv &&
-    !!conv.lastClientUpdateAt &&
-    (
-      !conv.lastReadByPro ||
-      new Date(conv.lastClientUpdateAt) > new Date(conv.lastReadByPro)
-    );
+      let unreadType = null;
 
-  const myAssignment = r.assignedPros?.find(
-    ap => ap.pro.toString() === proId.toString()
-  );
+      if (conv) {
+        const isUnread =
+          conv.lastClientUpdateAt &&
+          (!conv.lastReadByPro ||
+            new Date(conv.lastClientUpdateAt) > new Date(conv.lastReadByPro));
 
-  return {
-    _id: r._id,
-    title: r.title,
-    category: r.category,
-    location: r.location,
-    budget: r.budget,
-    status: r.status,
-    hasUnread,
-    createdAt: r.createdAt,
-    images: r.images || [],
-    assignedPros: r.assignedPros?.map(ap => ({
-      pro: ap.pro.toString(),
-      status: ap.status,
-      agreedAt: ap.agreedAt,
-      cancelledAt: ap.cancelledAt,
-      completedAt: ap.completedAt,
-      reviewByClient: ap.reviewByClient,
-      reviewByPro: ap.reviewByPro,
-    })) || [],
-    myAssignmentStatus: myAssignment?.status || null,
-  };
-});
+        if (isUnread) {
+          if (conv.dealProposedByClient && !conv.dealAcceptedByPro) {
+            unreadType = "deal";
+          } else if (
+            conv.messages?.some(
+              msg =>
+                msg.from.toString() !== proId.toString() &&
+                !msg.readBy.includes(proId)
+            )
+          ) {
+            unreadType = "message";
+          } else {
+            unreadType = "update";
+          }
+        }
+      }
+
+      const myAssignment = r.assignedPros?.find(
+        ap => ap.pro.toString() === proId.toString()
+      );
+
+      return {
+        _id: r._id,
+        title: r.title,
+        category: r.category,
+        location: r.location,
+        budget: r.budget,
+        status: r.status,
+        hasUnread: !!unreadType,
+        unreadType,
+        createdAt: r.createdAt,
+        images: r.images || [],
+        assignedPros:
+          r.assignedPros?.map(ap => ({
+            pro: ap.pro.toString(),
+            status: ap.status,
+            agreedAt: ap.agreedAt,
+            cancelledAt: ap.cancelledAt,
+            completedAt: ap.completedAt,
+            reviewByClient: ap.reviewByClient,
+            reviewByPro: ap.reviewByPro,
+          })) || [],
+        myAssignmentStatus: myAssignment?.status || null,
+      };
+    });
 
     res.json({
       requests: requestsWithUnread,
@@ -151,8 +195,17 @@ router.get("/:id", auth, async (req, res) => {
   await Conversation.updateMany(
   { request: req.params.id, client: req.user.id },
   {
-    $addToSet: {
-      "messages.$[].readBy": req.user.id
+    $set: {
+      lastReadByClient: new Date()
+    }
+  }
+);
+
+await Conversation.updateMany(
+  { request: req.params.id, pro: req.user.id },
+  {
+    $set: {
+      lastReadByPro: new Date()
     }
   }
 );
@@ -174,7 +227,6 @@ router.get("/:id", auth, async (req, res) => {
       {
         $set: {
           lastInteractionBy: req.user.id,
-          lastInteractionAt: new Date()
         }
       }
     );
@@ -182,6 +234,9 @@ router.get("/:id", auth, async (req, res) => {
     await Conversation.updateOne(
       { _id: conversation._id },
       {
+        $set: {
+      lastReadByPro: new Date()
+    },
         $addToSet: {
           "messages.$[msg].readBy": req.user.id
         }
@@ -263,8 +318,8 @@ router.post("/", auth, upload.array("images"), async (req, res) => {
 for (const pro of pros) {
   await createNotification({
     userId: pro._id,
-    type: "new_request",
-    request: newRequest._id
+    type: "request",
+    requestId: newRequest._id
   });
 }
 
@@ -388,6 +443,7 @@ router.post("/:id/message", auth, async (req, res) => {
           messages: [],
         });
       }
+      conversation.lastReadByPro = new Date(); // ✅ ici
 
     } else if (req.user.role === "client") {
       if (!proId) {
@@ -408,6 +464,7 @@ router.post("/:id/message", auth, async (req, res) => {
           messages: [],
         });
       }
+      conversation.lastReadByClient = new Date(); // ✅ ici
     }
 
 
@@ -421,6 +478,14 @@ router.post("/:id/message", auth, async (req, res) => {
     conversation.lastInteractionBy = req.user.id;
 conversation.lastInteractionAt = new Date();
 
+if (req.user.role === "client") {
+  conversation.lastClientUpdateAt = new Date();
+}
+
+if (req.user.role === "pro") {
+  conversation.lastProUpdateAt = new Date(); // ⭐ IMPORTANT
+}
+
     await conversation.save();
     await conversation.populate("messages.from", "name profileImage");
 
@@ -430,9 +495,9 @@ conversation.lastInteractionAt = new Date();
 
     await createNotification({
       userId: receiverId,
-      type: "new_message",
-      request: request._id,
-      conversation: conversation._id
+      type: "message",
+      requestId: request._id,
+      conversationId: conversation._id
     });
 
     res.json(conversation);
@@ -470,9 +535,9 @@ if (alreadyActive) {
 
     await createNotification({
       userId: request.client,
-      type: "new_offer",
+      type: "deal",
       content: "Un professionnel a envoyé une offre",
-      relatedRequest: request._id,
+      requestId: request._id,
     });
 
     res.json({ message: "Offre envoyée" });
@@ -545,8 +610,7 @@ conversation.lastInteractionAt = new Date();
     await createNotification({
       userId: offer.pro,
       type: "offer_accepted",
-      content: "Votre offre a été acceptée 🎉",
-      relatedRequest: request._id,
+      requestId: request._id,
     });
 
     res.json({ message: "Offre acceptée", assignedPros: request.assignedPros });
@@ -671,6 +735,7 @@ router.post("/:id/review-complete", auth, async (req, res) => {
 if (conversation) {
   conversation.lastInteractionBy = req.user.id;
   conversation.lastInteractionAt = new Date();
+  conversation.lastReviewAt = new Date();
   await conversation.save();
 }
 
@@ -713,17 +778,18 @@ router.post("/:id/propose-deal", auth, async (req, res) => {
       }
 
       conversation.dealProposedByPro = true;
-      conversation.lastInteractionAt = new Date();
-      conversation.lastInteractionBy = req.user.id;
+conversation.lastInteractionAt = new Date();
+conversation.lastInteractionBy = req.user.id;
+conversation.lastProUpdateAt = new Date();
 
       await conversation.save();
 
       await createNotification({
         userId: request.client,
-        type: "new_offer",
+        type: "deal",
         content: "Le pro propose un deal",
-        relatedRequest: request._id,
-        conversation: conversation._id,
+        requestId: request._id,
+        conversationId: conversation._id,
       });
 
       return res.json({
@@ -757,15 +823,16 @@ router.post("/:id/propose-deal", auth, async (req, res) => {
       conversation.dealProposedByClient = true;
       conversation.lastInteractionAt = new Date();
       conversation.lastInteractionBy = req.user.id;
+      conversation.lastClientUpdateAt = new Date();
 
       await conversation.save();
 
       await createNotification({
         userId: proId,
-        type: "new_offer",
+        type: "deal",
         content: "Le client propose un deal",
-        relatedRequest: request._id,
-        conversation: conversation._id,
+        requestId: request._id,
+        conversationId: conversation._id,
       });
 
       return res.json({

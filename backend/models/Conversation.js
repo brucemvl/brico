@@ -57,6 +57,18 @@ lastClientUpdateAt: {
 lastReadByPro: {
   type: Date,
   default: null,
+},
+lastReviewAt: Date,
+lastReviewReadByClient: { type: Date, default: null },
+lastReviewReadByPro: { type: Date, default: null },
+lastProUpdateAt: {
+  type: Date,
+  default: null,
+},
+
+lastReadByClient: {
+  type: Date,
+  default: null,
 }
 
 }, { timestamps: true });

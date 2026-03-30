@@ -4,8 +4,9 @@ const auth = require("../middlewares/auth");
 
 const Conversation = require("../models/Conversation");
 const Request = require("../models/Request");
-const { createNotification } = require("../services/notificationService");
 const User = require("../models/User");
+const Notification = require("../models/Notification");
+const {createNotification} = require("../services/notificationService")
 
 // =======================
 // 🔹 GET toutes les conversations ou par requestId
@@ -41,33 +42,78 @@ router.get("/:id", auth, async (req, res) => {
       return res.status(404).json({ error: "Conversation introuvable" });
     }
 
-    const isClient = conversation.client._id
-      ? conversation.client._id.toString() === req.user.id.toString()
-      : conversation.client.toString() === req.user.id.toString();
+    const userId = req.user.id.toString();
 
-    const isPro = conversation.pro._id
-      ? conversation.pro._id.toString() === req.user.id.toString()
-      : conversation.pro.toString() === req.user.id.toString();
+    const isClient =
+      conversation.client._id
+        ? conversation.client._id.toString() === userId
+        : conversation.client.toString() === userId;
+
+    const isPro =
+      conversation.pro._id
+        ? conversation.pro._id.toString() === userId
+        : conversation.pro.toString() === userId;
 
     if (!isClient && !isPro) {
       return res.status(403).json({ error: "Non autorisé" });
     }
 
-    conversation.messages.forEach(msg => {
-      const alreadyRead = msg.readBy.some(id => id.toString() === req.user.id.toString());
-      if (!alreadyRead) {
-        msg.readBy.push(req.user.id);
+    // 🧠 champs de lecture
+    const updateFields = {
+      lastInteractionAt: new Date(),
+      lastInteractionBy: req.user.id,
+    };
+
+    if (isClient) {
+      updateFields.lastReadByClient = new Date();
+      updateFields.lastReviewReadByClient = new Date();
+    }
+
+    if (isPro) {
+      updateFields.lastReadByPro = new Date();
+      updateFields.lastReviewReadByPro = new Date();
+    }
+
+    // ⚡ update messages + conversation
+    await Conversation.updateOne(
+      { _id: conversation._id },
+      {
+        $set: updateFields,
+        $addToSet: {
+          "messages.$[msg].readBy": req.user.id,
+        },
+      },
+      {
+        arrayFilters: [{ "msg.readBy": { $ne: req.user.id } }],
       }
-    });
+    );
 
-    await conversation.save();
+    // 🔥 IMPORTANT : marquer les notifications comme lues
+    const Notification = require("../models/Notification");
 
-    res.json(conversation);
+    await Notification.updateMany(
+      {
+        userId: req.user.id,
+        "data.conversationId": conversation._id,
+        isRead: false,
+      },
+      {
+        $set: { isRead: true },
+      }
+    );
+
+    // 🔄 refresh conversation
+    const updatedConversation = await Conversation.findById(req.params.id)
+      .populate("client", "name profileImage")
+      .populate("pro", "name profileImage")
+      .populate("messages.from", "name profileImage");
+
+    res.json(updatedConversation);
   } catch (err) {
+    console.error("GET /conversations/:id error:", err);
     res.status(500).json({ error: err.message });
   }
 });
-
 // =======================
 // 🔹 Envoyer un message
 // =======================
@@ -119,9 +165,22 @@ router.post("/:id/message", auth, async (req, res) => {
     conversation.lastInteractionAt = new Date();
     conversation.lastInteractionBy = req.user.id;
 
-    conversation.lastClientUpdateAt = new Date();
-
+if (isClient) {
+  conversation.lastClientUpdateAt = new Date();
+}
+if (isPro) {
+  conversation.lastProUpdateAt = new Date(); // ⭐ MANQUAIT
+}
     await conversation.save();
+
+    const receiverId = isClient ? conversation.pro : conversation.client;
+
+await createNotification({
+  userId: receiverId,
+  type: "message",
+  requestId: conversation.request,
+  conversationId: conversation._id
+});
     await conversation.populate("messages.from", "name profileImage");
 
     res.json(conversation);
@@ -136,33 +195,52 @@ router.post("/:id/message", auth, async (req, res) => {
 router.post("/:id/mark-read", auth, async (req, res) => {
   try {
     const conversation = await Conversation.findById(req.params.id);
+
     if (!conversation) {
       return res.status(404).json({ error: "Conversation introuvable" });
     }
 
-    await Conversation.updateOne(
-      { _id: conversation._id },
-      {
-        $set: {
-          lastReadByPro: new Date()
-        }
-      }
-    );
+    // 🔒 Vérifier que l'utilisateur appartient à la conversation
+    const isClient = conversation.client.toString() === req.user.id.toString();
+    const isPro = conversation.pro.toString() === req.user.id.toString();
 
-    await Conversation.updateOne(
-      { _id: conversation._id },
-      {
-        $addToSet: {
-          "messages.$[msg].readBy": req.user.id
-        }
-      },
-      {
-        arrayFilters: [{ "msg.readBy": { $ne: req.user.id } }]
-      }
-    );
+    if (!isClient && !isPro) {
+      return res.status(403).json({ error: "Non autorisé" });
+    }
+
+    // 🧠 Mettre à jour le bon champ selon le rôle
+    const updateFields = {};
+
+if (isPro) {
+  updateFields.lastReadByPro = new Date();
+}
+
+if (isClient) {
+  updateFields.lastReadByClient = new Date();
+}
+
+const updateQuery = {
+  $addToSet: {
+    "messages.$[msg].readBy": req.user.id
+  }
+};
+
+if (Object.keys(updateFields).length > 0) {
+  updateQuery.$set = updateFields;
+}
+
+await Conversation.updateOne(
+  { _id: conversation._id },
+  updateQuery,
+  {
+    arrayFilters: [{ "msg.readBy": { $ne: req.user.id } }]
+  }
+);
 
     res.json({ success: true });
+
   } catch (err) {
+    console.error("POST /conversations/:id/mark-read error:", err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -179,16 +257,16 @@ router.post("/:id/propose-deal", auth, async (req, res) => {
   conversation.dealProposedByClient = true;
   conversation.lastInteractionAt = new Date();
   conversation.lastInteractionBy = req.user.id;
+  conversation.lastClientUpdateAt = new Date();
 
   await conversation.save();
 
   await createNotification({
-    userId: conversation.pro,
-    type: "new_offer",
-    content: "Le client propose un deal",
-    relatedRequest: conversation.request,
-    conversation: conversation._id
-  });
+  userId: conversation.pro === req.user.id ? conversation.client : conversation.pro,
+  type: "deal",
+  requestId: conversation.request,
+  conversationId: conversation._id
+});
 
   return res.json({ message: "Proposition envoyée au pro" });
 }
@@ -200,16 +278,14 @@ router.post("/:id/propose-deal", auth, async (req, res) => {
       conversation.lastInteractionAt = new Date();
 conversation.lastInteractionBy = req.user.id;
 
-conversation.lastClientUpdateAt = new Date();
 
       await conversation.save();
 
       await createNotification({
         userId: conversation.client,
-        type: "new_offer",
-        content: "Le pro propose un deal",
-        relatedRequest: conversation.request,
-        conversation: conversation._id
+        type: "deal",
+requestId: conversation.request,
+        conversationId: conversation._id
       });
 
       return res.json({ message: "Proposition envoyée au client" });
@@ -246,9 +322,26 @@ router.post("/:id/accept-deal", auth, async (req, res) => {
     conversation.lastInteractionAt = new Date();
     conversation.lastInteractionBy = req.user.id;
 
-    conversation.lastClientUpdateAt = new Date();
+if (req.user.role === "client") {
+  conversation.lastClientUpdateAt = new Date();
+}
 
+if (req.user.role === "pro") {
+  conversation.lastProUpdateAt = new Date();
+}
     await conversation.save();
+
+    const receiverId =
+  req.user.id === conversation.client.toString()
+    ? conversation.pro
+    : conversation.client;
+
+await createNotification({
+  userId: receiverId,
+  type: "deal",
+  requestId: conversation.request,
+  conversationId: conversation._id
+});
 
     if (dealAccepted) {
       const request = await Request.findById(conversation.request);

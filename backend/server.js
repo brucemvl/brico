@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const usersRouter = require("./routes/users");
 const conversationRoutes = require("./routes/conversations");
+const notificationRoutes = require("./routes/notifications");
 
 const app = express();
 
@@ -25,6 +26,7 @@ app.use("/api/requests", require("./routes/requestRoutes"));
 app.use("/api/users", usersRouter);
 app.use("/uploads", express.static("uploads"));
 app.use("/api/conversations", conversationRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 // 🔥 Gestion erreurs Multer
 app.use((err, req, res, next) => {

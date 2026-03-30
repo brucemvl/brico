@@ -280,6 +280,7 @@ router.get("/:id", auth, async (req, res) => {
       return res.status(404).json({ error: "Utilisateur introuvable" });
     }
 
+    user.ratings.sort((a, b) => b.date - a.date);
     let phone = null;
     let email = null;
 

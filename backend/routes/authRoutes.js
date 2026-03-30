@@ -72,6 +72,7 @@ router.post('/register', async (req, res) => {
       message: "Utilisateur créé avec succès",
       token,
       role: user.role,
+      userId: user._id
     });
 
   } catch (err) {
@@ -108,6 +109,7 @@ router.post('/login', async (req, res) => {
       message: "Connexion réussie",
       token,
       role: user.role,
+      userId: user._id,
     });
 
   } catch (err) {

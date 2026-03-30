@@ -5,10 +5,12 @@ import { useContext, useEffect, useRef } from 'react';
 import {
   Animated,
   Dimensions,
+  Image,
   StyleSheet,
   Text,
   TouchableWithoutFeedback
 } from 'react-native';
+import logo from "../assets/briconnect1.png";
 import { AuthContext } from '../context/AuthContext';
 
 const { width } = Dimensions.get('window');
@@ -86,8 +88,7 @@ export default function Welcome() {
           },
         ]}
       >
-        <Text style={styles.title}>Briconnect</Text>
-        <Text style={styles.subtitle}>
+<Image source={logo} style={{height: 180, width: 180}}/>        <Text style={styles.subtitle}>
           Trouvez le bon professionnel en quelques secondes.
         </Text>
 
