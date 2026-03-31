@@ -1,10 +1,20 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import * as Notifications from 'expo-notifications';
 import { useContext } from 'react';
 import { AuthContext } from '../../context/AuthContext';
 import HomeClient from '../homeClient';
 import HomePro from '../homePro';
 
 const Tab = createBottomTabNavigator();
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowBanner: true, // ✅ remplace alert
+    shouldShowList: true,   // ✅ pour centre de notif
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+  }),
+});
 
 export default function TabLayout() {
   const context = useContext(AuthContext);

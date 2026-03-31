@@ -1,6 +1,6 @@
 const Notification = require("../models/Notification");
 const User = require("../models/User");
-const { sendPushNotification } = require("./pushService");
+const sendPushNotification = require("../utils/sendPushNotification");
 
 async function createNotification({ userId, type, requestId, conversationId }) {
 
@@ -24,9 +24,16 @@ async function createNotification({ userId, type, requestId, conversationId }) {
 });
 
   // 🔔 PUSH
-  const user = await User.findById(userId);
+  const user = await User.findById(userId).select("expoPushToken");
 
   if (user?.expoPushToken) {
+    let title = "Notification";
+
+if (type === "message") title = "💬 Message";
+if (type === "deal") title = "🤝 Proposition";
+if (type === "request") title = "📢 Nouvelle demande";
+
+
     let body = "Nouvelle notification";
 
     if (type === "request") body = "Nouvelle demande disponible";
@@ -34,9 +41,11 @@ async function createNotification({ userId, type, requestId, conversationId }) {
     if (type === "deal") body = "Nouvelle proposition";
     if (type === "review") body = "Nouvel avis reçu";
 
+    
+
     await sendPushNotification(
-      user.expoPushToken,
-      "Notification",
+      [user.expoPushToken],
+      title,
       body,
       {
         requestId: requestId || null,

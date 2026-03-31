@@ -7,6 +7,7 @@ const cloudinary = require("../config/cloudinary");
 const Conversation = require("../models/Conversation");
 const Request = require("../models/Request");
 const bcrypt = require("bcryptjs");
+const { createNotification } = require("../services/notificationService");
 
 
 // 🔹 GET /users/me → profil connecté
@@ -23,14 +24,25 @@ router.get("/me", auth, async (req, res) => {
 
 //PUSHTOKEN
 router.post("/push-token", auth, async (req, res) => {
+  try {
+    const { token } = req.body;
 
-  await User.findByIdAndUpdate(
-    req.user.id,
-    { expoPushToken: req.body.token }
-  );
+    if (!token) {
+      return res.status(400).json({ message: "Token manquant" });
+    }
 
-  res.json({ success: true });
+    await User.findByIdAndUpdate(
+      req.user.id,
+      { expoPushToken: token },
+      { new: true }
+    );
 
+    res.status(200).json({ success: true });
+
+  } catch (error) {
+    console.error("Erreur push-token:", error);
+    res.status(500).json({ message: "Erreur serveur" });
+  }
 });
 
 // 🔹 PUT /users/profile/pro → mise à jour profil pro
@@ -378,6 +390,20 @@ router.post("/:id/review", auth, async (req, res) => {
 
     // 🔹 Sauvegarde de la request
     await request.save();
+
+    let targetUserId;
+
+if (req.user.role === "pro") {
+  targetUserId = request.client; // client reçoit la notif
+} else {
+  targetUserId = user._id; // pro reçoit la notif
+}
+
+    await createNotification({
+  userId: targetUserId, // 👉 celui qui reçoit la notif (le client ou le pro)
+  type: "review",
+    requestId: requestId
+});
 
     res.json({
       message: "Avis enregistré",
