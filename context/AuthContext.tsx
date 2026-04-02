@@ -13,7 +13,8 @@ export type AuthContextType = {
   loading: boolean;
   login: (data: UserType) => Promise<void>;
   logout: () => Promise<void>;
-  setUser: React.Dispatch<React.SetStateAction<UserType | null>>; // 👈 AJOUT
+  setUser: React.Dispatch<React.SetStateAction<UserType | null>>;
+updateUser: (data: Partial<UserType>) => Promise<void>;
 };
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -49,14 +50,34 @@ if (token && role && userId) {
   }, []);
 
   const login = async (data: UserType) => {
-    await AsyncStorage.setItem('token', data.token);
-    await AsyncStorage.setItem('role', data.role);
-    await AsyncStorage.setItem('userId', data.userId);
-await AsyncStorage.setItem('onboardingCompleted', String(data.onboardingCompleted ?? false));
-    setUser(data);
-  };
+    
 
-  
+  if (data.token) {
+    await AsyncStorage.setItem('token', data.token);
+  }
+
+  await AsyncStorage.setItem('role', data.role);
+  await AsyncStorage.setItem('userId', data.userId);
+  await AsyncStorage.setItem('onboardingCompleted', String(data.onboardingCompleted ?? false));
+
+  setUser(prev => ({
+    ...prev,
+    ...data,
+    token: data.token ?? prev?.token, // 👈 garde l'ancien token si undefined
+  }));
+};
+
+ const updateUser = async (data: Partial<UserType>) => {
+  setUser(prev => (prev ? { ...prev, ...data } : prev));
+
+  // 🔥 sync avec AsyncStorage si onboardingCompleted change
+  if (data.onboardingCompleted !== undefined) {
+    await AsyncStorage.setItem(
+      "onboardingCompleted",
+      String(data.onboardingCompleted)
+    );
+  }
+};
 
   const logout = async () => {
    
@@ -68,8 +89,8 @@ await AsyncStorage.setItem('onboardingCompleted', String(data.onboardingComplete
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, setUser }}>
-      {children}
+<AuthContext.Provider value={{ user, loading, login, logout, setUser, updateUser }}>
+        {children}
     </AuthContext.Provider>
   );
 };

@@ -1,8 +1,12 @@
+import * as ImageManipulator from "expo-image-manipulator";
+import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
 import React, { useContext, useState } from "react";
 import {
+    ActivityIndicator,
     Alert,
     Dimensions,
+    Image,
     StyleSheet,
     Text,
     TextInput,
@@ -12,6 +16,7 @@ import {
 import Autocomplete from "react-native-autocomplete-input";
 import { AuthContext } from "../context/AuthContext";
 import { useApi } from "../services/api";
+
 
 
 
@@ -38,7 +43,7 @@ export default function OnboardingPro() {
   const context = useContext(AuthContext);
 if (!context) throw new Error("AuthContext non fourni");
 
-const { user, login } = context;
+const { user, updateUser } = context;
 
   // 🔹 states
   const [name, setName] = useState("");
@@ -46,17 +51,48 @@ const { user, login } = context;
   const [skills, setSkills] = useState<string[]>([]);
   const [equipment, setEquipment] = useState<string[]>([]);
   const [description, setDescription] = useState("");
+  const [profileImage, setProfileImage] = useState<any>(null);
+const [portfolio, setPortfolio] = useState<any[]>([]);
+
+const [loadingSubmit, setLoadingSubmit] = useState(false);
 
   const [locationQuery, setLocationQuery] = useState("");
     const [cities, setCities] = useState([]);
 
   const steps = [
-    "infos",
-    "location",
-    "skills",
-    "equipment",
-    "description"
-  ];
+  "infos",
+  "location",
+  "skills",
+  "equipment",
+  "description",
+  "profileImage",
+  "portfolio"
+];
+
+  const pickProfileImage = async () => {
+  const result = await ImagePicker.launchImageLibraryAsync({
+    mediaTypes: ImagePicker.MediaTypeOptions.Images,
+    allowsEditing: true,
+    aspect: [1, 1],
+    quality: 0.7,
+  });
+
+  if (!result.canceled) {
+    setProfileImage(result.assets[0]);
+  }
+};
+
+const pickPortfolioImages = async () => {
+  const result = await ImagePicker.launchImageLibraryAsync({
+    mediaTypes: ImagePicker.MediaTypeOptions.Images,
+    allowsMultipleSelection: true,
+    quality: 0.7,
+  });
+
+  if (!result.canceled) {
+setPortfolio((prev) => [...prev, ...result.assets]);
+  }
+};
 
   const progress = (step + 1) / steps.length;
 
@@ -78,37 +114,10 @@ const { user, login } = context;
 
   const saveStep = async (data: any) => {
   try {
-    if (!user?.token) throw new Error("Token manquant");
-
-    const formData = new FormData();
-
-    Object.keys(data).forEach((key) => {
-      const value = data[key];
-
-      if (Array.isArray(value)) {
-        formData.append(key, JSON.stringify(value)); // 👈 important pour skills/equipment
-      } else {
-        formData.append(key, value);
-      }
-    });
-
-    const res = await fetch("http://192.168.1.11:5000/api/users/profile/pro", {
+    await apiFetch("/users/profile/pro", {
       method: "PUT",
-      headers: {
-        Authorization: `Bearer ${user.token}`, // ❗ PAS de Content-Type
-      },
-      body: formData,
+      body: data, // JSON simple
     });
-
-    const text = await res.text();
-
-    try {
-      const json = JSON.parse(text);
-      console.log("SAVE OK:", json);
-    } catch {
-      console.log("Réponse non JSON save:", text);
-    }
-
   } catch (err) {
     console.log("Erreur save", err);
   }
@@ -157,47 +166,71 @@ const { user, login } = context;
 
   const completeOnboarding = async () => {
   try {
-    if (!user?.token) {
-      throw new Error("Token manquant");
+    if (!user) throw new Error("User absent");
+
+    setLoadingSubmit(true); // 🔥 START LOADING
+
+    const formData = new FormData();
+
+    formData.append("name", name);
+    formData.append("location", location);
+    formData.append("description", description);
+    formData.append("skills", JSON.stringify(skills));
+    formData.append("equipment", JSON.stringify(equipment));
+
+    if (profileImage?.uri) {
+      const manipulated = await ImageManipulator.manipulateAsync(
+        profileImage.uri,
+        [],
+        { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG }
+      );
+
+      formData.append("profileImage", {
+        uri: manipulated.uri,
+        name: "profile.jpg",
+        type: "image/jpeg",
+      } as any);
     }
 
-    const res = await fetch(
-      "http://192.168.1.11:5000/api/users/onboarding-complete",
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${user.token}`,
-        },
-      }
-    );
+    for (let i = 0; i < portfolio.length; i++) {
+      const img = portfolio[i];
 
-    const text = await res.text();
+      if (!img.uri) continue;
 
-    let data;
-    try {
-      data = JSON.parse(text);
-    } catch {
-      console.log("Réponse non JSON :", text);
-      throw new Error("Réponse serveur invalide");
+      const manipulated = await ImageManipulator.manipulateAsync(
+        img.uri,
+        [],
+        { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG }
+      );
+
+      formData.append("portfolio", {
+        uri: manipulated.uri,
+        name: `portfolio_${i}.jpg`,
+        type: "image/jpeg",
+      } as any);
     }
 
-    if (!res.ok) {
-      throw new Error(data.error || "Erreur onboarding");
-    }
-
-    // ✅ mettre à jour AsyncStorage + contexte via login
-    await login({
-      ...user,
-      onboardingCompleted: true,
+    await apiFetch("/users/profile/pro", {
+      method: "PUT",
+      body: formData,
     });
 
-    // ✅ redirection
-    router.replace("/homePro");
+    await apiFetch("/users/onboarding-complete", {
+  method: "PUT",
+});
+
+updateUser({ onboardingCompleted: true });
+await updateUser({ onboardingCompleted: true });
+
+router.replace("/homePro");
+
+
 
   } catch (err) {
     console.error("Erreur onboarding:", err);
     Alert.alert("Erreur", "Impossible de terminer l'onboarding");
+  } finally {
+    setLoadingSubmit(false); // 🔥 STOP LOADING
   }
 };
 
@@ -377,7 +410,7 @@ const { user, login } = context;
               nextStep();
             }}
           >
-            <Text style={styles.buttonText}>Terminer</Text>
+            <Text style={styles.buttonText}>Continuer</Text>
           </TouchableOpacity>
 
           <TouchableOpacity onPress={skipStep}>
@@ -385,6 +418,56 @@ const { user, login } = context;
           </TouchableOpacity>
         </View>
       )}
+
+{/* 🔹 STEP 6 */}
+      {step === 5 && (
+  <View style={styles.step}>
+    <Text style={styles.title}>Photo de profil</Text>
+{profileImage && (
+  <Image source={{ uri: profileImage.uri }} style={{ width: 100, height: 100 }} />
+)}
+    <TouchableOpacity onPress={pickProfileImage} style={styles.button}>
+      <Text style={styles.buttonText}>Choisir une photo</Text>
+    </TouchableOpacity>
+
+    <TouchableOpacity
+      style={styles.button}
+      onPress={nextStep}
+    >
+      <Text style={styles.buttonText}>Continuer</Text>
+    </TouchableOpacity>
+  </View>
+)}
+
+{/* 🔹 STEP 7 */}
+
+{step === 6 && (
+  <View style={styles.step}>
+    <Text style={styles.title}>Tes réalisations</Text>
+{portfolio.map((image, index) => (
+  <Image
+    key={index}
+    source={{ uri: image.uri }}
+    style={{ height: 100, width: 100, margin: 5 }}
+  />
+))}
+    <TouchableOpacity onPress={pickPortfolioImages} style={styles.button}>
+      <Text style={styles.buttonText}>Ajouter des photos</Text>
+    </TouchableOpacity>
+
+    <TouchableOpacity
+  style={[styles.button, loadingSubmit && { opacity: 0.7 }]}
+  onPress={completeOnboarding}
+  disabled={loadingSubmit}
+>
+  {loadingSubmit ? (
+    <ActivityIndicator color="#fff" />
+  ) : (
+    <Text style={styles.buttonText}>Terminer</Text>
+  )}
+</TouchableOpacity>
+  </View>
+)}
 
     </View>
   );
