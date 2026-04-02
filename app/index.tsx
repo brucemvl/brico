@@ -24,10 +24,14 @@ export default function Welcome() {
 
   // Redirection auto
   useEffect(() => {
-    if (!loading && user) {
-      router.replace(user.role === 'pro' ? '/homePro' : '/homeClient');
+  if (!loading && user) {
+    if (user.role === "pro" && !user.onboardingCompleted) {
+      router.replace("/onboardingPro");
+    } else {
+      router.replace(user.role === "pro" ? "/homePro" : "/homeClient");
     }
-  }, [user, loading]);
+  }
+}, [user, loading]);
 
   // Animation d'entrée
   const fadeAnim = useRef(new Animated.Value(0)).current;

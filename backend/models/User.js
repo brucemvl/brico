@@ -86,6 +86,11 @@ equipment: [{ type: String, trim: true }],
   type: String
 },
 
+onboardingCompleted: {
+  type: Boolean,
+  default: false
+},
+
   ratings: [ratingSchema],
   averageRating: { type: Number, default: 0 },
 

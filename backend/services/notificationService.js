@@ -23,6 +23,20 @@ async function createNotification({ userId, type, requestId, conversationId }) {
   }
 });
 
+const existing = await Notification.findOne({
+  userId,
+  type: "message",
+  isRead: false,
+  "data.conversationId": conversationId
+});
+
+if (existing) {
+  // 🔁 update au lieu de recréer
+  existing.updatedAt = new Date();
+  await existing.save();
+  return existing;
+}
+
   // 🔔 PUSH
   const user = await User.findById(userId).select("expoPushToken");
 

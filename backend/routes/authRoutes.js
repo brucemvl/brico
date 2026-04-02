@@ -72,7 +72,8 @@ router.post('/register', async (req, res) => {
       message: "Utilisateur créé avec succès",
       token,
       role: user.role,
-      userId: user._id
+      userId: user._id,
+      onboardingCompleted: user.onboardingCompleted
     });
 
   } catch (err) {
@@ -110,6 +111,7 @@ router.post('/login', async (req, res) => {
       token,
       role: user.role,
       userId: user._id,
+      onboardingCompleted: user.onboardingCompleted || false
     });
 
   } catch (err) {

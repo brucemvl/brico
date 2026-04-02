@@ -42,12 +42,17 @@ export default function Register() {
       // stocke le token et le role dans le contexte et AsyncStorage
       await login({
   token: data.token,
-  role: data.user.role,
-  userId: data.userId // ✅ FIX
+  role: data.role,
+  userId: data.userId,
+  onboardingCompleted: false
 });
 
       // redirection selon le rôle
-      router.replace(data.role === 'pro' ? '/homePro' : '/homeClient');
+     if (data.role === "pro") {
+  router.replace("/onboardingPro");
+} else {
+  router.replace("/homeClient");
+}
 
     } catch (err) {
       console.error(err);

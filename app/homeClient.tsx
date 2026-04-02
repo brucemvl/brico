@@ -127,6 +127,12 @@ const getRequestUnreadType = (requestId: string) => {
     extrapolate: "clamp",
   });
 
+  const settingsOpacity = scrollY.interpolate({
+  inputRange: [0, 100],
+  outputRange: [1, 0.5], // 👈 devient transparent
+  extrapolate: "clamp",
+});
+
   const fadeOut = scrollY.interpolate({
     inputRange: [0, 100],
     outputRange: [1, 0],
@@ -270,9 +276,19 @@ console.log(
   return (
     <ImageBackground source={fond} style={{flex: 1}}>
       <Animated.Text style={{ fontFamily: "Montt", opacity: headerOpacity, marginTop: 50, marginLeft: 10, fontSize: 16 }}>Accueil</Animated.Text>
-      <TouchableOpacity onPress={() => router.push({ pathname: "/settings" })} style={{position: "absolute", top: 70, right: 15, zIndex: 99}}>
-      <Image source={settings} style={{height: 40, width: 40, }} />
-      </TouchableOpacity>
+      <Animated.View
+  style={{
+    position: "absolute",
+    top: 70,
+    right: 15,
+    zIndex: 99,
+    opacity: settingsOpacity,
+  }}
+>
+  <TouchableOpacity onPress={() => router.push({ pathname: "/settings" })}>
+    <Image source={settings} style={{ height: 40, width: 40 }} />
+  </TouchableOpacity>
+</Animated.View>
       <Animated.ScrollView
         contentContainerStyle={styles.container}
         onScroll={Animated.event(

@@ -1,5 +1,6 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import * as Notifications from 'expo-notifications';
+import { usePathname, useRouter } from "expo-router";
 import { useContext } from 'react';
 import { AuthContext } from '../../context/AuthContext';
 import HomeClient from '../homeClient';
@@ -18,6 +19,8 @@ Notifications.setNotificationHandler({
 
 export default function TabLayout() {
   const context = useContext(AuthContext);
+  const router = useRouter();
+  const pathname = usePathname();
 
   if (!context) throw new Error("AuthContext non fourni"); // TypeScript sûr
 
@@ -25,7 +28,15 @@ export default function TabLayout() {
 
   if (loading) return null; // loader si tu veux
 
-  if (!user) return null; // ou router.replace('/welcome')
+  if (!user) return null;
+
+if (user.role === "pro" && !user.onboardingCompleted) {
+  return null; // ❗ empêche HomePro de s'afficher
+}
+
+console.log("USER:", user);
+console.log("ROLE:", user?.role);
+console.log("ONBOARDING:", user?.onboardingCompleted);
 
   return (
     <Tab.Navigator>

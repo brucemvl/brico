@@ -21,8 +21,10 @@ import { useApi } from "../services/api";
               return tokenData.data; }
                /* ✅ NOUVEAU composant interne (IMPORTANT) */
                 function PushRegister() {
+                  
                    const { apiFetch, user, loading } = useApi();
                     useEffect(() => {
+                      if (!user || loading) return; 
                        const register = async () => {
                        const token = await registerForPushNotificationsAsync();
                         if (token) { try { await apiFetch("/users/push-token", {

@@ -42,11 +42,19 @@ export default function Login() {
   token: data.token,
   role: data.role,
   userId: data.userId,
+  onboardingCompleted: data.onboardingCompleted
 });
 
       // Redirection selon le rôle
-      router.replace(data.role === 'pro' ? '/homePro' : '/homeClient');
-
+if (data.role === "pro") {
+  if (!data.onboardingCompleted) {
+    router.replace("/onboardingPro");
+  } else {
+    router.replace("/homePro");
+  }
+} else {
+  router.replace("/homeClient");
+}
     } catch (err) {
       console.error(err);
       Alert.alert('Erreur', 'Impossible de contacter le serveur');

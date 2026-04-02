@@ -1,12 +1,14 @@
 import { useFocusEffect } from "@react-navigation/native";
 import { useFonts } from "expo-font";
 import { LinearGradient } from "expo-linear-gradient";
+import * as Notifications from 'expo-notifications';
 import { useRouter } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
 import {
   Animated,
   Image,
   ImageBackground,
+  RefreshControl,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -75,12 +77,19 @@ const [pickerOpen, setPickerOpen] = useState(false);
   const [skills, setSkills] = useState<string[]>([]);
   const [activeFilter, setActiveFilter] = useState<"skills" | "all" | string>("skills");
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   const scrollY = new Animated.Value(0);
 
   const headerOpacity = scrollY.interpolate({
   inputRange: [0, 60],
   outputRange: [0, 1],
+  extrapolate: "clamp",
+});
+
+const settingsOpacity = scrollY.interpolate({
+  inputRange: [0, 100],
+  outputRange: [1, 0.5], // 👈 devient transparent
   extrapolate: "clamp",
 });
 
@@ -101,6 +110,11 @@ const scale = scrollY.interpolate({
   outputRange: [1, 0.90],
   extrapolate: "clamp",
 });
+
+const updateBadge = async () => {
+  const res = await apiFetch("/notifications/unread-count");
+  await Notifications.setBadgeCountAsync(res.count);
+};
 
 const getUnreadIcon = (type?: string) => {
   switch (type) {
@@ -196,6 +210,12 @@ useEffect(() => {
       fetchRequests();
     }, [])
   );
+
+  const onRefresh = async () => {
+  setRefreshing(true);
+  await fetchRequests();
+  setRefreshing(false);
+};
 
   const requestViewLabels: Record<"requests" | "deals" | "completed", string> = {
   requests: "Demandes",
@@ -314,9 +334,19 @@ const filteredRequests = (() => {
   return (
     <ImageBackground source={fond} >
   <Animated.Text style={{ fontFamily: "Montt", opacity: headerOpacity, marginTop: 50, marginLeft: 10, fontSize: 16 }}>Accueil</Animated.Text>
-<TouchableOpacity onPress={() => router.push({ pathname: "/settings" })} style={{position: "absolute", top: 70, right: 15, zIndex: 99}}>
-      <Image source={settings} style={{height: 40, width: 40, }} />
-      </TouchableOpacity>
+<Animated.View
+  style={{
+    position: "absolute",
+    top: 70,
+    right: 15,
+    zIndex: 99,
+    opacity: settingsOpacity,
+  }}
+>
+  <TouchableOpacity onPress={() => router.push({ pathname: "/settings" })}>
+    <Image source={settings} style={{ height: 40, width: 40 }} />
+  </TouchableOpacity>
+</Animated.View>
 <Animated.ScrollView
   contentContainerStyle={styles.container}
   onScroll={Animated.event(
@@ -324,6 +354,12 @@ const filteredRequests = (() => {
     { useNativeDriver: false }
   )}
   scrollEventThrottle={6}
+   refreshControl={
+    <RefreshControl
+      refreshing={refreshing}
+      onRefresh={onRefresh}
+    />
+  }
 >      
 
 <Animated.View

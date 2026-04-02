@@ -511,4 +511,28 @@ router.delete("/delete-account", auth, async (req, res) => {
   }
 });
 
+
+router.put("/onboarding-complete", auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({ error: "Utilisateur introuvable" });
+    }
+
+    user.onboardingCompleted = true;
+
+    await user.save();
+
+    res.json({
+      message: "Onboarding terminé",
+      onboardingCompleted: true,
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;
