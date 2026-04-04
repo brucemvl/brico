@@ -47,6 +47,7 @@ const { user, updateUser } = context;
 
   // 🔹 states
   const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
   const [location, setLocation] = useState("");
   const [skills, setSkills] = useState<string[]>([]);
   const [equipment, setEquipment] = useState<string[]>([]);
@@ -61,6 +62,7 @@ const [loadingSubmit, setLoadingSubmit] = useState(false);
 
   const steps = [
   "infos",
+  "phone",
   "location",
   "skills",
   "equipment",
@@ -173,6 +175,7 @@ setPortfolio((prev) => [...prev, ...result.assets]);
     const formData = new FormData();
 
     formData.append("name", name);
+    formData.append("phone", phone);
     formData.append("location", location);
     formData.append("description", description);
     formData.append("skills", JSON.stringify(skills));
@@ -237,7 +240,11 @@ router.replace("/homePro");
 
   return (
     <View style={styles.container}>
-
+{step !== 0 && (
+  <TouchableOpacity onPress={skipStep} style={{marginBottom: 50, alignSelf: "flex-end"}}>
+    <Text style={styles.skip}>Ignorer  {">>"}</Text>
+  </TouchableOpacity>
+)}
       {/* 🔥 Progress bar */}
       <View style={styles.progressBar}>
         <View style={[styles.progress, { width: `${progress * 100}%` }]} />
@@ -246,33 +253,61 @@ router.replace("/homePro");
       {/* 🔹 STEP 1 */}
       {step === 0 && (
         <View style={styles.step}>
-          <Text style={styles.title}>Ton nom</Text>
+          <Text style={[styles.title, {marginBottom: 0}]}>Votre nom</Text>
+          <Text style={{fontFamily: "Mont", color: "#555555", marginBottom: 20}}>(Obligatoire)</Text>
 
           <TextInput
             style={styles.input}
-            placeholder="Ex: Jean Dupont"
             value={name}
             onChangeText={setName}
           />
 
           <TouchableOpacity
+  style={[
+    styles.button,
+    !name.trim() && { backgroundColor: "#ccc" } // visuel désactivé
+  ]}
+  disabled={!name.trim()}
+  onPress={async () => {
+    await saveStep({ name });
+    nextStep();
+  }}
+>
+  <Text style={styles.buttonText}>Continuer</Text>
+</TouchableOpacity>
+
+          
+        </View>
+      )}
+
+      {/* 🔹 STEP 2 */}
+      {step === 1 && (
+        <View style={styles.step}>
+          <Text style={styles.title}>Votre numero</Text>
+
+          <TextInput
+            style={styles.input}
+            value={phone}
+            keyboardType="numeric"
+            onChangeText={setPhone}
+          />
+
+          <TouchableOpacity
             style={styles.button}
             onPress={async () => {
-              await saveStep({ name });
+              await saveStep({ phone });
               nextStep();
             }}
           >
             <Text style={styles.buttonText}>Continuer</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity onPress={skipStep}>
-            <Text style={styles.skip}>Passer</Text>
-          </TouchableOpacity>
+          
         </View>
       )}
 
-      {/* 🔹 STEP 2 */}
-      {step === 1 && (
+      {/* 🔹 STEP 3 */}
+      {step === 2 && (
         <View style={styles.step}>
           <Text style={styles.title}>Ta localisation</Text>
 
@@ -312,14 +347,12 @@ router.replace("/homePro");
             <Text style={styles.buttonText}>Continuer</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity onPress={skipStep}>
-            <Text style={styles.skip}>Passer</Text>
-          </TouchableOpacity>
+          
         </View>
-      )}
+      )}      
 
-      {/* 🔹 STEP 3 */}
-      {step === 2 && (
+      {/* 🔹 STEP 4 */}
+      {step === 3 && (
         <View style={styles.step}>
           <Text style={styles.title}>Tes compétences</Text>
 
@@ -333,7 +366,7 @@ router.replace("/homePro");
                 ]}
                 onPress={() => toggleSkill(cat)}
               >
-                <Text>{cat}</Text>
+                <Text style={{fontFamily: "Mont"}}>{cat}</Text>
               </TouchableOpacity>
             ))}
           </View>
@@ -348,14 +381,12 @@ router.replace("/homePro");
             <Text style={styles.buttonText}>Continuer</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity onPress={skipStep}>
-            <Text style={styles.skip}>Passer</Text>
-          </TouchableOpacity>
+       
         </View>
       )}
 
-      {/* 🔹 STEP 4 */}
-      {step === 3 && (
+      {/* 🔹 STEP 5 */}
+      {step === 4 && (
         <View style={styles.step}>
           <Text style={styles.title}>Ton matériel</Text>
 
@@ -369,7 +400,7 @@ router.replace("/homePro");
                 ]}
                 onPress={() => toggleEquipment(item)}
               >
-                <Text>{item}</Text>
+                <Text style={{fontFamily: "Mont"}}>{item}</Text>
               </TouchableOpacity>
             ))}
           </View>
@@ -384,14 +415,12 @@ router.replace("/homePro");
             <Text style={styles.buttonText}>Continuer</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity onPress={skipStep}>
-            <Text style={styles.skip}>Passer</Text>
-          </TouchableOpacity>
+          
         </View>
       )}
 
-      {/* 🔹 STEP 5 */}
-      {step === 4 && (
+      {/* 🔹 STEP 6 */}
+      {step === 5 && (
         <View style={styles.step}>
           <Text style={styles.title}>Description</Text>
 
@@ -413,14 +442,12 @@ router.replace("/homePro");
             <Text style={styles.buttonText}>Continuer</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity onPress={skipStep}>
-            <Text style={styles.skip}>Passer</Text>
-          </TouchableOpacity>
+        
         </View>
       )}
 
-{/* 🔹 STEP 6 */}
-      {step === 5 && (
+{/* 🔹 STEP 7 */}
+      {step === 6 && (
   <View style={styles.step}>
     <Text style={styles.title}>Photo de profil</Text>
 {profileImage && (
@@ -439,9 +466,9 @@ router.replace("/homePro");
   </View>
 )}
 
-{/* 🔹 STEP 7 */}
+{/* 🔹 STEP 8 */}
 
-{step === 6 && (
+{step === 7 && (
   <View style={styles.step}>
     <Text style={styles.title}>Tes réalisations</Text>
 {portfolio.map((image, index) => (
@@ -476,30 +503,31 @@ router.replace("/homePro");
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
-    justifyContent: "center"
+    paddingInline: 30,
+    paddingTop: 120
   },
 
   progressBar: {
     height: 6,
-    backgroundColor: "#eee",
+    backgroundColor: "#e6e6e6",
     borderRadius: 10,
     marginBottom: 30
   },
 
   progress: {
     height: 6,
-    backgroundColor: "#007AFF",
+    backgroundColor: "#1a5b4f",
     borderRadius: 10
   },
 
   step: {
-    alignItems: "center"
+    alignItems: "center",
   },
 
   title: {
     fontSize: 22,
-    marginBottom: 20
+    marginBottom: 20,
+    fontFamily: "Montt"
   },
 
   input: {
@@ -520,29 +548,31 @@ const styles = StyleSheet.create({
     padding: 10,
     borderWidth: 1,
     borderRadius: 20,
-    margin: 5
+    margin: 4
   },
 
   tagActive: {
-    backgroundColor: "#a0e7ff"
+    backgroundColor: "#44d5aa"
   },
 
   button: {
-    backgroundColor: "#007AFF",
+    backgroundColor: "#1a5b4f",
     padding: 15,
     borderRadius: 20,
-    width: "100%",
+    width: "80%",
     alignItems: "center",
     marginTop: 20
   },
 
   buttonText: {
     color: "white",
-    fontSize: 16
+    fontSize: 16,
+    fontFamily: "Mont"
   },
 
   skip: {
     marginTop: 15,
-    color: "#999"
+    color: "#999",
+    fontFamily: "Kanito"
   }
 });

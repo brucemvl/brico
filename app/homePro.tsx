@@ -506,9 +506,9 @@ const filteredRequests = (() => {
                   </View>
 <View style={styles.cardContainer}>
 <View style={{gap: 4}}>
-                  <Text style={{fontFamily: "Londrina", fontSize: 16, color: "#783516"}}>Catégorie : {item.category}</Text>
-                  <Text style={{fontFamily: "Londrina", fontSize: 16, color: "#783516"}}>Lieu : {item.location}</Text>
-                  <Text style={{fontFamily: "Londrina", fontSize: 16, color: "#783516"}}>Budget : {item.budget}€</Text>
+                  <Text style={{fontFamily: "Londrina", fontSize: 16, color: "#000000"}}>Catégorie : {item.category}</Text>
+                  <Text style={{fontFamily: "Londrina", fontSize: 16, color: "#000000"}}>Lieu : {item.location}</Text>
+                  <Text style={{fontFamily: "Londrina", fontSize: 16, color: "#000000"}}>Budget : {item.budget}€</Text>
                  </View>
                  {item.images && item.images.length > 0 && (
   <View style={styles.thumbRow}>
