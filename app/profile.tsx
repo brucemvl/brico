@@ -18,7 +18,7 @@ import { useApi } from "../services/api";
 
 
 const defaultAvatar =
-  "https://res.cloudinary.com/ton-cloud-name/image/upload/v123456/default-profile.png";
+  "https://res.cloudinary.com/dwjssp2pd/image/upload/v1773074497/default_pro.jpg";
 
 export default function Profile() {
   const { apiFetch } = useApi();
@@ -176,7 +176,7 @@ useEffect(() => {
     : user.equipment;
 
   return (
-<ImageBackground source={fond}>
+<ImageBackground source={fond} style={{flex: 1}}>
   <Animated.Text style={{ fontFamily: "Montt", opacity: headerOpacity, marginTop: 50, marginLeft: 10, fontSize: 16 }}>Profil de {user?.name}</Animated.Text>
 <BackButton />
 <Animated.ScrollView
@@ -332,8 +332,10 @@ title={user.name}
 
       {user.ratings?.length > 0 && (
 <View style={styles.section}>
+  <View style={{flexDirection: "row", justifyContent: "space-between", borderBottomWidth: 4, paddingBottom: 10}}>
 <Text style={styles.title}>Avis clients</Text>
-
+<Text style={{fontFamily: "Montt", fontSize: 18}}>{formatRating(user?.averageRating)} ⭐</Text>
+</View>
 {user.ratings.map((rating:any)=>(
 <View key={rating._id} style={styles.review}>
 <View>
@@ -347,8 +349,10 @@ title={user.name}
 </Text>
 )}
 </View>
+<View>
+  <Text>{rating?.userName}</Text>
 <Text style={{fontFamily: "Kanit"}}>{formatDate(rating.date)}</Text>
-
+</View>
 </View>
 ))}
 
@@ -483,7 +487,9 @@ paddingBottom: 60  },
   portfolioImage: {
     width: 110,
     height: 110,
-    borderRadius: 8,
+    borderRadius: 12,
+    borderColor: "#f3f3f3",
+    borderWidth: 2
   },
   badges:{
 flexDirection:"row",
@@ -507,7 +513,7 @@ fontFamily: "Montt",
 padding: 1
 },
 review:{
-marginBottom:12,
+marginBlock:12,
 paddingBottom:10,
 borderBottomWidth:1,
 borderColor:"#e1e1e1",

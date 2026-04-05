@@ -31,7 +31,14 @@ const equipmentOptions = [
   "Ponceuse",
   "Multimètre",
   "Escabeau",
+  "Pinceaux",
+  "Rouleaux",
   "Camion",
+  "Laser",
+  "Bache de protection",
+  "Scie sauteuse",
+   "Scie circulaire",
+   "Coupe carrelage"
 ];
 
 export default function OnboardingPro() {
@@ -253,7 +260,7 @@ router.replace("/homePro");
       {/* 🔹 STEP 1 */}
       {step === 0 && (
         <View style={styles.step}>
-          <Text style={[styles.title, {marginBottom: 0}]}>Votre nom</Text>
+          <Text style={[styles.title, {marginBottom: 0}]}>Ton nom</Text>
           <Text style={{fontFamily: "Mont", color: "#555555", marginBottom: 20}}>(Obligatoire)</Text>
 
           <TextInput
@@ -283,7 +290,7 @@ router.replace("/homePro");
       {/* 🔹 STEP 2 */}
       {step === 1 && (
         <View style={styles.step}>
-          <Text style={styles.title}>Votre numero</Text>
+          <Text style={styles.title}>Ton numero</Text>
 
           <TextInput
             style={styles.input}
@@ -309,7 +316,7 @@ router.replace("/homePro");
       {/* 🔹 STEP 3 */}
       {step === 2 && (
         <View style={styles.step}>
-          <Text style={styles.title}>Ta localisation</Text>
+          <Text style={styles.title}>Ta ville</Text>
 
           <Autocomplete
                   data={cities}

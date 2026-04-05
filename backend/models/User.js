@@ -5,7 +5,8 @@ const ratingSchema = new mongoose.Schema({
   request: { type: mongoose.Schema.Types.ObjectId, ref: "Request", required: true },
   score: { type: Number, min: 1, max: 5, required: true },
   comment: String,
-  date: { type: Date, default: Date.now }
+  date: { type: Date, default: Date.now },
+
 });
 
 const notificationSchema = new mongoose.Schema({
@@ -140,7 +141,7 @@ userSchema.pre("save", async function () {
 
     if (this.role === "client") {
       this.profileImage = {
-        url: "https://res.cloudinary.com/dwjssp2pd/image/upload/v1773074497/default_client.jpg",
+        url: "https://res.cloudinary.com/dwjssp2pd/image/upload/v1775330960/default_client.png",
         public_id: ""
       };
     }

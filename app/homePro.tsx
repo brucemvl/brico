@@ -64,6 +64,7 @@ export default function HomePro() {
   location?: string;
   profileImage?: { url?: string };
   averageRating?: number;
+  proBadge?: boolean
 };
 
 const [requestView, setRequestView] = useState<"requests" | "deals" | "completed">("requests");
@@ -379,6 +380,7 @@ const filteredRequests = (() => {
   style={styles.avatar}
 />
 </TouchableOpacity>
+{profile?.proBadge && <View style={{backgroundColor: "gold",  borderRadius: 10, height: 20, width: 20, alignItems: "center", justifyContent: "center", position: "absolute", right: 135}}><Text style={{fontSize: 10}}>✔️</Text></View> }
       <TouchableOpacity
         onPress={() => router.push({ pathname: "/profilePro" })}
         style={styles.profileButton}
@@ -387,7 +389,7 @@ const filteredRequests = (() => {
       </TouchableOpacity>
       </View>
       <LinearGradient colors={[ "#30a590", "#1a5b4f","#1a5b4f" ]} style={{width: "100%", alignItems: "center", paddingInline: 20, paddingTop: 54, paddingBottom: 24, borderRadius: 20, gap: 4}}>
-      <Text style={{fontFamily: "Londrinak", fontSize: 16, color: "white", letterSpacing: 0.3 }}>{profile?.name}</Text>
+      <Text style={{fontFamily: "Londrinak", fontSize: 17, color: "white", letterSpacing: 0.3 }}>{profile?.name}</Text>
       {profile?.location && 
       <Text style={{fontFamily: "Londrinak", fontSize: 16, color: "white", letterSpacing: 0.3 }}>{profile?.location}</Text>
       }
@@ -459,14 +461,14 @@ const filteredRequests = (() => {
           style={[styles.filterButton, activeFilter === "skills" && styles.activeFilter]}
           onPress={() => setActiveFilter("skills")}
         >
-          <Text style={styles.filterText}>Mes compétences</Text>
+          <Text style={[styles.filterText, activeFilter === "skills" && {fontFamily: "Montt", color: "#fff"}]}>Mes compétences</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           style={[styles.filterButton, activeFilter === "all" && styles.activeFilter]}
           onPress={() => setActiveFilter("all")}
         >
-          <Text style={styles.filterText}>Toutes</Text>
+          <Text style={[styles.filterText, activeFilter === "all" && {fontFamily: "Montt", color: "#fff"}]}>Toutes</Text>
         </TouchableOpacity>
 
         {categories.map(cat => (
@@ -476,7 +478,7 @@ const filteredRequests = (() => {
             onPress={() => setActiveFilter(cat)}
           >
             <View style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
-              <Text style={styles.filterText}>{cat}</Text>
+              <Text style={[styles.filterText, activeFilter === cat && {fontFamily: "Montt", color: "#fff"}]}>{cat}</Text>
               {hasUnreadByCategory[cat] && <View style={styles.categoryBadge} />}
             </View>
           </TouchableOpacity>
@@ -589,7 +591,7 @@ header: {
 
   },
   filterText: {fontFamily: "Mont"},
-  activeFilter: { backgroundColor: "#a4a4a4" },
+  activeFilter: { backgroundColor: "#909090" },
 
   requestsContainer: { width: "100%", paddingHorizontal: 20, alignItems: "center" },
   card: { borderWidth: 5, borderColor: "#1a5b4f", borderRadius: 16, marginBottom: 12, width: "100%", backgroundColor: "#f3f3f3" },

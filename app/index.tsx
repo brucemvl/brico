@@ -10,7 +10,7 @@ import {
   Text,
   TouchableWithoutFeedback
 } from 'react-native';
-import logo from "../assets/briconnect1.png";
+import logo from "../assets/briconnect3.png";
 import { AuthContext } from '../context/AuthContext';
 
 const { width } = Dimensions.get('window');
@@ -92,7 +92,7 @@ export default function Welcome() {
           },
         ]}
       >
-<Image source={logo} style={{height: 180, width: 180}}/>        <Text style={styles.subtitle}>
+<Image source={logo} style={{height: 180, width: 180, backgroundColor: "#fff", borderRadius: 90}}/>        <Text style={styles.subtitle}>
           Trouvez le bon professionnel en quelques secondes.
         </Text>
 
@@ -114,7 +114,7 @@ export default function Welcome() {
               colors={['#007AFF', '#0051FF']}
               style={styles.button}
             >
-<Text style={styles.buttonTitle}>Besoin d’un artisan</Text>
+<Text style={styles.buttonTitle}>Besoin d’un bricoleur</Text>
 
             </LinearGradient>
           </Animated.View>

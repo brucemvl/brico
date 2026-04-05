@@ -38,7 +38,7 @@ type ProfileType = {
   averageRating?: number;
 };
 
-const defaultAvatar = "https://res.cloudinary.com/dwjssp2pd/image/upload/v1773074497/default_client.jpg";
+const defaultAvatar = "https://res.cloudinary.com/dwjssp2pd/image/upload/v1775330960/default_client.png";
 
 
 export default function HomeClient() {

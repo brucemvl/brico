@@ -48,6 +48,7 @@ if (type === "deal") title = "🤝 Proposition";
 if (type === "request") title = "📢 Nouvelle demande";
 
 
+
     let body = "Nouvelle notification";
 
     if (type === "request") body = "Nouvelle demande disponible";

@@ -21,6 +21,7 @@ import {
 } from "react-native";
 import Autocomplete from "react-native-autocomplete-input";
 import fond from "../assets/convert_1.png";
+import trash from "../assets/icons/trash2.png";
 import { useApi } from "../services/api";
 
 
@@ -35,11 +36,14 @@ const equipmentOptions = [
   "Ponceuse",
   "Multimètre",
   "Escabeau",
+  "Pinceaux",
+  "Rouleaux",
   "Camion",
   "Laser",
   "Bache de protection",
   "Scie sauteuse",
-   "Scie circulaire"
+   "Scie circulaire",
+   "Coupe carrelage"
 ];
 
 export default function ProfilePro() {
@@ -480,11 +484,12 @@ Alert.alert(
               </View>
             )}
 
+            
             <TouchableOpacity
-              style={styles.deleteButton}
               onPress={() => removePortfolioImage(img, index)}
+              style={styles.deleteButton}
             >
-              <Text style={styles.deleteText}>✕</Text>
+              <Image source={trash} style={{height: 18, width: 18}}/>
             </TouchableOpacity>
           </View>
         ))}
@@ -575,18 +580,19 @@ borderRadius: 20
     margin: 5,
   },
   portfolioImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 8,
+    width: 95,
+    height: 95,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: "#fff"
   },
   deleteButton: {
   position: "absolute",
   top: -8,
   right: -8,
-  backgroundColor: "rgba(0,0,0,0.6)",
-  width: 24,
-  height: 24,
-  borderRadius: 12,
+  backgroundColor: "rgb(255, 255, 255)",
+  padding: 4,
+  borderRadius: 10,
   justifyContent: "center",
   alignItems: "center",
 },
