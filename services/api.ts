@@ -54,7 +54,17 @@ try {
 if (!res.ok) {
   console.log("STATUS:", res.status);
   console.log("BODY:", text);
-  throw new Error(text);
+
+  let errorMessage = "Une erreur est survenue";
+
+  try {
+    const parsed = JSON.parse(text);
+    errorMessage = parsed.error || parsed.message || text;
+  } catch (e) {
+    errorMessage = text;
+  }
+
+  throw new Error(errorMessage);
 }
 
 return data;
