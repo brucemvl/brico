@@ -179,7 +179,8 @@ await createNotification({
   userId: receiverId,
   type: "message",
   requestId: conversation.request,
-  conversationId: conversation._id
+  conversationId: conversation._id,
+    senderId: req.user.id
 });
     await conversation.populate("messages.from", "name profileImage");
 
@@ -338,10 +339,9 @@ if (req.user.role === "pro") {
 
 await createNotification({
   userId: receiverId,
-  type: "deal",
+  type: "offer_accepted",
   requestId: conversation.request,
   conversationId: conversation._id,
-  senderId: req.user.id
 });
 
     if (dealAccepted) {

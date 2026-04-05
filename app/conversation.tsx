@@ -353,7 +353,7 @@ const canReview =
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       {/* ACTIONS */}
-      <ScrollView style={{flexGrow: 1, paddingInline: 20}} contentContainerStyle={{paddingBottom: 40, paddingTop: 100}}>
+      <ScrollView style={{flexGrow: 1, paddingInline: 12}} contentContainerStyle={{paddingBottom: 40, paddingTop: 100}}>
       <View style={styles.actions}>
 
         {!clientProposed && !proProposed && !dealAccepted && (
@@ -498,7 +498,7 @@ style={styles.inputModal}
 
        {/* MESSAGES */}
        {conversation.messages.length > 0 &&
-       <LinearGradient colors={["#cecececb", "#7f7f7fec"]} style={{flex: 1, borderRadius: 20, padding: 4}}>
+       <LinearGradient colors={["#cecececb", "#7f7f7fec"]} style={{flex: 1, borderRadius: 20, padding: 3}}>
       <ScrollView
         ref={scrollRef}
         style={styles.messages}
@@ -589,7 +589,7 @@ const styles = StyleSheet.create({
   contactBox: { padding: 10, backgroundColor: "#dfdfdf", margin: 10, borderRadius: 8, flexDirection: "row", alignItems: "center", gap: 20 },
   contactText: { fontSize: 16, marginBottom: 5, fontFamily: "Kanito", color: "#007AFF" },
   messages: {  padding: 15 },
-  messageBubble: { padding: 10, borderRadius: 10,  maxWidth: "80%" },
+  messageBubble: { paddingInline: 10, paddingBlock: 4, borderRadius: 10,  maxWidth: "80%" },
   myMessage: { alignSelf: "flex-end", backgroundColor: "#DCF8C6" },
   otherMessage: { alignSelf: "flex-start", backgroundColor: "#eee" },
   author: { fontFamily: "Londrinak", marginBottom: 3 },
