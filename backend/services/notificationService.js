@@ -60,7 +60,7 @@ if (senderId) {
 
     if (type === "request") body = "Nouvelle demande disponible";
     if (type === "message") {
-  body = `💬 ${senderName} vous a envoyé un message`;
+  body = `vous avez recu un message${senderName !== "Quelqu'un" ? `de ${senderName}` : null} `;
 }
     if (type === "deal") body = "Nouvelle proposition";
     if (type === "review") body = "Nouvel avis reçu";
