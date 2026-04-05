@@ -61,4 +61,21 @@ router.post("/:id/read", auth, async (req, res) => {
   }
 });
 
+//ACTIVER OU DESACTIVER NOTIFS
+router.put("/me/notifications", auth, async (req, res) => {
+  try {
+    const updates = req.body;
+
+    const user = await User.findByIdAndUpdate(
+      req.user.id,
+      { notificationPreferences: updates },
+      { new: true }
+    );
+
+    res.json(user.notificationPreferences);
+  } catch (err) {
+    res.status(500).json({ error: "Erreur serveur" });
+  }
+});
+
 module.exports = router;

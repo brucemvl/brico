@@ -92,6 +92,13 @@ onboardingCompleted: {
   default: false
 },
 
+notificationPreferences: {
+  message: { type: Boolean, default: true },
+  deal: { type: Boolean, default: true },
+  request: { type: Boolean, default: true },
+  review: { type: Boolean, default: true },
+},
+
   ratings: [ratingSchema],
   averageRating: { type: Number, default: 0 },
 

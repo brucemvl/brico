@@ -1,23 +1,33 @@
 import BackButton from '@/components/BackButton';
 import * as Haptics from 'expo-haptics';
 import { useRouter } from "expo-router";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
-    ActivityIndicator,
-    Alert,
-    Animated,
-    ImageBackground,
-    KeyboardAvoidingView,
-    Platform,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    TouchableWithoutFeedback,
-    View
+  ActivityIndicator,
+  Alert,
+  Animated,
+  ImageBackground,
+  KeyboardAvoidingView,
+  Platform,
+  StyleSheet,
+  Switch,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View
 } from "react-native";
 import fond from "../assets/convert_1.png";
 import { useApi } from "../services/api";
+
+type NotificationPrefs = {
+  message: boolean;
+  deal: boolean;
+  request: boolean;
+  review: boolean;
+};
+
+type NotificationType = keyof NotificationPrefs;
 
 export default function SettingsScreen() {
   const { apiFetch } = useApi();
@@ -27,6 +37,13 @@ export default function SettingsScreen() {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+
+  const [notifications, setNotifications] = useState<NotificationPrefs>({
+  message: true,
+  deal: true,
+  request: true,
+  review: true
+});
 
   const [loading, setLoading] = useState(false);
 
@@ -46,6 +63,48 @@ export default function SettingsScreen() {
       useNativeDriver: true,
     }).start();
   };
+
+useEffect(() => {
+  const loadPrefs = async () => {
+    try {
+      const data = await apiFetch("/users/me");
+      if (data.notificationPreferences) {
+        setNotifications(data.notificationPreferences);
+      }
+    } catch {}
+  };
+
+  loadPrefs();
+}, []);
+
+  useEffect(() => {
+  const loadPrefs = async () => {
+    try {
+      const user = await apiFetch("/users/me");
+
+      if (user.notificationPreferences) {
+        setNotifications(user.notificationPreferences);
+      }
+    } catch (err) {
+      console.log("Erreur chargement prefs");
+    }
+  };
+
+  loadPrefs();
+}, []);
+
+const updateNotifications = async (newPrefs: NotificationPrefs) => {
+    try {
+    await apiFetch("/users/me/notifications", {
+      method: "PUT",
+      body: JSON.stringify(newPrefs)
+    });
+
+    setNotifications(newPrefs); // ✅ après succès
+  } catch (err) {
+    Alert.alert("Erreur", "Impossible de mettre à jour");
+  }
+};
 
   const validateEmail = (email) => /\S+@\S+\.\S+/.test(email);
 
@@ -143,6 +202,32 @@ export default function SettingsScreen() {
 
         <View style={styles.container}>
           <Text style={styles.title}>Paramètres</Text>
+
+          <View style={styles.box}>
+  <Text style={styles.label}>Notifications</Text>
+
+{(["message", "deal", "request", "review"] as NotificationType[]).map((type) => (
+      <View key={type} style={styles.row}>
+      <Text style={{ color: "white", fontFamily: "Mont" }}>
+  {{
+    message: "Messages",
+    deal: "Propositions",
+    request: "Nouvelles demandes",
+    review: "Avis"
+  }[type]}
+</Text>
+
+      <Switch
+        value={notifications[type]}
+        onValueChange={(value) => {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          updateNotifications({ ...notifications, [type]: value })
+        }
+        }
+      />
+    </View>
+  ))}
+</View>
 
           {/* EMAIL */}
           <View style={styles.box}>
@@ -258,5 +343,11 @@ const styles = StyleSheet.create({
   deleteText: {
     color: "white",
     fontFamily: "Montt"
-  }
+  },
+  row: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center",
+  marginBottom: 10
+}
 });

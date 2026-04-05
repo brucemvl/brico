@@ -565,7 +565,8 @@ modalImage: {
   height: 420,
   borderRadius: 18,
   backgroundColor: "#fff",
-},
+borderColor: "#fff",
+  borderWidth: 1},
 
 modalNav: {
   marginTop: 14,
@@ -582,6 +583,8 @@ navButton: {
   backgroundColor: "#1a5b4f",
   alignItems: "center",
   justifyContent: "center",
+  borderColor: "#fff",
+  borderWidth: 1
 },
 
 navButtonText: {

@@ -206,7 +206,7 @@ export default function RequestDetailClient() {
           <TouchableOpacity key={conv._id} style={styles.conversationCard} onPress={openConversation}>
             {conv.pro.profileImage?.url && <Image source={{ uri: conv.pro.profileImage.url }} style={styles.avatar} />}
             <View style={{ flex: 1 }}>
-              <Text style={{ fontFamily: "Londrinak", fontSize: 16 }}>{conv.pro.name}</Text>
+              <Text style={{ fontFamily: "Londrinak", fontSize: 17 }}>{conv.pro.name}</Text>
               {conv.messages?.length > 0 && <Text numberOfLines={1} style={{fontFamily: "Kanit"}}>{conv.messages[conv.messages.length - 1].content}</Text>}
             </View>
             {unread > 0 && (

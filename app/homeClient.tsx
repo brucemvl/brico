@@ -321,9 +321,9 @@ console.log(
             </TouchableOpacity>
           </View>
           <LinearGradient colors={["#30a590", "#1a5b4f", "#1a5b4f"]} style={{ width: "100%", alignItems: "center", paddingInline: 20, paddingTop: 54, paddingBottom: 24, borderRadius: 20, gap: 4 }}>
-            <Text style={{ fontFamily: "Londrinak", fontSize: 16, color: "white", letterSpacing: 0.3 }}>{profile?.name}</Text>
+            <Text style={{ fontFamily: "Montt", fontSize: 16, color: "white", letterSpacing: 0.3 }}>{profile?.name}</Text>
             {profile?.location &&
-              <Text style={{ fontFamily: "Londrinak", fontSize: 16, color: "white", letterSpacing: 0.3 }}>{profile?.location}</Text>
+              <Text style={{ fontFamily: "Montt", fontSize: 14, color: "white", letterSpacing: 0.3 }}>{profile?.location}</Text>
             }
             {/* ⭐ Rating pro */}
             {typeof profile?.averageRating === "number" && (

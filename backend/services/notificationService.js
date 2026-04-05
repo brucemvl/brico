@@ -4,7 +4,7 @@ const sendPushNotification = require("../utils/sendPushNotification");
 
 async function createNotification({ userId, type, requestId, conversationId, senderId }) {
 
-  const allowedTypes = ["message", "deal", "review", "request"];
+const allowedTypes = ["message", "deal", "review", "request", "offer_accepted"];
 
   let senderName = "Quelqu’un";
 
@@ -44,7 +44,14 @@ if (senderId) {
   }
 
   // 🔔 PUSH (toujours envoyé)
-  const user = await User.findById(userId).select("expoPushToken");
+const user = await User.findById(userId).select("expoPushToken notificationPreferences");
+
+if (!user) return;
+
+// 🔕 Vérifier préférences
+if (user.notificationPreferences && user.notificationPreferences[type] === false) {
+  return; // ❌ on n'envoie pas la notif
+}
 
   if (user?.expoPushToken) {
     let title = "Notification";
@@ -60,7 +67,9 @@ if (senderId) {
 
     if (type === "request") body = "Nouvelle demande disponible";
     if (type === "message") {
-  body = `vous avez recu un message${senderName !== "Quelqu’un" ? ` de ${senderName}` : ""} `;
+ body = senderName !== "Quelqu’un"
+  ? `${senderName} vous a envoyé un message`
+  : "Vous avez reçu un message";
 }
     if (type === "deal") body = "Nouvelle proposition";
     if (type === "review") body = "Nouvel avis reçu";
