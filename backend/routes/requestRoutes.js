@@ -11,6 +11,22 @@ const sharp = require("sharp");
 const fetch = require("node-fetch");
 const User = require("../models/User");
 
+
+// 🔒 Fonction de détection avancée
+const containsContactInfo = (text) => {
+  if (!text) return false;
+
+  // Email classique + variantes simples (ex: test(at)gmail.com)
+  const emailRegex =
+    /\b[A-Z0-9._%+-]+(@|\(at\)|\[at\]|\sat\s)[A-Z0-9.-]+(\.|\(dot\)|\[dot\]|\sdot\s)[A-Z]{2,}\b/i;
+
+  // Numéro FR + international + formats variés
+  const phoneRegex =
+    /(\+?\d{1,3}[\s.-]?)?(\(?\d{1,3}\)?[\s.-]?)?(\d[\s.-]?){6,}/;
+
+  return emailRegex.test(text) || phoneRegex.test(text);
+};
+
 // =======================
 // 🔹 GET demandes du client connecté
 // =======================
@@ -420,12 +436,23 @@ router.post("/:id/message", auth, async (req, res) => {
   try {
     const { content, proId } = req.body;
 
+    // 🔹 Vérification message vide
     if (!content || !content.trim()) {
       return res.status(400).json({ error: "Message vide" });
     }
 
+    // 🔒 Blocage coordonnées
+    if (containsContactInfo(content)) {
+      return res.status(400).json({
+        error:
+          "🔒 Pour votre sécurité, le partage d’email ou de numéro de téléphone est interdit avant validation de la mission."
+      });
+    }
+
     const request = await Request.findById(req.params.id);
-    if (!request) return res.status(404).json({ error: "Demande introuvable" });
+    if (!request) {
+      return res.status(404).json({ error: "Demande introuvable" });
+    }
 
     let conversation;
 
@@ -443,7 +470,8 @@ router.post("/:id/message", auth, async (req, res) => {
           messages: [],
         });
       }
-      conversation.lastReadByPro = new Date(); // ✅ ici
+
+      conversation.lastReadByPro = new Date();
 
     } else if (req.user.role === "client") {
       if (!proId) {
@@ -464,10 +492,11 @@ router.post("/:id/message", auth, async (req, res) => {
           messages: [],
         });
       }
-      conversation.lastReadByClient = new Date(); // ✅ ici
+
+      conversation.lastReadByClient = new Date();
     }
 
-
+    // 🔹 Ajout message
     conversation.messages.push({
       from: req.user.id,
       content,
@@ -475,32 +504,35 @@ router.post("/:id/message", auth, async (req, res) => {
       createdAt: new Date(),
     });
 
+    // 🔹 Updates activité
     conversation.lastInteractionBy = req.user.id;
-conversation.lastInteractionAt = new Date();
+    conversation.lastInteractionAt = new Date();
 
-if (req.user.role === "client") {
-  conversation.lastClientUpdateAt = new Date();
-}
+    if (req.user.role === "client") {
+      conversation.lastClientUpdateAt = new Date();
+    }
 
-if (req.user.role === "pro") {
-  conversation.lastProUpdateAt = new Date(); // ⭐ IMPORTANT
-}
+    if (req.user.role === "pro") {
+      conversation.lastProUpdateAt = new Date();
+    }
 
     await conversation.save();
     await conversation.populate("messages.from", "name profileImage");
 
-    const receiverId = req.user.role === "pro"
-      ? conversation.client
-      : conversation.pro;
+    const receiverId =
+      req.user.role === "pro"
+        ? conversation.client
+        : conversation.pro;
 
     await createNotification({
       userId: receiverId,
       type: "message",
       requestId: request._id,
-      conversationId: conversation._id
+      conversationId: conversation._id,
     });
 
     res.json(conversation);
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: err.message });

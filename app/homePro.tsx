@@ -14,6 +14,7 @@ import {
   TouchableOpacity,
   View
 } from "react-native";
+import logo from "../assets/briconnect33.png";
 import fond from "../assets/convert_1.png";
 import msg from "../assets/icons/enveloppe.png";
 import modifier from "../assets/icons/modifier.png";
@@ -21,6 +22,7 @@ import notifIcon from "../assets/icons/notif.png";
 import settings from "../assets/icons/settings.png";
 import star from "../assets/icons/star.png";
 import { useApi } from "../services/api";
+
 
 
 
@@ -90,7 +92,7 @@ const [pickerOpen, setPickerOpen] = useState(false);
 
 const settingsOpacity = scrollY.interpolate({
   inputRange: [0, 100],
-  outputRange: [1, 0.5], // 👈 devient transparent
+  outputRange: [1, 0.6], // 👈 devient transparent
   extrapolate: "clamp",
 });
 
@@ -334,7 +336,9 @@ const filteredRequests = (() => {
 
   return (
     <ImageBackground source={fond} >
-  <Animated.Text style={{ fontFamily: "Montt", opacity: headerOpacity, marginTop: 50, marginLeft: 10, fontSize: 16 }}>Accueil</Animated.Text>
+  <Animated.View style={{opacity: headerOpacity,  flexDirection: "row", alignItems: "center", position: "relative", top: 30, paddingBottom: 15 }}>
+    <Image source={logo} style={{height: 60, width: 60}}/>
+    <Text style={{ fontFamily: "Montt" , fontSize: 16}}>Accueil</Text></Animated.View>
 <Animated.View
   style={{
     position: "absolute",
