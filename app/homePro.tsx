@@ -335,7 +335,7 @@ const filteredRequests = (() => {
 
 
   return (
-    <ImageBackground source={fond} >
+    <ImageBackground source={fond} style={{flex: 1}} >
   <Animated.View style={{opacity: headerOpacity,  flexDirection: "row", alignItems: "center", position: "relative", top: 30, paddingBottom: 15 }}>
     <Image source={logo} style={{height: 60, width: 60}}/>
     <Text style={{ fontFamily: "Montt" , fontSize: 16}}>Accueil</Text></Animated.View>
@@ -595,7 +595,7 @@ header: {
 
   },
   filterText: {fontFamily: "Mont"},
-  activeFilter: { backgroundColor: "#909090" },
+  activeFilter: { backgroundColor: "#1a5b4f" },
 
   requestsContainer: { width: "100%", paddingHorizontal: 20, alignItems: "center" },
   card: { borderWidth: 5, borderColor: "#1a5b4f", borderRadius: 16, marginBottom: 12, width: "100%", backgroundColor: "#f3f3f3" },

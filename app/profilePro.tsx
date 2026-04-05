@@ -243,7 +243,6 @@ setSkills(Array.isArray(data.skills) ? data.skills : []);
 
     const data = await res.json();
 
-    // Trier pour mettre Bagneux 92 en premier
     const sorted = data.sort((a, b) => {
       if (a.departement.code === "92") return -1;
       if (b.departement.code === "92") return 1;

@@ -445,7 +445,7 @@ router.post("/:id/message", auth, async (req, res) => {
     if (containsContactInfo(content)) {
       return res.status(400).json({
         error:
-          "Validez un accord afin de pouvoir partager vos coordonnées"
+          "🔒 Validez un accord afin de pouvoir partager vos coordonnées"
       });
     }
 
@@ -529,6 +529,7 @@ router.post("/:id/message", auth, async (req, res) => {
       type: "message",
       requestId: request._id,
       conversationId: conversation._id,
+      senderId: req.user.id
     });
 
     res.json(conversation);
