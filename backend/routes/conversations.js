@@ -340,7 +340,8 @@ await createNotification({
   userId: receiverId,
   type: "deal",
   requestId: conversation.request,
-  conversationId: conversation._id
+  conversationId: conversation._id,
+  senderId: req.user.id
 });
 
     if (dealAccepted) {
