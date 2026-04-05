@@ -445,7 +445,7 @@ router.post("/:id/message", auth, async (req, res) => {
     if (containsContactInfo(content)) {
       return res.status(400).json({
         error:
-          "🔒 Pour votre sécurité, le partage d’email ou de numéro de téléphone est interdit avant validation de la mission."
+          "Validez un accord afin de pouvoir partager vos coordonnées"
       });
     }
 

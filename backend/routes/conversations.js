@@ -142,8 +142,8 @@ router.post("/:id/message", auth, async (req, res) => {
     }
 
     const text = content;
-    const emailRegex = /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/i;
-    const phoneRegex = /(\+?\d[\d\s]{7,})/;
+    const emailRegex = /\b[A-Z0-9._%+-]+(@|\(at\)|\[at\]|\sat\s)[A-Z0-9.-]+(\.|\(dot\)|\[dot\]|\sdot\s)[A-Z]{2,}\b/i;
+    const phoneRegex = /(\+?\d{1,3}[\s.-]?)?(\(?\d{1,3}\)?[\s.-]?)?(\d[\s.-]?){6,}/;
 
     const dealAccepted =
       (conversation.dealProposedByPro && conversation.dealAcceptedByClient) ||

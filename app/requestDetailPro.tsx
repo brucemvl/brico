@@ -239,8 +239,9 @@ const [request, setRequest] = useState<RequestType>({
 
     setMessage("");
     scrollRef.current?.scrollToEnd({ animated: true });
-  } catch (err) {
-    console.error(err);
+  } catch (e: any) {
+    console.error(e);
+    Alert.alert("Erreur", e.message);
   }
 };
 
