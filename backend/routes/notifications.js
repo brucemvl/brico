@@ -63,8 +63,8 @@ router.post("/:id/read", auth, async (req, res) => {
 });
 
 //ACTIVER OU DESACTIVER NOTIFS
-router.put("/users/me/notifications", auth, async (req, res) => {
-    try {
+router.put("/me/notifications", auth, async (req, res) => {
+  try {
     const updates = req.body;
 
     const user = await User.findByIdAndUpdate(

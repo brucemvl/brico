@@ -77,25 +77,9 @@ useEffect(() => {
   loadPrefs();
 }, []);
 
-  useEffect(() => {
-  const loadPrefs = async () => {
-    try {
-      const user = await apiFetch("/users/me");
-
-      if (user.notificationPreferences) {
-        setNotifications(user.notificationPreferences);
-      }
-    } catch (err) {
-      console.log("Erreur chargement prefs");
-    }
-  };
-
-  loadPrefs();
-}, []);
-
 const updateNotifications = async (newPrefs: NotificationPrefs) => {
     try {
-    await apiFetch("/users/me/notifications", {
+    await apiFetch("/notifications/me/notifications", {
       method: "PUT",
       body: JSON.stringify(newPrefs)
     });
