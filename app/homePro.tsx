@@ -208,6 +208,11 @@ useEffect(() => {
   }
 };
 
+const finish = requests.filter((element)=> 
+  element.status === "completed"
+)
+console.log(finish.length)
+
   useFocusEffect(
     useCallback(() => {
       fetchRequests();
@@ -372,12 +377,12 @@ const filteredRequests = (() => {
     alignItems: "center",
     marginBlock: 20,
     width: "100%",
-    paddingInline: 20,
+    paddingInline: 12,
     opacity: fadeOut,
     transform: [{ translateY }, { scale }],
   }}
 >
-    <View style={{width: "100%", alignItems: "center", position: "absolute", zIndex: 99, bottom: profile?.location ? 120 : 100}}>
+    <View style={{width: "100%", alignItems: "center", position: "absolute", zIndex: 99, bottom: 90}}>
 <TouchableOpacity onPress={openProfile} >
 <Image
   source={{ uri: profile?.profileImage?.url || defaultAvatar }}
@@ -392,22 +397,32 @@ const filteredRequests = (() => {
         <Image source={modifier} style={{width: 20, height: 20}}/>
       </TouchableOpacity>
       </View>
-      <LinearGradient colors={[ "#30a590", "#1a5b4f","#1a5b4f" ]} style={{width: "100%", alignItems: "center", paddingInline: 20, paddingTop: 54, paddingBottom: 24, borderRadius: 20, gap: 4}}>
-      <Text style={{fontFamily: "Londrinak", fontSize: 17, color: "white", letterSpacing: 0.3 }}>{profile?.name}</Text>
+      <LinearGradient colors={[ "#30a590", "#1a5b4f","#1a5b4f" ]} style={{width: "100%", alignItems: "center", paddingInline: 6, paddingTop: 56, paddingBottom: 24, borderRadius: 20}}>
+      <View style={{flexDirection: "row", justifyContent: "space-between"}}>
+        <View style={{width: "34%", alignItems: "center", justifyContent: "center", gap: 5}}>
+      <Text style={{fontFamily: "Londrinak", fontSize: 14, color: "white", letterSpacing: 0.3 }}>{profile?.name}</Text>
       {profile?.location && 
-      <Text style={{fontFamily: "Londrinak", fontSize: 16, color: "white", letterSpacing: 0.3 }}>{profile?.location}</Text>
+      <Text style={{fontFamily: "Londrinak", fontSize: 12, color: "white", letterSpacing: 0.3, textAlign: "center" }}>{profile?.location}</Text>
       }
+      </View>
+      <View style={{gap: 20, alignItems: "center", borderLeftColor: "#fff", borderLeftWidth: 1, borderRightColor: "#fff", borderRightWidth: 1, width: "32%"}}>
+<Text style={{fontFamily: "Montt", color: "#fff", fontSize: 12}}>Réalisations</Text>
+<Text style={{fontFamily: "Mont", color: "#fff", fontSize: 15}}>{finish.length}</Text>
+      </View>
+      <View style={{width: "34%", alignItems: "center", gap: 20}}>
       {/* ⭐ Rating pro */}
 {typeof profile?.averageRating === "number" && (
   <View style={{ flexDirection: "row"}}>
     {[1,2,3,4,5].map(i => (
-      <Text key={i} style={{ fontSize: 16, color: "white" }}>
+      <Text key={i} style={{ fontSize: 12, color: "white" }}>
         {i <= Math.round(profile?.averageRating ?? 0) ? "⭐" : "☆"}
       </Text>
     ))}
   </View>
 )}
-    <Text style={{fontFamily: "Mont", color: "white"}}>({formatRating(profile?.averageRating)})</Text>
+    <Text style={{fontFamily: "Mont", color: "white", fontSize: 15}}>({formatRating(profile?.averageRating)})</Text>
+    </View>
+    </View>
     </LinearGradient>
 
 </Animated.View>
