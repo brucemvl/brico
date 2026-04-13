@@ -9,39 +9,7 @@ const ratingSchema = new mongoose.Schema({
 
 });
 
-const notificationSchema = new mongoose.Schema({
-  type: {
-    type: String,
-    enum: [
-  "new_request",
-  "new_offer",
-  "new_message",
-  "request_accepted",
-  "deal_update",
-  "deal_accepted"
-]
-  },
 
-  request: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Request"
-  },
-
-  conversation: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Conversation"
-  },
-
-  read: {
-    type: Boolean,
-    default: false
-  },
-
-  createdAt: {
-    type: Date,
-    default: Date.now
-  }
-});
 
 const userSchema = new mongoose.Schema({
 
@@ -79,7 +47,13 @@ equipment: [{ type: String, trim: true }],
 
   skills: [{ type: String, trim: true }],
 
-  subscriptionActive: { type: Boolean, default: false },
+stripeCustomerId: String,
+stripeSubscriptionId: String,
+subscriptionStatus: {
+  type: String,
+  enum: ["active", "inactive", "cancelled", "past_due"],
+  default: "inactive"
+},
   subscriptionStart: Date,
   subscriptionEnd: Date,
 
@@ -119,7 +93,6 @@ portfolio: [
   }
 ],
 
-  notifications: [notificationSchema]
 
 }, { timestamps: true });
 

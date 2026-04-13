@@ -389,7 +389,7 @@ const filteredRequests = (() => {
   style={styles.avatar}
 />
 </TouchableOpacity>
-{profile?.proBadge && <View style={{backgroundColor: "gold",  borderRadius: 10, height: 20, width: 20, alignItems: "center", justifyContent: "center", position: "absolute", right: 135}}><Text style={{fontSize: 10}}>✔️</Text></View> }
+{profile?.proBadge && <View style={{backgroundColor: "gold",  borderRadius: 10, height: 20, width: 20, alignItems: "center", justifyContent: "center", position: "absolute", right: 145}}><Text style={{fontSize: 10}}>✔️</Text></View> }
       <TouchableOpacity
         onPress={() => router.push({ pathname: "/profilePro" })}
         style={styles.profileButton}
@@ -402,7 +402,7 @@ const filteredRequests = (() => {
         <View style={{width: "34%", alignItems: "center", justifyContent: "center", gap: 5}}>
       <Text style={{fontFamily: "Londrinak", fontSize: 14, color: "white", letterSpacing: 0.3 }}>{profile?.name}</Text>
       {profile?.location && 
-      <Text style={{fontFamily: "Londrinak", fontSize: 12, color: "white", letterSpacing: 0.3, textAlign: "center" }}>{profile?.location}</Text>
+      <Text style={{fontFamily: "Londrina", fontSize: 12, color: "white", letterSpacing: 0.3, textAlign: "center" }}>{profile?.location}</Text>
       }
       </View>
       <View style={{gap: 20, alignItems: "center", borderLeftColor: "#fff", borderLeftWidth: 1, borderRightColor: "#fff", borderRightWidth: 1, width: "32%"}}>

@@ -1,3 +1,4 @@
+import { useFonts } from "expo-font";
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
@@ -13,11 +14,24 @@ import {
 import logo from "../assets/briconnect3.png";
 import { AuthContext } from '../context/AuthContext';
 
+
 const { width } = Dimensions.get('window');
+
+
 
 export default function Welcome() {
   const router = useRouter();
   const context = useContext(AuthContext);
+
+  const [fontsLoaded] = useFonts({ 
+      "Londrina": require("../assets/fonts/Londrina/LondrinaSolid-Regular.ttf"), 
+      "Londrinak": require("../assets/fonts/Londrina/LondrinaSolid-Black.ttf"), 
+      "Mont": require("../assets/fonts/Montserrat/Montserrat-Regular.ttf"), 
+      "Montt": require("../assets/fonts/Montserrat/Montserrat-Bold.ttf"), 
+      "Kanit": require("../assets/fonts/Kanit/Kanit-Regular.ttf"), 
+      "Kanitt": require("../assets/fonts/Kanit/Kanit-Bold.ttf"), 
+      "Kanito": require("../assets/fonts/Kanit/Kanit-Medium.ttf"), 
+    });
 
   if (!context) throw new Error('AuthContext non fourni');
   const { user, loading } = context;
@@ -92,7 +106,8 @@ export default function Welcome() {
           },
         ]}
       >
-<Image source={logo} style={{height: 180, width: 180, backgroundColor: "#fff", borderRadius: 90}}/>        <Text style={styles.subtitle}>
+<Image source={logo} style={{height: 180, width: 180, backgroundColor: "#fff", borderRadius: 90}}/>
+       <Text style={styles.subtitle}>
           Trouvez le bon professionnel en quelques secondes.
         </Text>
 
@@ -155,7 +170,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   content: {
-    width: width * 0.85,
+    width: width * 0.95,
     alignItems: 'center',
   },
   title: {
@@ -167,8 +182,9 @@ const styles = StyleSheet.create({
   subtitle: {
     color: 'rgba(255,255,255,0.8)',
     textAlign: 'center',
-    marginBottom: 50,
-    fontSize: 16,
+    marginBlock: 50,
+    fontSize: 19,
+    fontFamily: "Londrina"
   },
   buttonWrapper: {
     width: 240,
@@ -188,7 +204,7 @@ const styles = StyleSheet.create({
   buttonTitle: {
   color: 'white',
   fontSize: 16,
-  fontWeight: '700',
+  fontFamily: "Mont",
 },
 
 buttonSubtitle: {

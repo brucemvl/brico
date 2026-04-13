@@ -5,6 +5,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { Alert, Animated, Image, ImageBackground, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import logo from "../assets/briconnect33.png";
 import fond from "../assets/convert_1.png";
 import msg from "../assets/icons/enveloppe.png";
 import modifier from "../assets/icons/modifier.png";
@@ -14,6 +15,7 @@ import star from "../assets/icons/star.png";
 import trash from "../assets/icons/trash2.png";
 import { AuthContext } from '../context/AuthContext';
 import { useApi } from "../services/api";
+
 
 
 
@@ -165,6 +167,25 @@ const getRequestUnreadType = (requestId: string) => {
   const [requests, setRequests] = useState<RequestType[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const badgeBlink = React.useRef(new Animated.Value(1)).current;
+  
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(badgeBlink, {
+          toValue: 0,
+          duration: 400,
+          useNativeDriver: true,
+        }),
+        Animated.timing(badgeBlink, {
+          toValue: 1,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+  }, [badgeBlink]);
+
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -275,8 +296,9 @@ console.log(
 
   return (
     <ImageBackground source={fond} style={{flex: 1}}>
-      <Animated.Text style={{ fontFamily: "Montt", opacity: headerOpacity, marginTop: 50, marginLeft: 10, fontSize: 16 }}>Accueil</Animated.Text>
-      <Animated.View
+<Animated.View style={{opacity: headerOpacity,  flexDirection: "row", alignItems: "center", position: "relative", top: 30, paddingBottom: 15 }}>
+    <Image source={logo} style={{height: 60, width: 60}}/>
+    <Text style={{ fontFamily: "Montt" , fontSize: 16}}>Accueil</Text></Animated.View>      <Animated.View
   style={{
     position: "absolute",
     top: 70,
@@ -302,13 +324,14 @@ console.log(
           style={{
             alignItems: "center",
             marginBlock: 20,
-            width: "100%",
+            width: 390,
+            height: 160,
             paddingInline: 20,
             opacity: fadeOut,
             transform: [{ translateY }, { scale }],
           }}
         >
-          <View style={{ width: "100%", alignItems: "center", position: "absolute", zIndex: 99, bottom: profile?.location ? 120 : 100 }}>
+          <View style={{ width: "100%", alignItems: "center", position: "absolute", zIndex: 99, bottom: 115 }}>
             <Image
               source={{ uri: profile?.profileImage?.url || defaultAvatar }}
               style={styles.avatar}
@@ -428,8 +451,14 @@ console.log(
                       </View>
 
 
-{unreadType && (
-  <Image source={getUnreadIcon(unreadType)} style={styles.unreadIcon} />
+{item.hasUnread && (
+  <Animated.Image
+    source={getUnreadIcon(item.unreadType)}
+    style={[
+      styles.unreadIcon,
+      { opacity: badgeBlink }
+    ]}
+  />
 )}
                     </View>
                   </View>

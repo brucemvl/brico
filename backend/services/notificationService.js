@@ -49,8 +49,8 @@ const user = await User.findById(userId).select("expoPushToken notificationPrefe
 if (!user) return;
 
 // 🔕 Vérifier préférences
-if (user.notificationPreferences && user.notificationPreferences[type] === false) {
-  return; // ❌ on n'envoie pas la notif
+if (user.notificationPreferences?.[type] === false) {
+  return;
 }
 
   if (user?.expoPushToken) {
@@ -73,6 +73,7 @@ if (user.notificationPreferences && user.notificationPreferences[type] === false
 }
     if (type === "deal") body = "Nouvelle proposition";
     if (type === "review") body = "Nouvel avis reçu";
+    if (type === "offer_accepted") body = "Vous avez acces aux coordonnées";
 
     await sendPushNotification(
       [user.expoPushToken],

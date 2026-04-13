@@ -19,8 +19,10 @@ import {
   TouchableOpacity,
   View
 } from "react-native";
+import logo from "../assets/briconnect33.png";
 import fond from "../assets/convert_1.png";
 import { useApi } from "../services/api";
+
 
 
 type MessageType = {
@@ -357,8 +359,10 @@ if (!request) return <Text>Chargement...</Text>;
   behavior={Platform.OS === "ios" ? "padding" : "height"}
    // ajuste selon ton header
 >
-          <Animated.Text style={{ fontFamily: "Montt", opacity: headerOpacity, marginTop: 50, marginLeft: 10, fontSize: 16 }}>{request.title}</Animated.Text>
-      <BackButton />
+<Animated.View style={{opacity: headerOpacity,  flexDirection: "row", alignItems: "center", position: "relative", top: 30, paddingBottom: 15 }}>
+    <Image source={logo} style={{height: 60, width: 60}}/>
+    <Text style={{ fontFamily: "Montt" , fontSize: 16}}>{request.title}</Text></Animated.View>
+          <BackButton />
       <Animated.ScrollView
         contentContainerStyle={styles.container}
         onScroll={Animated.event(
@@ -380,19 +384,19 @@ if (!request) return <Text>Chargement...</Text>;
           
         }}
       >
-        <LinearGradient colors={[ "#30a590", "#1a5b4f" ]} style={{padding: 18, borderRadius: 20, width: "100%", flexDirection: "row", justifyContent: "space-between"}}>
+        <LinearGradient colors={[ "#30a590", "#1a5b4f" ]} style={{padding: 15, borderRadius: 20, width: "100%", flexDirection: "row", justifyContent: "space-between"}}>
           <View style={{gap: 5}}>
                   <Text style={styles.title}>{request.title}</Text>
         <Text style={{fontFamily: "Montt", color: "#fff"}}>Catégorie: {request.category}</Text>
         <Text style={{fontFamily: "Montt", color: "#fff"}}>Lieu: {request.location}</Text>
         <Text style={{fontFamily: "Montt", color: "#fff"}}>Budget: {request.budget}€</Text>
         </View>
-        <View style={{alignSelf: "flex-end"}}>
-        <View style={{flexDirection: "row-reverse", alignItems: "flex-end", gap: 5}}>
-        <Image source={{uri: request?.client?.profileImage?.url}} style={{height: 30, width: 30, borderRadius: 15}}/>
+        <View style={{alignSelf: "flex-end", flexDirection: "row-reverse", gap: 4, alignItems: "center"}}>
+        <Image source={{uri: request?.client?.profileImage?.url}} style={{height: 40, width: 35, borderRadius: 10}}/>
+        <View style={{alignItems: "flex-end"}}>
         <Text style={{fontSize: 15, color: "#fff", fontFamily: "Londrina"}}>{request?.client?.name}</Text>
+        <Text style={{fontSize: 13, color: "#fff", fontFamily: "Londrina"}}>{formatDate(request?.createdAt)}</Text>
         </View>
-        <Text style={{fontSize: 15, color: "#fff", fontFamily: "Londrina"}}>{formatDate(request?.createdAt)}</Text>
         </View>
         </LinearGradient>
         </Animated.View>
@@ -400,7 +404,7 @@ if (!request) return <Text>Chargement...</Text>;
         <View style={{alignItems: "center", gap: 10, flex: 1, borderBottomWidth: 1, borderBottomColor: "#7a7a7a", paddingBottom: 10, width: "100%"}}>
           <Text style={{fontFamily: "Montt", fontSize: 20, marginTop: 10, textAlign: "center"}}>Description</Text>
           <View style={{width: "100%", paddingInline: 12, alignItems: "center"}}>
-        <Text  style={{fontFamily: "Londrina", fontSize: 16, color: "#000000"}}>{request.description}</Text>
+        <Text  style={{fontFamily: "Londrina", fontSize: 16, color: "#000000", textAlign: "center"}}>{request.description}</Text>
         </View>
         
 

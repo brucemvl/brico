@@ -118,14 +118,16 @@ export default function Register() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', padding: 20, alignItems: "center" },
-  title: { fontSize: 20, marginBottom: 20, fontFamily: "Montt", textAlign: 'center' },
+  container: { flex: 1, justifyContent: 'center', padding: 20, alignItems: "center", },
+  title: { fontSize: 20, marginBottom: 20, fontFamily: "Montt", textAlign: 'center', color: "#1a5b4f" },
   input: {
     borderWidth: 1,
-    padding: 10,
+    paddingInline: 10,
+    height: 40,
     marginBottom: 15,
     borderRadius: 6,
     fontFamily: "Mont",
-    width: 300
+    width: 300,
+    borderColor: "#1a5b4f"
   },
 });

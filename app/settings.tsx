@@ -161,7 +161,7 @@ const updateNotifications = async (newPrefs: NotificationPrefs) => {
           style: "destructive",
           onPress: async () => {
             try {
-              await apiFetch("/users/me", {
+              await apiFetch("/users/delete-account", {
                 method: "DELETE"
               });
 
@@ -282,9 +282,10 @@ const updateNotifications = async (newPrefs: NotificationPrefs) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
+    padding: 18,
     justifyContent: "center",
-    gap: 20
+    gap: 10,
+    paddingTop: 40
   },
   title: {
     fontSize: 24,
@@ -293,19 +294,19 @@ const styles = StyleSheet.create({
   },
   box: {
     backgroundColor: "#247868",
-    padding: 15,
+    padding: 12,
     borderRadius: 20
   },
   label: {
     color: "white",
-    marginBottom: 10,
+    marginBottom: 8,
     fontFamily: "Mont"
   },
   input: {
     backgroundColor: "white",
     padding: 10,
     borderRadius: 8,
-    marginBottom: 15,
+    marginBottom: 10,
     fontFamily: "Mont"
   },
   button: {

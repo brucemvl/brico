@@ -3,15 +3,15 @@ import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
 import React, { useContext, useState } from "react";
 import {
-    ActivityIndicator,
-    Alert,
-    Dimensions,
-    Image,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+  ActivityIndicator,
+  Alert,
+  Dimensions,
+  Image,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from "react-native";
 import Autocomplete from "react-native-autocomplete-input";
 import { AuthContext } from "../context/AuthContext";
@@ -477,6 +477,7 @@ router.replace("/homePro");
 {step === 7 && (
   <View style={styles.step}>
     <Text style={styles.title}>Tes réalisations</Text>
+    <View style={{flexDirection: "row", flexWrap: "wrap", width: "90%"}}>
 {portfolio.map((image, index) => (
   <Image
     key={index}
@@ -484,6 +485,7 @@ router.replace("/homePro");
     style={{ height: 100, width: 100, margin: 5 }}
   />
 ))}
+</View>
     <TouchableOpacity onPress={pickPortfolioImages} style={styles.button}>
       <Text style={styles.buttonText}>Ajouter des photos</Text>
     </TouchableOpacity>

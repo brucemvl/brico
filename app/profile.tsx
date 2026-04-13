@@ -13,8 +13,10 @@ import {
   View,
 } from "react-native";
 import MapView, { Marker } from "react-native-maps";
+import logo from "../assets/briconnect33.png";
 import fond from "../assets/convert_1.png";
 import { useApi } from "../services/api";
+
 
 
 const defaultAvatar =
@@ -177,8 +179,10 @@ useEffect(() => {
 
   return (
 <ImageBackground source={fond} style={{flex: 1}}>
-  <Animated.Text style={{ fontFamily: "Montt", opacity: headerOpacity, marginTop: 50, marginLeft: 10, fontSize: 16 }}>Profil de {user?.name}</Animated.Text>
-<BackButton />
+<Animated.View style={{opacity: headerOpacity,  flexDirection: "row", alignItems: "center", position: "relative", top: 30, paddingBottom: 15 }}>
+    <Image source={logo} style={{height: 60, width: 60}}/>
+    <Text style={{ fontFamily: "Montt" , fontSize: 16}}>Profil de {user?.name}</Text></Animated.View>
+    <BackButton />
 <Animated.ScrollView
   contentContainerStyle={styles.container}
   onScroll={Animated.event(

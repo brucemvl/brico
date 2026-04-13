@@ -1,6 +1,7 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useContext, useState } from 'react';
-import { ActivityIndicator, Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import logo from "../assets/briconnect3.png";
 import { AuthContext } from '../context/AuthContext';
 
 export default function Login() {
@@ -65,6 +66,8 @@ if (data.role === "pro") {
 
   return (
     <View style={styles.container}>
+      <Image source={logo} style={{height: 180, width: 180, backgroundColor: "#fff", borderRadius: 90}}/>
+
       <Text style={styles.title}>
         Connexion {role === 'pro' ? 'Professionnel' : 'Particulier'}
       </Text>
@@ -113,9 +116,9 @@ if (data.role === "pro") {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', padding: 20, alignItems: "center" },
-  title: { fontSize: 24, marginBottom: 20, textAlign: 'center', fontFamily: "Montt" },
-  subtitle : {fontSize: 16, textAlign: "center", marginBottom: 20, fontFamily: "Montt"},
+  container: { flex: 1, justifyContent: 'center', padding: 20, alignItems: "center", backgroundColor: "#fff" },
+  title: { fontSize: 24, marginBottom: 20, textAlign: 'center', fontFamily: "Montt", color: "#1a5b4f" },
+  subtitle : {fontSize: 16, textAlign: "center", marginBottom: 20, fontFamily: "Montt", color: "#1a5b4f"},
   input: {
     borderWidth: 1,
     padding: 10,

@@ -1,17 +1,23 @@
 {
   "expo": {
-    "name": "briconnect",
+    "name": "Briconnect",
     "slug": "briconnect",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/briconnectICON.png",
     "scheme": "bricoconnect",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "com.brico.app"
-    },
+  "supportsTablet": true,
+  "bundleIdentifier": "com.brico.app",
+  "CFBundleLocalizations": "fr",
+  "infoPlist": {
+    "ITSAppUsesNonExemptEncryption": false,
+    "NSPhotoLibraryUsageDescription": "Cette application accède à vos photos pour vous permettre d’ajouter des images à vos demandes de travaux ou à votre profil.",
+    "NSCameraUsageDescription": "Cette application utilise la caméra pour vous permettre de prendre des photos de vos travaux ou missions."
+  }
+},
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
@@ -25,7 +31,7 @@
     },
     "web": {
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/briconnectICON.png"
     },
     "plugins": [
       "expo-notifications",
