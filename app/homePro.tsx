@@ -353,7 +353,11 @@ const filteredRequests = (() => {
     opacity: settingsOpacity,
   }}
 >
-  <TouchableOpacity onPress={() => router.push({ pathname: "/settings" })}>
+  <TouchableOpacity onPress={() => router.push({ pathname: "/settings" })}
+    accessible
+  accessibilityRole="button"
+  accessibilityLabel="Paramètres"
+  accessibilityHint={`Accéder aux paramètres`}>
     <Image source={settings} style={{ height: 40, width: 40 }} />
   </TouchableOpacity>
 </Animated.View>
@@ -383,7 +387,11 @@ const filteredRequests = (() => {
   }}
 >
     <View style={{width: "100%", alignItems: "center", position: "absolute", zIndex: 99, bottom: 90}}>
-<TouchableOpacity onPress={openProfile} >
+<TouchableOpacity onPress={openProfile}
+accessible
+  accessibilityRole="button"
+  accessibilityLabel="Mon profil"
+  accessibilityHint={`Voir mon profil`} >
 <Image
   source={{ uri: profile?.profileImage?.url || defaultAvatar }}
   style={styles.avatar}
@@ -393,6 +401,10 @@ const filteredRequests = (() => {
       <TouchableOpacity
         onPress={() => router.push({ pathname: "/profilePro" })}
         style={styles.profileButton}
+        accessible
+  accessibilityRole="button"
+  accessibilityLabel="Modifier profl"
+  accessibilityHint={`Modifier mon profil`}
       >
         <Image source={modifier} style={{width: 20, height: 20}}/>
       </TouchableOpacity>
@@ -433,6 +445,11 @@ const filteredRequests = (() => {
     style={styles.pickerButton}
     onPress={() => setPickerOpen(prev => !prev)}
     activeOpacity={0.8}
+    accessible
+  accessibilityRole="button"
+  accessibilityLabel="Choisir une vue"
+  accessibilityHint="Ouvre ou ferme la liste des options"
+  accessibilityState={{ expanded: pickerOpen }}
   >
     <Text style={styles.pickerButtonText}>
       {requestViewLabels[requestView]}
@@ -450,6 +467,11 @@ const filteredRequests = (() => {
             requestView === option && styles.pickerOptionActive
           ]}
           onPress={() => changeRequestView(option)}
+          accessible
+        accessibilityRole="button"
+        accessibilityLabel={requestViewLabels[option]}
+        accessibilityHint="Sélectionner cette vue"
+        accessibilityState={{ selected: requestView === option }}
         >
           <Text
             style={[
@@ -475,10 +497,14 @@ const filteredRequests = (() => {
 
       {/* 🔹 Boutons filtres */}
       {requestView === "requests" &&
-      <View style={styles.filtersContainer}>
+      <View style={styles.filtersContainer} accessible accessibilityRole="tablist">
         <TouchableOpacity
           style={[styles.filterButton, activeFilter === "skills" && styles.activeFilter]}
           onPress={() => setActiveFilter("skills")}
+          accessible
+    accessibilityRole="button"
+    accessibilityLabel="Filtrer selon mes compétences"
+    accessibilityState={{ selected: activeFilter === "skills" }}
         >
           <Text style={[styles.filterText, activeFilter === "skills" && {fontFamily: "Montt", color: "#fff"}]}>Mes compétences</Text>
         </TouchableOpacity>
@@ -486,6 +512,10 @@ const filteredRequests = (() => {
         <TouchableOpacity
           style={[styles.filterButton, activeFilter === "all" && styles.activeFilter]}
           onPress={() => setActiveFilter("all")}
+          accessible
+    accessibilityRole="button"
+    accessibilityLabel="Afficher toutes les demandes"
+    accessibilityState={{ selected: activeFilter === "all" }}
         >
           <Text style={[styles.filterText, activeFilter === "all" && {fontFamily: "Montt", color: "#fff"}]}>Toutes</Text>
         </TouchableOpacity>
@@ -495,10 +525,15 @@ const filteredRequests = (() => {
             key={cat}
             style={[styles.filterButton, activeFilter === cat && styles.activeFilter]}
             onPress={() => setActiveFilter(cat)}
+            accessible
+      accessibilityRole="button"
+      accessibilityLabel={`Filtrer par catégorie ${cat}`}
+      accessibilityHint="Appliquer ce filtre"
+      accessibilityState={{ selected: activeFilter === cat }}
           >
             <View style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
               <Text style={[styles.filterText, activeFilter === cat && {fontFamily: "Montt", color: "#fff"}]}>{cat}</Text>
-              {hasUnreadByCategory[cat] && <View style={styles.categoryBadge} />}
+              {hasUnreadByCategory[cat] && <View style={styles.categoryBadge} accessible accessibilityLabel="Nouveaux éléments dans cette catégorie" />}
             </View>
           </TouchableOpacity>
         ))}
@@ -517,7 +552,12 @@ const filteredRequests = (() => {
 );
 
             return (
-              <TouchableOpacity key={item._id} onPress={() => openRequest(item)} style={{ width: "95%" }}>
+              <TouchableOpacity key={item._id} 
+              onPress={() => openRequest(item)} style={{ width: "95%" }}
+              accessible
+  accessibilityRole="button"
+accessibilityLabel={`Mission ${item.title}, catégorie ${item.category}, à ${item.location}, budget ${item.budget} euros${isAssignedToMe ? ", accord conclu" : ""}${isMatchingSkill ? ", correspond à vos compétences" : ""}`} 
+ accessibilityHint="Ouvrir le détail de la mission" >
                 <View style={styles.card}>
                   <View style={{ flexDirection: "row", justifyContent: "space-between", backgroundColor: "#1a5b4f", paddingBlock: 6, paddingInline: 6 }}>
                     <Text style={styles.cardTitle}>{item.title}</Text>
