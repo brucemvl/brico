@@ -74,16 +74,16 @@ export default function RequestDetailPro() {
   const params = useLocalSearchParams<{ id: string }>();
   const requestId = params.id;
 
-const [request, setRequest] = useState<RequestType>({
-  _id: "",
-  title: "",
-  category: "",
-  location: "",
-  budget: 0,
-  client: { _id: "", name: "" },
-  status: "open",
-  assignedPros: [],
-});
+  const [request, setRequest] = useState<RequestType>({
+    _id: "",
+    title: "",
+    category: "",
+    location: "",
+    budget: 0,
+    client: { _id: "", name: "" },
+    status: "open",
+    assignedPros: [],
+  });
 
   const [currentUserId, setCurrentUserId] = useState("");
   const [message, setMessage] = useState("");
@@ -103,35 +103,35 @@ const [request, setRequest] = useState<RequestType>({
   const [uploading, setUploading] = useState(false);
 
   const formatDate = (dateString?: string) => {
-  if (!dateString) return "";
-  return new Date(dateString).toLocaleDateString("fr-FR");
-};
+    if (!dateString) return "";
+    return new Date(dateString).toLocaleDateString("fr-FR");
+  };
 
   const scrollY = new Animated.Value(0);
-    
-      const headerOpacity = scrollY.interpolate({
-      inputRange: [0, 60],
-      outputRange: [0, 1],
-      extrapolate: "clamp",
-    });
-    
-    const fadeOut = scrollY.interpolate({
-      inputRange: [0, 100],
-      outputRange: [1, 0],
-      extrapolate: "clamp",
-    });
-    
-    const translateY = scrollY.interpolate({
-      inputRange: [0, 100],
-      outputRange: [0, -40],
-      extrapolate: "clamp",
-    });
-    
-    const scale = scrollY.interpolate({
-      inputRange: [0, 100],
-      outputRange: [1, 0.90],
-      extrapolate: "clamp",
-    });
+
+  const headerOpacity = scrollY.interpolate({
+    inputRange: [0, 60],
+    outputRange: [0, 1],
+    extrapolate: "clamp",
+  });
+
+  const fadeOut = scrollY.interpolate({
+    inputRange: [0, 100],
+    outputRange: [1, 0],
+    extrapolate: "clamp",
+  });
+
+  const translateY = scrollY.interpolate({
+    inputRange: [0, 100],
+    outputRange: [0, -40],
+    extrapolate: "clamp",
+  });
+
+  const scale = scrollY.interpolate({
+    inputRange: [0, 100],
+    outputRange: [1, 0.90],
+    extrapolate: "clamp",
+  });
 
   // Charger utilisateur
   useEffect(() => {
@@ -143,10 +143,10 @@ const [request, setRequest] = useState<RequestType>({
   }, []);
 
   const dealAccepted =
-  (request?.conversation?.dealProposedByPro && request?.conversation?.dealAcceptedByClient) ||
-  (request?.conversation?.dealProposedByClient && request?.conversation?.dealAcceptedByPro);
+    (request?.conversation?.dealProposedByPro && request?.conversation?.dealAcceptedByClient) ||
+    (request?.conversation?.dealProposedByClient && request?.conversation?.dealAcceptedByPro);
 
-  
+
 
   useEffect(() => {
     const fetchContact = async () => {
@@ -182,32 +182,32 @@ const [request, setRequest] = useState<RequestType>({
       if (!request?.conversation?._id) return;
       try {
         await apiFetch(`/conversations/${request.conversation._id}/mark-read`, { method: "POST" });
-      } catch {}
+      } catch { }
     };
     markAsRead();
   }, [request?.conversation?._id]);
 
   const handleProposeDeal = async () => {
-  if (!request?._id || proposingDeal) return;
+    if (!request?._id || proposingDeal) return;
 
-  try {
-    setProposingDeal(true);
+    try {
+      setProposingDeal(true);
 
-    await apiFetch(`/requests/${request._id}/propose-deal`, {
-      method: "POST",
-    });
+      await apiFetch(`/requests/${request._id}/propose-deal`, {
+        method: "POST",
+      });
 
-    const updatedRequest = await apiFetch(`/requests/${request._id}`);
-    setRequest(updatedRequest);
+      const updatedRequest = await apiFetch(`/requests/${request._id}`);
+      setRequest(updatedRequest);
 
-    Alert.alert("Accord proposé", "En attente de validation du client");
-  } catch (err) {
-    console.error("Erreur propose deal:", err);
-    Alert.alert("Erreur", "Impossible de proposer l'accord");
-  } finally {
-    setProposingDeal(false);
-  }
-};
+      Alert.alert("Accord proposé", "En attente de validation du client");
+    } catch (err) {
+      console.error("Erreur propose deal:", err);
+      Alert.alert("Erreur", "Impossible de proposer l'accord");
+    } finally {
+      setProposingDeal(false);
+    }
+  };
 
   const acceptDeal = async () => {
     if (!request?.conversation?._id) return;
@@ -222,125 +222,125 @@ const [request, setRequest] = useState<RequestType>({
   };
 
   const sendMessage = async () => {
-  if (!message.trim()) return;
+    if (!message.trim()) return;
 
-  try {
-    const res = await apiFetch(`/requests/${requestId}/message`, {
-      method: "POST",
-      body: JSON.stringify({ content: message }),
-    });
+    try {
+      const res = await apiFetch(`/requests/${requestId}/message`, {
+        method: "POST",
+        body: JSON.stringify({ content: message }),
+      });
 
-    setRequest(prev =>
-      prev
-        ? {
+      setRequest(prev =>
+        prev
+          ? {
             ...prev,
             conversation: res,
           }
-        : prev
-    );
+          : prev
+      );
 
-    setMessage("");
-    scrollRef.current?.scrollToEnd({ animated: true });
-  } catch (e: any) {
-    console.error(e);
-    Alert.alert("Erreur", e.message);
-  }
-};
+      setMessage("");
+      scrollRef.current?.scrollToEnd({ animated: true });
+    } catch (e: any) {
+      console.error(e);
+      Alert.alert("Erreur", e.message);
+    }
+  };
 
- const submitReview = async () => {
-  if (!request) return;
-  try {
-    await apiFetch(`/users/${request.client._id}/review`, {
-      method: "POST",
-      body: JSON.stringify({ score: rating, comment, requestId: request._id }),
-    });
+  const submitReview = async () => {
+    if (!request) return;
+    try {
+      await apiFetch(`/users/${request.client._id}/review`, {
+        method: "POST",
+        body: JSON.stringify({ score: rating, comment, requestId: request._id }),
+      });
 
-    await apiFetch(`/requests/${request._id}/review-complete`, {
-      method: "POST",
-      body: JSON.stringify({ proId: currentUserId }),
-    });
+      await apiFetch(`/requests/${request._id}/review-complete`, {
+        method: "POST",
+        body: JSON.stringify({ proId: currentUserId }),
+      });
 
-    // 🔹 Rafraîchir request et recalculer assignment
-    const updatedRequest = await apiFetch(`/requests/${request._id}`);
-    setRequest(updatedRequest);
+      // 🔹 Rafraîchir request et recalculer assignment
+      const updatedRequest = await apiFetch(`/requests/${request._id}`);
+      setRequest(updatedRequest);
 
-    setReviewModal(false);
-    Alert.alert("Merci !", "Votre avis a été enregistré");
-  } catch (err) {
-    console.log(err);
-    Alert.alert("Erreur", "Impossible d'envoyer l'avis");
-  }
-};
+      setReviewModal(false);
+      Alert.alert("Merci !", "Votre avis a été enregistré");
+    } catch (err) {
+      console.log(err);
+      Alert.alert("Erreur", "Impossible d'envoyer l'avis");
+    }
+  };
 
   const openPreview = (url: string) => {
     setPreviewImage(url);
     setPreviewVisible(true);
   };
 
-    useEffect(() => {
-  const animation = Animated.loop(
-    Animated.sequence([
-      Animated.timing(reviewScale, {
-        toValue: 1.08,
-        duration: 500,
-        useNativeDriver: true,
-      }),
-      Animated.timing(reviewScale, {
-        toValue: 1,
-        duration: 500,
-        useNativeDriver: true,
-      }),
-    ])
-  );
-
-  animation.start();
-
-  return () => {
-    animation.stop();
-  };
-}, []);
-
-
-const getProId = (pro: string | { _id: string } | undefined) => {
-  if (!pro) return "";
-  return typeof pro === "string" ? pro : pro._id;
-};
-
-// récupérer l'assignement correspondant au pro courant
-const { proHasReviewed, clientHasReviewed, missionCompleted, canReview } = useMemo(() => {
-  if (!request || !request.assignedPros || !currentUserId) {
-    return {
-      proHasReviewed: false,
-      clientHasReviewed: false,
-      missionCompleted: false,
-      canReview: false,
-    };
-  }
-
-  const assign =
-    request.assignedPros.find(
-      ap => getProId(ap.pro) === currentUserId
-    ) ?? null;
-
-  const proReviewed = assign?.reviewByPro ?? false;
-  const clientReviewed = assign?.reviewByClient ?? false;
-
-  const accepted =
-    !!request.conversation &&
-    (
-      (request.conversation.dealProposedByPro && request.conversation.dealAcceptedByClient) ||
-      (request.conversation.dealProposedByClient && request.conversation.dealAcceptedByPro)
+  useEffect(() => {
+    const animation = Animated.loop(
+      Animated.sequence([
+        Animated.timing(reviewScale, {
+          toValue: 1.08,
+          duration: 500,
+          useNativeDriver: true,
+        }),
+        Animated.timing(reviewScale, {
+          toValue: 1,
+          duration: 500,
+          useNativeDriver: true,
+        }),
+      ])
     );
 
-  return {
-    proHasReviewed: proReviewed,
-    clientHasReviewed: clientReviewed,
-    missionCompleted: proReviewed && clientReviewed,
-    canReview: accepted && !!assign && !proReviewed,
-  };
-}, [request, currentUserId]);
+    animation.start();
 
-if (!request) return <Text>Chargement...</Text>;
+    return () => {
+      animation.stop();
+    };
+  }, []);
+
+
+  const getProId = (pro: string | { _id: string } | undefined) => {
+    if (!pro) return "";
+    return typeof pro === "string" ? pro : pro._id;
+  };
+
+  // récupérer l'assignement correspondant au pro courant
+  const { proHasReviewed, clientHasReviewed, missionCompleted, canReview } = useMemo(() => {
+    if (!request || !request.assignedPros || !currentUserId) {
+      return {
+        proHasReviewed: false,
+        clientHasReviewed: false,
+        missionCompleted: false,
+        canReview: false,
+      };
+    }
+
+    const assign =
+      request.assignedPros.find(
+        ap => getProId(ap.pro) === currentUserId
+      ) ?? null;
+
+    const proReviewed = assign?.reviewByPro ?? false;
+    const clientReviewed = assign?.reviewByClient ?? false;
+
+    const accepted =
+      !!request.conversation &&
+      (
+        (request.conversation.dealProposedByPro && request.conversation.dealAcceptedByClient) ||
+        (request.conversation.dealProposedByClient && request.conversation.dealAcceptedByPro)
+      );
+
+    return {
+      proHasReviewed: proReviewed,
+      clientHasReviewed: clientReviewed,
+      missionCompleted: proReviewed && clientReviewed,
+      canReview: accepted && !!assign && !proReviewed,
+    };
+  }, [request, currentUserId]);
+
+  if (!request) return <Text>Chargement...</Text>;
 
   const messages = request.conversation?.messages || [];
 
@@ -349,259 +349,327 @@ if (!request) return <Text>Chargement...</Text>;
   const proProposed =
     request?.conversation?.dealProposedByPro && !request?.conversation?.dealAcceptedByPro;
 
-  
+
 
   return (
 
-  <ImageBackground source={fond} style={{ flex: 1 }}>
-    <KeyboardAvoidingView
-  style={{ flex: 1 }}
-  behavior={Platform.OS === "ios" ? "padding" : "height"}
-   // ajuste selon ton header
->
-<Animated.View style={{opacity: headerOpacity,  flexDirection: "row", alignItems: "center", position: "relative", top: 30, paddingBottom: 15 }}>
-    <Image source={logo} style={{height: 60, width: 60}}/>
-    <Text style={{ fontFamily: "Montt" , fontSize: 16}}>{request.title}</Text></Animated.View>
-          <BackButton />
-      <Animated.ScrollView
-        contentContainerStyle={styles.container}
-        onScroll={Animated.event(
-          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-          { useNativeDriver: false }
-        )}
-        scrollEventThrottle={6}
-        
-      > 
-      <Animated.View
-        style={{
-          alignItems: "center",
-          marginBlock: 10,
-          justifyContent: "center",
-          width: "100%",
-          opacity: fadeOut,
-          transform: [{ translateY }, { scale }],
-          flexDirection: "row",
-          
-        }}
+    <ImageBackground source={fond} style={{ flex: 1 }}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      // ajuste selon ton header
       >
-        <LinearGradient colors={[ "#30a590", "#1a5b4f" ]} style={{padding: 15, borderRadius: 20, width: "100%", flexDirection: "row", justifyContent: "space-between"}}>
-          <View style={{gap: 5}}>
-                  <Text style={styles.title}>{request.title}</Text>
-        <Text style={{fontFamily: "Montt", color: "#fff"}}>Catégorie: {request.category}</Text>
-        <Text style={{fontFamily: "Montt", color: "#fff"}}>Lieu: {request.location}</Text>
-        <Text style={{fontFamily: "Montt", color: "#fff"}}>Budget: {request.budget}€</Text>
-        </View>
-        <View style={{alignSelf: "flex-end", flexDirection: "row-reverse", gap: 4, alignItems: "center"}}>
-        <Image source={{uri: request?.client?.profileImage?.url}} style={{height: 40, width: 35, borderRadius: 10}}/>
-        <View style={{alignItems: "flex-end"}}>
-        <Text style={{fontSize: 15, color: "#fff", fontFamily: "Londrina"}}>{request?.client?.name}</Text>
-        <Text style={{fontSize: 13, color: "#fff", fontFamily: "Londrina"}}>{formatDate(request?.createdAt)}</Text>
-        </View>
-        </View>
-        </LinearGradient>
-        </Animated.View>
-        {request.description &&
-        <View style={{alignItems: "center", gap: 10, flex: 1, borderBottomWidth: 1, borderBottomColor: "#7a7a7a", paddingBottom: 10, width: "100%"}}>
-          <Text style={{fontFamily: "Montt", fontSize: 20, marginTop: 10, textAlign: "center"}}>Description</Text>
-          <View style={{width: "100%", paddingInline: 12, alignItems: "center"}}>
-        <Text  style={{fontFamily: "Londrina", fontSize: 16, color: "#000000", textAlign: "center"}}>{request.description}</Text>
-        </View>
-        
-
-        {/* 🔹 Images du client */}
-        {request.images && request.images.length > 0 && (
-          <ScrollView horizontal style={{ marginVertical: 10,  padding: 10, borderRadius: 20, width: "100%", backgroundColor: "#1a5b4f" }} contentContainerStyle={{justifyContent: "center"}}>
-            {request.images.map((img, idx) => (
-              <TouchableOpacity key={idx} onPress={() => openPreview(img.url)} style={{ marginRight: 10 }}>
-                <Image source={{ uri: img.url }} style={{ width: 130, height: 130, borderRadius: 8 }} />
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        )}
-        
-        </View>}
-{proProposed && !dealAccepted && <Text style={styles.dealStatus}>Vous avez proposé un accord — en attente du client ⏳</Text>}
-          {dealAccepted && <Text style={[styles.dealStatus, {color: "green"}]}>🤝 Accord validé</Text>}
-
-        {/* Coordonnées après accord */}
-        {dealAccepted && contact && (
-          <View style={styles.contactBox}>
-            <Text style={{textAlign: "center", fontFamily: "Montt", marginBottom: 10}}>Coordonnées</Text>
-            <View style={{flexDirection: "row", alignItems: "center", gap: 20}}>
-              <View style={{alignItems: "center"}}>
-                <Image source={{uri: request?.client?.profileImage?.url}} style={{height: 30, width: 30, borderRadius: 15}} />
-                <Text style={{fontFamily: "Londrina"}}>{request?.client?.name}</Text>
-              </View>
-            <View>
-            {contact.phone && (
-              <TouchableOpacity onPress={() => Linking.openURL(`tel:${contact.phone}`)}>
-                <Text style={styles.contactText}>📞 {contact.phone}</Text>
-              </TouchableOpacity>
-            )}
-            {contact.email && (
-              <TouchableOpacity onPress={() => Linking.openURL(`mailto:${contact.email}`)}>
-                <Text style={styles.contactText}>✉️ {contact.email}</Text>
-              </TouchableOpacity>
-            )}
-            </View>
-            </View>
-          </View>
-        )}
-
-        {/* Actions deal */}
-        <View style={styles.dealBox}>
-          {!clientProposed && !proProposed && !dealAccepted && (
-  <TouchableOpacity
-    onPress={handleProposeDeal}
-    disabled={proposingDeal}
-    style={{
-      backgroundColor: proposingDeal ? "#8fb9ff" : "#007AFF",
-      width: 180,
-      padding: 10,
-      alignItems: "center",
-      justifyContent: "center",
-      borderRadius: 20
-    }}
-  >
-    <Text style={{ color: "#fff", fontFamily: "Mont" }}>
-      {proposingDeal ? "Envoi..." : "Proposer un accord"}
-    </Text>
-  </TouchableOpacity>
-)}
-
-          {clientProposed && !dealAccepted && (
-            <TouchableOpacity onPress={acceptDeal} style={{backgroundColor: "#007AFF", padding: 14, width: 300, alignItems: "center", justifyContent: "center", borderRadius: 20 }}>
-<Animated.Text
-    style={{
-      color: "#fefefe",
-      fontFamily: "Mont",
-      fontSize: 13,
-      transform: [{ scale: reviewScale }],
-    }}
-  >
-    Accepter l'accord proposé par le client
-  </Animated.Text>
-  </TouchableOpacity>
+        <Animated.View style={{ opacity: headerOpacity, flexDirection: "row", alignItems: "center", position: "relative", top: 30, paddingBottom: 15 }}>
+          <Image source={logo} style={{ height: 60, width: 60 }} />
+          <Text style={{ fontFamily: "Montt", fontSize: 16 }}>{request.title}</Text></Animated.View>
+        <BackButton />
+        <Animated.ScrollView
+          contentContainerStyle={styles.container}
+          onScroll={Animated.event(
+            [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+            { useNativeDriver: false }
           )}
+          scrollEventThrottle={6}
 
-          
-        </View>
+        >
+          <Animated.View
+            style={{
+              alignItems: "center",
+              marginBlock: 10,
+              justifyContent: "center",
+              width: "100%",
+              opacity: fadeOut,
+              transform: [{ translateY }, { scale }],
+              flexDirection: "row",
 
-        {dealAccepted && !missionCompleted && proHasReviewed && (
-  <Text style={{ textAlign: "center", margin: 10, color: "#555", fontFamily: "Kanitt" }}>
-    ✅ Avis envoyé! En attente de la note du client ⏳
-  </Text>
-)}
-
-{dealAccepted && canReview && (
-  <TouchableOpacity
-    style={styles.reviewButton}
-    onPress={() => setReviewModal(true)}
-  >
-    <Animated.Text
-      style={{
-        color: "#fefefe",
-        fontFamily: "Mont",
-        transform: [{ scale: reviewScale }],
-      }}
-    >
-      Donner un avis ⭐
-    </Animated.Text>
-  </TouchableOpacity>
-)}
-
-{dealAccepted && missionCompleted && (
-  <Text style={{ textAlign: "center", margin: 10, color: "green", fontFamily: "Kanitt" }}>
-    🎉 Mission terminée !
-  </Text>
-)}
-
-        {/* Modal review */}
-        <Modal visible={reviewModal} transparent animationType="slide">
-          <View style={styles.modalOverlay}>
-            <View style={styles.modal}>
-              <Text style={styles.modalTitle}>Comment s'est deroulée la mission ?</Text>
-              <View style={styles.stars}>
-                {[1,2,3,4,5].map((s)=>(
-                  <TouchableOpacity key={s} onPress={()=>setRating(s)}>
-                    <Text style={{fontSize:30}}>{s <= rating ? "⭐" : "☆"}</Text>
-                  </TouchableOpacity>
-                ))}
+            }}
+          >
+            <LinearGradient colors={["#30a590", "#1a5b4f"]} style={{ padding: 15, borderRadius: 20, width: "100%", flexDirection: "row", justifyContent: "space-between" }}>
+              <View style={{ gap: 5 }}>
+                <Text style={styles.title}>{request.title}</Text>
+                <Text style={{ fontFamily: "Montt", color: "#fff" }}>Catégorie: {request.category}</Text>
+                <Text style={{ fontFamily: "Montt", color: "#fff" }}>Lieu: {request.location}</Text>
+                <Text style={{ fontFamily: "Montt", color: "#fff" }}>Budget: {request.budget}€</Text>
               </View>
-              <TextInput
-                placeholder="Commentaire (optionnel)"
-                value={comment}
-                onChangeText={setComment}
-                style={styles.input}
-              />
-              <TouchableOpacity style={styles.sendReview} onPress={submitReview}>
-                <Text style={{color:"#fff", fontFamily: "Mont"}}>Envoyer l'avis</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={()=>setReviewModal(false)}>
-                <Text style={{textAlign:"center", marginTop:10, fontFamily: "Mont"}}>Fermer</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </Modal>
+              <View style={{ alignSelf: "flex-end", flexDirection: "row-reverse", gap: 4, alignItems: "center" }}>
+                <Image source={{ uri: request?.client?.profileImage?.url }} style={{ height: 40, width: 35, borderRadius: 10 }} />
+                <View style={{ alignItems: "flex-end" }}>
+                  <Text style={{ fontSize: 15, color: "#fff", fontFamily: "Londrina" }}>{request?.client?.name}</Text>
+                  <Text style={{ fontSize: 13, color: "#fff", fontFamily: "Londrina" }}>{formatDate(request?.createdAt)}</Text>
+                </View>
+              </View>
+            </LinearGradient>
+          </Animated.View>
+          {request.description &&
+            <View style={{ alignItems: "center", gap: 10, flex: 1, borderBottomWidth: 1, borderBottomColor: "#7a7a7a", paddingBottom: 10, width: "100%" }}>
+              <Text style={{ fontFamily: "Montt", fontSize: 20, marginTop: 10, textAlign: "center" }}>Description</Text>
+              <View style={{ width: "100%", paddingInline: 12, alignItems: "center" }}>
+                <Text style={{ fontFamily: "Londrina", fontSize: 16, color: "#000000", textAlign: "center" }}>{request.description}</Text>
+              </View>
 
-        {/* Messages */}
-        <Text style={styles.chatTitle}>Conversation avec {request.client.name}</Text>
-        <LinearGradient colors={["#cecece", "#8a8a8a"]} style={{padding: messages.length <= 0 ? 0 : 5, borderRadius: 20}}>
-        {messages.map((msg, i) => {
-          const isMe = msg.from._id === currentUserId;
-          let status = "";
-          if (isMe) {
-            if (msg.readBy.length === 1) status = "✓ envoyé";
-            if (msg.readBy.length >= 2) status = "✓✓ lu";
-          }
-          const msgTime = new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-          return (
-            <View key={i} style={[styles.messageRow, isMe ? styles.myMessageRow : styles.otherMessageRow]}>
-              {!isMe && request.client?.profileImage && (
-                <Image source={{ uri: request.client?.profileImage?.url }} style={styles.avatar} />
+
+              {/* 🔹 Images du client */}
+              {request.images && request.images.length > 0 && (
+                <ScrollView horizontal style={{ marginVertical: 10, padding: 10, borderRadius: 20, width: "100%", backgroundColor: "#1a5b4f" }} contentContainerStyle={{ justifyContent: "center" }} accessible accessibilityLabel="Images de la demande">
+                  {request.images.map((img, idx) => (
+                    <TouchableOpacity
+                      key={idx}
+                      onPress={() => openPreview(img.url)} style={{ marginRight: 10 }}
+                      accessible
+                      accessibilityRole="button"
+                      accessibilityLabel={`Image ${idx + 1} de la demande`}
+                      accessibilityHint="Ouvrir l'image en grand" >
+                      <Image source={{ uri: img.url }} style={{ width: 130, height: 130, borderRadius: 8 }} />
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
               )}
-              <View style={[styles.messageBubble, isMe ? styles.myMessage : styles.otherMessage]}>
-                {!isMe && <Text style={styles.author}>{msg.from.name}</Text>}
-                <Text style={{fontFamily: "Mont", letterSpacing: -0.6}}>{msg.content}</Text>
-                <View style={styles.messageMeta}>
-                  <Text style={styles.time}>{msgTime}</Text>
-                  {isMe && <Text style={[styles.readStatus, msg.readBy.length >= 2 && {color: "#0b87da"} ]}>{status}</Text>}
+
+            </View>}
+          {proProposed && !dealAccepted && <Text style={styles.dealStatus} accessibilityLiveRegion="polite">Vous avez proposé un accord — en attente du client ⏳</Text>}
+          {dealAccepted && <Text style={[styles.dealStatus, { color: "green" }]} accessibilityLiveRegion="polite">🤝 Accord validé</Text>}
+
+          {/* Coordonnées après accord */}
+          {dealAccepted && contact && (
+            <View style={styles.contactBox}>
+              <Text style={{ textAlign: "center", fontFamily: "Montt", marginBottom: 10 }}>Coordonnées</Text>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 20 }}>
+                <View style={{ alignItems: "center" }} accessible accessibilityLabel={`Client ${request?.client?.name}`}>
+                  <Image source={{ uri: request?.client?.profileImage?.url }} style={{ height: 30, width: 30, borderRadius: 15 }} />
+                  <Text style={{ fontFamily: "Londrina" }}>{request?.client?.name}</Text>
+                </View>
+                <View>
+                  {contact.phone && (
+                    <TouchableOpacity
+                      onPress={() => Linking.openURL(`tel:${contact.phone}`)}
+                      accessible
+                      accessibilityRole="button"
+                      accessibilityLabel={`Appeler ${request?.client?.name}`}
+                      accessibilityHint={`Lancer un appel au ${contact.phone}`} >
+                      <Text style={styles.contactText}>📞 {contact.phone}</Text>
+                    </TouchableOpacity>
+                  )}
+                  {contact.email && (
+                    <TouchableOpacity
+                      onPress={() => Linking.openURL(`mailto:${contact.email}`)}
+                      accessible
+                      accessibilityRole="button"
+                      accessibilityLabel={`Envoyer un email à ${request?.client?.name}`}
+                      accessibilityHint={`Envoyer un email à ${contact.email}`} >
+                      <Text style={styles.contactText}>✉️ {contact.email}</Text>
+                    </TouchableOpacity>
+                  )}
                 </View>
               </View>
             </View>
-          );
-        })}
-        </LinearGradient>
+          )}
 
-        <View style={styles.inputRow}>
-          <TextInput
-            value={message}
-            onChangeText={setMessage}
-            placeholder="Votre message..."
-            style={styles.inputMsg}
-          />
-          <TouchableOpacity onPress={sendMessage} style={styles.sendButton}>
-            <Text style={{ color: "#fff", fontFamily: "Mont", fontSize: 12 }}>Envoyer</Text>
+          {/* Actions deal */}
+          <View style={styles.dealBox}>
+            {!clientProposed && !proProposed && !dealAccepted && (
+              <TouchableOpacity
+                onPress={handleProposeDeal}
+                disabled={proposingDeal}
+                style={{
+                  backgroundColor: proposingDeal ? "#8fb9ff" : "#007AFF",
+                  width: 180,
+                  padding: 10,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  borderRadius: 20
+                }}
+                accessible
+  accessibilityRole="button"
+  accessibilityLabel="Proposer un accord"
+  accessibilityHint="Envoyer une proposition d'accord au client"
+  accessibilityState={{ disabled: proposingDeal, busy: proposingDeal }}
+              >
+                <Text style={{ color: "#fff", fontFamily: "Mont" }}>
+                  {proposingDeal ? "Envoi..." : "Proposer un accord"}
+                </Text>
+              </TouchableOpacity>
+            )}
+
+            {clientProposed && !dealAccepted && (
+              <TouchableOpacity 
+              onPress={acceptDeal} 
+              style={{ backgroundColor: "#007AFF", padding: 14, width: 300, alignItems: "center", justifyContent: "center", borderRadius: 20 }}
+              accessible
+  accessibilityRole="button"
+  accessibilityLabel="Accepter l'accord proposé par le client"
+  accessibilityHint="Valider l'accord et accéder aux coordonnées" >
+                <Animated.Text
+                  style={{
+                    color: "#fefefe",
+                    fontFamily: "Mont",
+                    fontSize: 13,
+                    transform: [{ scale: reviewScale }],
+                  }}
+                >
+                  Accepter l'accord proposé par le client
+                </Animated.Text>
+              </TouchableOpacity>
+            )}
+
+
+          </View>
+
+          {dealAccepted && !missionCompleted && proHasReviewed && (
+            <Text style={{ textAlign: "center", margin: 10, color: "#555", fontFamily: "Kanitt" }} accessibilityLiveRegion="polite">
+              ✅ Avis envoyé! En attente de la note du client ⏳
+            </Text>
+          )}
+
+          {dealAccepted && canReview && (
+            <TouchableOpacity
+              style={styles.reviewButton}
+              onPress={() => setReviewModal(true)}
+              accessible
+  accessibilityRole="button"
+  accessibilityLabel="Donner un avis"
+  accessibilityHint="Ouvrir la fenêtre pour noter le client"
+            >
+              <Animated.Text
+                style={{
+                  color: "#fefefe",
+                  fontFamily: "Mont",
+                  transform: [{ scale: reviewScale }],
+                }}
+              >
+                Donner un avis ⭐
+              </Animated.Text>
+            </TouchableOpacity>
+          )}
+
+          {dealAccepted && missionCompleted && (
+            <Text style={{ textAlign: "center", margin: 10, color: "green", fontFamily: "Kanitt" }} accessibilityLiveRegion="polite">
+              🎉 Mission terminée !
+            </Text>
+          )}
+
+          {/* Modal review */}
+          <Modal visible={reviewModal} transparent animationType="slide" accessible>
+            <View style={styles.modalOverlay}>
+              <View 
+              style={styles.modal}
+              accessible
+  accessibilityViewIsModal={true}
+  accessibilityLabel="Évaluation de la mission" >
+                <Text style={styles.modalTitle} accessibilityRole="header">Comment s'est deroulée la mission ?</Text>
+                <View style={styles.stars}>
+                  {[1, 2, 3, 4, 5].map((s) => (
+                    <TouchableOpacity 
+                    key={s} 
+                    onPress={() => setRating(s)}
+                    accessible
+      accessibilityRole="button"
+      accessibilityLabel={`${s} étoile${s > 1 ? "s" : ""}`}
+      accessibilityState={{ selected: rating === s }} >
+                      <Text style={{ fontSize: 30 }}>{s <= rating ? "⭐" : "☆"}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+                <TextInput
+                  placeholder="Commentaire (optionnel)"
+                  value={comment}
+                  onChangeText={setComment}
+                  style={styles.input}
+                  accessible
+  accessibilityLabel="Ajouter un commentaire"
+  accessibilityHint="Écrire un commentaire sur la mission"
+                />
+                <TouchableOpacity 
+                style={styles.sendReview} 
+                onPress={submitReview}
+                accessible
+  accessibilityRole="button"
+  accessibilityLabel="Envoyer l'avis"
+  accessibilityHint="Soumettre la note et le commentaire" >
+                  <Text style={{ color: "#fff", fontFamily: "Mont" }}>Envoyer l'avis</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                onPress={() => setReviewModal(false)}
+                accessible
+  accessibilityRole="button"
+  accessibilityLabel="Fermer"
+  accessibilityHint="Fermer la fenêtre d'évaluation" >
+                  <Text style={{ textAlign: "center", marginTop: 10, fontFamily: "Mont" }}>Fermer</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </Modal>
+
+          {/* Messages */}
+          <Text style={styles.chatTitle} accessibilityRole="header">Conversation avec {request.client.name}</Text>
+          <LinearGradient colors={["#cecece", "#8a8a8a"]} style={{ padding: messages.length <= 0 ? 0 : 5, borderRadius: 20 }}>
+            {messages.map((msg, i) => {
+              const isMe = msg.from._id === currentUserId;
+              let status = "";
+              if (isMe) {
+                if (msg.readBy.length === 1) status = "✓ envoyé";
+                if (msg.readBy.length >= 2) status = "✓✓ lu";
+              }
+              const msgTime = new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+              return (
+                <View 
+                key={i} 
+                style={[styles.messageRow, isMe ? styles.myMessageRow : styles.otherMessageRow]}
+                accessible
+      accessibilityLabel={`${isMe ? "Vous" : msg.from.name}, ${msg.content}, à ${msgTime}${isMe ? `, ${status}` : ""}`} >
+                  {!isMe && request.client?.profileImage && (
+                    <Image source={{ uri: request.client?.profileImage?.url }} style={styles.avatar} />
+                  )}
+                  <View style={[styles.messageBubble, isMe ? styles.myMessage : styles.otherMessage]}>
+                    {!isMe && <Text style={styles.author}>{msg.from.name}</Text>}
+                    <Text style={{ fontFamily: "Mont", letterSpacing: -0.6 }}>{msg.content}</Text>
+                    <View style={styles.messageMeta}>
+                      <Text style={styles.time}>{msgTime}</Text>
+                      {isMe && <Text style={[styles.readStatus, msg.readBy.length >= 2 && { color: "#0b87da" }]}>{status}</Text>}
+                    </View>
+                  </View>
+                </View>
+              );
+            })}
+          </LinearGradient>
+
+          <View style={styles.inputRow}>
+            <TextInput
+              value={message}
+              onChangeText={setMessage}
+              placeholder="Votre message..."
+              style={styles.inputMsg}
+              accessible
+  accessibilityLabel="Écrire un message"
+  accessibilityHint="Saisir votre message"
+            />
+            <TouchableOpacity 
+            onPress={sendMessage} 
+            style={styles.sendButton}
+            accessible
+  accessibilityRole="button"
+  accessibilityLabel="Envoyer le message"
+  accessibilityHint="Envoyer le message dans la conversation" >
+              <Text style={{ color: "#fff", fontFamily: "Mont", fontSize: 12 }}>Envoyer</Text>
+            </TouchableOpacity>
+          </View>
+        </Animated.ScrollView>
+
+        {/* Modal preview image */}
+        <Modal visible={previewVisible} transparent animationType="fade">
+          <TouchableOpacity
+            style={{
+              flex: 1,
+              backgroundColor: "rgba(0,0,0,0.9)",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+            onPress={() => setPreviewVisible(false)}
+            activeOpacity={1}
+          >
+            <Image source={{ uri: previewImage }} style={{ width: "90%", height: "80%", resizeMode: "contain", borderRadius: 12 }} />
           </TouchableOpacity>
-        </View>
-      </Animated.ScrollView>
-
-      {/* Modal preview image */}
-      <Modal visible={previewVisible} transparent animationType="fade">
-        <TouchableOpacity
-          style={{
-            flex: 1,
-            backgroundColor: "rgba(0,0,0,0.9)",
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-          onPress={() => setPreviewVisible(false)}
-          activeOpacity={1}
-        >
-          <Image source={{ uri: previewImage }} style={{ width: "90%", height: "80%", resizeMode: "contain", borderRadius: 12 }} />
-        </TouchableOpacity>
-      </Modal>
-          </KeyboardAvoidingView>
+        </Modal>
+      </KeyboardAvoidingView>
 
     </ImageBackground>
   );
@@ -613,10 +681,11 @@ const styles = StyleSheet.create({
   container: {
     paddingTop: 40,
     paddingInline: 10,
-paddingBottom: 140, alignItems: "center"  },
+    paddingBottom: 140, alignItems: "center"
+  },
   title: { fontSize: 22, fontFamily: "Montt", marginBottom: 10 },
   chatTitle: { marginTop: 20, marginBottom: 10, fontFamily: "Montt", textAlign: "center", fontSize: 16 },
-  dealBox: {  borderRadius: 8,  marginVertical: 10, alignItems: "center" },
+  dealBox: { borderRadius: 8, marginVertical: 10, alignItems: "center" },
   dealAction: { color: "#fff", fontFamily: "Mont" },
   dealStatus: { color: "#555", fontFamily: "Kanito" },
   contactBox: { padding: 10, backgroundColor: "#e5e5e5", borderRadius: 8, marginVertical: 10, width: "100%" },
@@ -636,10 +705,10 @@ paddingBottom: 140, alignItems: "center"  },
   input: { borderWidth: 1, borderColor: "#ccc", borderRadius: 8, padding: 10 },
   inputMsg: { borderWidth: 1, borderColor: "#ccc", borderRadius: 8, padding: 10, width: "78%", fontFamily: "Mont", backgroundColor: "#ffffff" },
   sendButton: { padding: 10, backgroundColor: "#007AFF", borderRadius: 8, marginLeft: "2%", width: "20%", alignItems: "center", justifyContent: "center" },
-  reviewButton: { backgroundColor: "#007AFF", padding:12, borderRadius:8, alignItems:"center", marginTop:10, width: "80%" },
-  modalOverlay: { flex:1, backgroundColor:"rgba(0,0,0,0.5)", justifyContent:"center", alignItems:"center" },
-  modal: { backgroundColor:"white", padding:20, borderRadius:10, width:"85%", gap: 10 },
-  modalTitle: { fontSize:18, fontFamily: "Montt", marginBottom:15, textAlign:"center" },
-  stars: { flexDirection:"row", justifyContent:"center", marginBottom:20 },
-  sendReview: { backgroundColor:"#007AFF", padding:12, borderRadius:8, alignItems:"center" },
+  reviewButton: { backgroundColor: "#007AFF", padding: 12, borderRadius: 8, alignItems: "center", marginTop: 10, width: "80%" },
+  modalOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "center", alignItems: "center" },
+  modal: { backgroundColor: "white", padding: 20, borderRadius: 10, width: "85%", gap: 10 },
+  modalTitle: { fontSize: 18, fontFamily: "Montt", marginBottom: 15, textAlign: "center" },
+  stars: { flexDirection: "row", justifyContent: "center", marginBottom: 20 },
+  sendReview: { backgroundColor: "#007AFF", padding: 12, borderRadius: 8, alignItems: "center" },
 });
