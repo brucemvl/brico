@@ -28,7 +28,7 @@ type RequestType = {
   client: string;
   title: string;
   hasUnread: boolean;
-  unreadType?: "message" | "deal" | "update" ;
+  unreadType?: "message" | "deal" | "update";
   createdAt?: string;
 };
 
@@ -55,25 +55,25 @@ export default function HomeClient() {
   const [pickerOpen, setPickerOpen] = useState(false);
 
   const fetchNotifications = useCallback(async () => {
-  try {
-    const res = await apiFetch("/notifications"); // ✅ PAS unread-count
-    setNotifications(res); // ✅ on remplit le tableau
-    setUnreadCount(res.filter((n: any) => !n.isRead).length);
-  } catch (err) {
-    console.error("Erreur notifications", err);
-  }
-}, []);
+    try {
+      const res = await apiFetch("/notifications"); // ✅ PAS unread-count
+      setNotifications(res); // ✅ on remplit le tableau
+      setUnreadCount(res.filter((n: any) => !n.isRead).length);
+    } catch (err) {
+      console.error("Erreur notifications", err);
+    }
+  }, []);
 
 
 
   const scrollY = new Animated.Value(0);
 
-   const scaleAnim = useRef(new Animated.Value(1)).current;
+  const scaleAnim = useRef(new Animated.Value(1)).current;
 
   const onPressIn = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     Animated.spring(scaleAnim, {
-      toValue: 1.3, 
+      toValue: 1.3,
       useNativeDriver: true,
       friction: 4,
       tension: 100,
@@ -89,39 +89,39 @@ export default function HomeClient() {
     }).start();
   };
 
-  const [fontsLoaded] = useFonts({ 
-      "Londrina": require("../assets/fonts/Londrina/LondrinaSolid-Regular.ttf"), 
-      "Londrinak": require("../assets/fonts/Londrina/LondrinaSolid-Black.ttf"), 
-      "Mont": require("../assets/fonts/Montserrat/Montserrat-Regular.ttf"), 
-      "Montt": require("../assets/fonts/Montserrat/Montserrat-Bold.ttf"), 
-      "Kanit": require("../assets/fonts/Kanit/Kanit-Regular.ttf"), 
-      "Kanitt": require("../assets/fonts/Kanit/Kanit-Bold.ttf"), 
-      "Kanito": require("../assets/fonts/Kanit/Kanit-Medium.ttf"), 
-    });
+  const [fontsLoaded] = useFonts({
+    "Londrina": require("../assets/fonts/Londrina/LondrinaSolid-Regular.ttf"),
+    "Londrinak": require("../assets/fonts/Londrina/LondrinaSolid-Black.ttf"),
+    "Mont": require("../assets/fonts/Montserrat/Montserrat-Regular.ttf"),
+    "Montt": require("../assets/fonts/Montserrat/Montserrat-Bold.ttf"),
+    "Kanit": require("../assets/fonts/Kanit/Kanit-Regular.ttf"),
+    "Kanitt": require("../assets/fonts/Kanit/Kanit-Bold.ttf"),
+    "Kanito": require("../assets/fonts/Kanit/Kanit-Medium.ttf"),
+  });
 
-   const getUnreadIcon = (type?: string) => {
-  switch (type) {
-    case "message":
-      return msg;
+  const getUnreadIcon = (type?: string) => {
+    switch (type) {
+      case "message":
+        return msg;
       case "review":
-      return star;
+        return star;
       case "deal":
-      return notifIcon;
-    default:
-      return notifIcon;
-  }
-};
+        return notifIcon;
+      default:
+        return notifIcon;
+    }
+  };
 
 
-const getRequestUnreadType = (requestId: string) => {
-  const notif = notifications.find(
-    n =>
-      n.data?.requestId?.toString() === requestId &&
-      !n.isRead
-  );
+  const getRequestUnreadType = (requestId: string) => {
+    const notif = notifications.find(
+      n =>
+        n.data?.requestId?.toString() === requestId &&
+        !n.isRead
+    );
 
-  return notif?.type || null;
-};
+    return notif?.type || null;
+  };
 
   const headerOpacity = scrollY.interpolate({
     inputRange: [0, 60],
@@ -130,10 +130,10 @@ const getRequestUnreadType = (requestId: string) => {
   });
 
   const settingsOpacity = scrollY.interpolate({
-  inputRange: [0, 100],
-  outputRange: [1, 0.5], // 👈 devient transparent
-  extrapolate: "clamp",
-});
+    inputRange: [0, 100],
+    outputRange: [1, 0.5], // 👈 devient transparent
+    extrapolate: "clamp",
+  });
 
   const fadeOut = scrollY.interpolate({
     inputRange: [0, 100],
@@ -168,7 +168,7 @@ const getRequestUnreadType = (requestId: string) => {
   const [loading, setLoading] = useState(true);
 
   const badgeBlink = React.useRef(new Animated.Value(1)).current;
-  
+
   useEffect(() => {
     Animated.loop(
       Animated.sequence([
@@ -200,10 +200,10 @@ const getRequestUnreadType = (requestId: string) => {
   }, []);
 
   console.log("NOTIFICATIONS:", notifications);
-console.log(
-  "UNREAD:",
-  notifications.filter(n => !n.isRead)
-);
+  console.log(
+    "UNREAD:",
+    notifications.filter(n => !n.isRead)
+  );
 
   // 🔹 Fonction pour récupérer les demandes
   const fetchRequests = useCallback(async () => {
@@ -220,11 +220,11 @@ console.log(
 
   // 🔹 Rafraîchit la liste à chaque retour sur cet écran
   useFocusEffect(
-  useCallback(() => {
-    fetchRequests();
-    fetchNotifications(); // ✅ AJOUT ICI
-  }, [fetchRequests, fetchNotifications])
-);
+    useCallback(() => {
+      fetchRequests();
+      fetchNotifications(); // ✅ AJOUT ICI
+    }, [fetchRequests, fetchNotifications])
+  );
 
   // 🔹 Supprimer une demande
   const handleDelete = async (id: string) => {
@@ -292,25 +292,30 @@ console.log(
     );
   }
 
-      if (!fontsLoaded) return null;
+  if (!fontsLoaded) return null;
 
   return (
-    <ImageBackground source={fond} style={{flex: 1}}>
-<Animated.View style={{opacity: headerOpacity,  flexDirection: "row", alignItems: "center", position: "relative", top: 30, paddingBottom: 15 }}>
-    <Image source={logo} style={{height: 60, width: 60}}/>
-    <Text style={{ fontFamily: "Montt" , fontSize: 16}}>Accueil</Text></Animated.View>      <Animated.View
-  style={{
-    position: "absolute",
-    top: 70,
-    right: 15,
-    zIndex: 99,
-    opacity: settingsOpacity,
-  }}
->
-  <TouchableOpacity onPress={() => router.push({ pathname: "/settings" })}>
-    <Image source={settings} style={{ height: 40, width: 40 }} />
-  </TouchableOpacity>
-</Animated.View>
+    <ImageBackground source={fond} style={{ flex: 1 }}>
+      <Animated.View style={{ opacity: headerOpacity, flexDirection: "row", alignItems: "center", position: "relative", top: 30, paddingBottom: 15 }}>
+        <Image source={logo} style={{ height: 60, width: 60 }} />
+        <Text style={{ fontFamily: "Montt", fontSize: 16 }}>Accueil</Text></Animated.View>      <Animated.View
+          style={{
+            position: "absolute",
+            top: 70,
+            right: 15,
+            zIndex: 99,
+            opacity: settingsOpacity,
+          }}
+        >
+        <TouchableOpacity
+          onPress={() => router.push({ pathname: "/settings" })}
+          accessible
+          accessibilityRole="button"
+          accessibilityLabel="Paramètres"
+          accessibilityHint={`Accéder aux paramètres`} >
+          <Image source={settings} style={{ height: 40, width: 40 }} />
+        </TouchableOpacity>
+      </Animated.View>
       <Animated.ScrollView
         contentContainerStyle={styles.container}
         onScroll={Animated.event(
@@ -319,7 +324,7 @@ console.log(
         )}
         scrollEventThrottle={6}
       >
-        
+
         <Animated.View
           style={{
             alignItems: "center",
@@ -335,15 +340,24 @@ console.log(
             <Image
               source={{ uri: profile?.profileImage?.url || defaultAvatar }}
               style={styles.avatar}
+              accessible={false}
             />
             <TouchableOpacity
               onPress={() => router.push({ pathname: "/profileClient" })}
               style={styles.profileButton}
+              accessible
+              accessibilityRole="button"
+              accessibilityLabel="Modifier profl"
+              accessibilityHint={`Modifier mon profil`}
             >
               <Image source={modifier} style={{ width: 20, height: 20 }} />
             </TouchableOpacity>
           </View>
-          <LinearGradient colors={["#30a590", "#1a5b4f", "#1a5b4f"]} style={{ width: "100%", alignItems: "center", paddingInline: 20, paddingTop: 54, paddingBottom: 24, borderRadius: 20, gap: 4 }}>
+          <LinearGradient
+            colors={["#30a590", "#1a5b4f", "#1a5b4f"]}
+            style={{ width: "100%", alignItems: "center", paddingInline: 20, paddingTop: 54, paddingBottom: 24, borderRadius: 20, gap: 4 }}
+            accessible
+            accessibilityLabel={`Profil de ${profile?.name}, localisation ${profile?.location}, note ${formatRating(profile?.averageRating)}`}>
             <Text style={{ fontFamily: "Montt", fontSize: 16, color: "white", letterSpacing: 0.3 }}>{profile?.name}</Text>
             {profile?.location &&
               <Text style={{ fontFamily: "Montt", fontSize: 14, color: "white", letterSpacing: 0.3 }}>{profile?.location}</Text>
@@ -363,26 +377,31 @@ console.log(
 
         </Animated.View>
         <TouchableWithoutFeedback
-    accessible
-  accessibilityRole="button"
-  accessibilityLabel="Nouvelle demande"
-  accessibilityHint="Poster une noueelle demande"
-      onPress={() => router.push('/createRequestForm')}
-      onPressIn={onPressIn}
-      onPressOut={onPressOut}
-      
-    >
-      <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
-      <LinearGradient colors={["#30a590", "#1a5b4f"]} style={{ padding: 12, marginBottom: 20, backgroundColor: "#1a5b4f", borderRadius: 14 }}>
-          <Text style={{ color: "white", fontSize: 12, fontFamily: "Kanitt" }}>+ DEMANDE</Text>
-        </LinearGradient>
-        </Animated.View>
+          accessible
+          accessibilityRole="button"
+          accessibilityLabel="Nouvelle demande"
+          accessibilityHint="Poster une noueelle demande"
+          onPress={() => router.push('/createRequestForm')}
+          onPressIn={onPressIn}
+          onPressOut={onPressOut}
+
+        >
+          <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
+            <LinearGradient colors={["#30a590", "#1a5b4f"]} style={{ padding: 12, marginBottom: 20, backgroundColor: "#1a5b4f", borderRadius: 14 }}>
+              <Text style={{ color: "white", fontSize: 12, fontFamily: "Kanitt" }}>+ DEMANDE</Text>
+            </LinearGradient>
+          </Animated.View>
         </TouchableWithoutFeedback>
         <View style={styles.pickerWrapper}>
           <TouchableOpacity
             style={styles.pickerButton}
             onPress={() => setPickerOpen(prev => !prev)}
             activeOpacity={0.8}
+            accessible
+            accessibilityRole="button"
+            accessibilityLabel="Choisir une vue"
+            accessibilityHint="Ouvre ou ferme la liste des options"
+            accessibilityState={{ expanded: pickerOpen }}
           >
             <Text style={styles.pickerButtonText}>
               {requestViewLabels[requestView]}
@@ -400,6 +419,11 @@ console.log(
                     requestView === option && styles.pickerOptionActive
                   ]}
                   onPress={() => changeRequestView(option)}
+                  accessible
+                  accessibilityRole="button"
+                  accessibilityLabel={requestViewLabels[option]}
+                  accessibilityHint="Sélectionner cette vue"
+                  accessibilityState={{ selected: requestView === option }}
                 >
                   <Text
                     style={[
@@ -424,57 +448,90 @@ console.log(
         <View style={styles.requestsContainer}>
 
           {filteredRequests.length === 0 ? (
-            <Text style={{fontFamily: "Londrina", fontSize: 16}}>Aucune demande active</Text>
+            <Text
+              style={{ fontFamily: "Londrina", fontSize: 16 }}
+              accessible
+              accessibilityLabel="Aucune demande active">Aucune demande active</Text>
           ) : (
             filteredRequests.map((item) => {
               const unreadType = getRequestUnreadType(item._id);
               return (
-              
-              <View
-                key={item._id}
-                style={{ flexDirection: "row", alignItems: "center", gap: 10, width: "95%", justifyContent: "center" }}
-              >
-                <TouchableOpacity style={{ width: "90%" }} onPress={() => router.push(`/requestDetailClient?id=${item._id}`)}>
-                  <View style={styles.card}>
-                    <View style={{ flexDirection: "row", justifyContent: "space-between", backgroundColor: "#1a5b4f", paddingBlock: 6, paddingInline: 6 }}>
-                      <Text style={styles.cardTitle}>{item.title}</Text>
-                      <Text style={{ fontFamily: "Montt", fontSize: 10, color: "#ffffff" }}>
-                        {formatDate(item.createdAt)}
-                      </Text>
-                    </View>
-                    <View style={styles.cardContainer}>
-                      <View style={{ gap: 4 }}>
 
-                        <Text style={{ fontFamily: "Londrina", fontSize: 16, color: "#000000" }}>Catégorie : {item.category}</Text>
-                        <Text style={{ fontFamily: "Londrina", fontSize: 16, color: "#000000" }}>Budget : {item.budget}€</Text>
-                        <Text style={{fontFamily: "Kanito", color: item.status === "open" ? "green" : item.status === "in_progress" ? "#bdc008" : "red"}}>Statut: {item.status === "open" ? "Ouvert" : item.status === "in_progress" ? "En cours" : "Terminé"}</Text>
+                <View
+                  key={item._id}
+                  style={{ flexDirection: "row", alignItems: "center", gap: 10, width: "95%", justifyContent: "center" }}
+                >
+                  <TouchableOpacity
+                    style={{ width: "90%" }}
+                    onPress={() => router.push(`/requestDetailClient?id=${item._id}`)}
+                    accessible
+                    accessibilityRole="button"
+                    accessibilityLabel={`Demande ${item.title}, catégorie ${item.category}, budget ${item.budget} euros, statut ${item.status}`}
+                    accessibilityHint="Ouvrir les détails de la demande"
+                  >
+                    <View style={styles.card}>
+                      <View style={{ flexDirection: "row", justifyContent: "space-between", backgroundColor: "#1a5b4f", paddingBlock: 6, paddingInline: 6 }}>
+                        <Text style={styles.cardTitle}>{item.title}</Text>
+                        <Text style={{ fontFamily: "Montt", fontSize: 10, color: "#ffffff" }}>
+                          {formatDate(item.createdAt)}
+                        </Text>
                       </View>
+                      <View style={styles.cardContainer}>
+                        <View style={{ gap: 4 }}>
+
+                          <Text style={{ fontFamily: "Londrina", fontSize: 16, color: "#000000" }}>Catégorie : {item.category}</Text>
+                          <Text style={{ fontFamily: "Londrina", fontSize: 16, color: "#000000" }}>Budget : {item.budget}€</Text>
+                          <Text
+                            style={{ fontFamily: "Kanito", color: item.status === "open" ? "green" : item.status === "in_progress" ? "#bdc008" : "red" }}
+                            accessible
+                            accessibilityLabel={`Statut : ${item.status === "open"
+                                ? "Ouvert"
+                                : item.status === "in_progress"
+                                  ? "En cours"
+                                  : "Terminé"
+                              }`}>Statut: {item.status === "open" ? "Ouvert" : item.status === "in_progress" ? "En cours" : "Terminé"}</Text>
+                        </View>
 
 
-{item.hasUnread && (
-  <Animated.Image
-    source={getUnreadIcon(item.unreadType)}
-    style={[
-      styles.unreadIcon,
-      { opacity: badgeBlink }
-    ]}
-  />
-)}
+                        {item.hasUnread && (
+                          <Animated.Image
+                            accessible={false}
+                            source={getUnreadIcon(item.unreadType)}
+                            style={[
+                              styles.unreadIcon,
+                              { opacity: badgeBlink }
+                            ]}
+                          />
+                        )}
+                      </View>
                     </View>
-                  </View>
-                </TouchableOpacity>
-{ item.status != "completed" &&
-                <TouchableOpacity onPress={() => handleDelete(item._id)}>
-                  <Image source={trash} style={{ height: 20, width: 20 }} />
-                </TouchableOpacity>}
-              </View>
-            )}
-          )
+                  </TouchableOpacity>
+                  {item.status != "completed" &&
+                    <TouchableOpacity
+                      onPress={() => handleDelete(item._id)}
+                      accessible
+                      accessibilityRole="button"
+                      accessibilityLabel="Supprimer la demande"
+                      accessibilityHint="Supprimer définitivement cette demande"
+                    >
+                      <Image source={trash} style={{ height: 20, width: 20 }} />
+                    </TouchableOpacity>}
+                </View>
+              )
+            }
+            )
           )}
         </View>
 
-        <TouchableOpacity onPress={handleLogout} style={{marginBlock: 10}}>
-          <Text style={{fontFamily: "Kanito", color: "red", fontSize: 15}}>Deconnexion</Text>
+        <TouchableOpacity
+          onPress={handleLogout}
+          style={{ marginBlock: 10 }}
+          accessible
+          accessibilityRole="button"
+          accessibilityLabel="Déconnexion"
+          accessibilityHint="Se déconnecter du compte"
+        >
+          <Text style={{ fontFamily: "Kanito", color: "red", fontSize: 15 }}>Deconnexion</Text>
         </TouchableOpacity>
       </Animated.ScrollView>
     </ImageBackground>
@@ -557,12 +614,12 @@ const styles = StyleSheet.create({
     color: "#1a5b4f",
   },
   unreadIcon: {
-  width: 22,
-  height: 22,
-  position: "absolute",
-  top: 8,
-  right: 8,
-},
+    width: 22,
+    height: 22,
+    position: "absolute",
+    top: 8,
+    right: 8,
+  },
   requestsContainer: { width: "100%", paddingHorizontal: 20, alignItems: "center" },
   cardContainer: { padding: 10, flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
 

@@ -63,8 +63,9 @@ export default function Register() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>
+    <View style={styles.container} accessible
+  accessibilityLabel="Écran de création de compte">
+      <Text style={styles.title} accessibilityRole="header">
         Créer un compte {role === 'pro' ? 'Professionnel' : 'Particulier'}
       </Text>
 
@@ -74,6 +75,9 @@ export default function Register() {
         onChangeText={setName}
         style={styles.input}
         editable={!loading}
+         accessible
+  accessibilityLabel="Nom"
+  accessibilityHint="Entrer votre nom"
       />
 
       <TextInput
@@ -84,6 +88,9 @@ export default function Register() {
         autoCapitalize="none"
         style={styles.input}
         editable={!loading}
+        accessible
+  accessibilityLabel="Adresse email"
+  accessibilityHint="Entrer votre email pour créer le compte"
       />
 
       <TextInput
@@ -93,13 +100,22 @@ export default function Register() {
         onChangeText={setPassword}
         style={styles.input}
         editable={!loading}
+        accessible
+  accessibilityLabel="Mot de passe"
+  accessibilityHint="Créer un mot de passe sécurisé"
       />
 
       <View style={{ marginVertical: 10 }}>
         {loading ? (
           <ActivityIndicator size="large" color="#007AFF" />
         ) : (
-          <TouchableOpacity onPress={handleRegister} style={{backgroundColor: "#007AFF", padding: 10, borderRadius: 12, marginBlock: 10}} >
+          <TouchableOpacity 
+          onPress={handleRegister} 
+          style={{backgroundColor: "#007AFF", padding: 10, borderRadius: 12, marginBlock: 10}}
+          accessible
+  accessibilityRole="button"
+  accessibilityLabel="Créer mon compte"
+  accessibilityHint="Valider l'inscription et créer votre compte" >
             <Text style={{color: "#fff", fontFamily: "Mont", fontSize: 16}}>Créer mon compte</Text>
           </TouchableOpacity>
         )}
@@ -109,8 +125,12 @@ export default function Register() {
         <TouchableOpacity
           
           onPress={() => router.push({ pathname: '/login', params: { role } })}
+          accessible
+  accessibilityRole="button"
+  accessibilityLabel="Déjà un compte, se connecter"
+  accessibilityHint="Retourner à l'écran de connexion"
         >
-          <Text style={{color: "#007AFF", fontFamily: "Mont" }}>Déà un compte? Se connecter</Text>
+          <Text style={{color: "#007AFF", fontFamily: "Mont" }}>Déjà un compte ? Se connecter</Text>
         </TouchableOpacity>
       )}
     </View>
