@@ -40,22 +40,22 @@ export default function Login() {
 
       // Stocke le token et le rôle dans le contexte et AsyncStorage
       await login({
-  token: data.token,
-  role: data.role,
-  userId: data.userId,
-  onboardingCompleted: data.onboardingCompleted
-});
+        token: data.token,
+        role: data.role,
+        userId: data.userId,
+        onboardingCompleted: data.onboardingCompleted
+      });
 
       // Redirection selon le rôle
-if (data.role === "pro") {
-  if (!data.onboardingCompleted) {
-    router.replace("/onboardingPro");
-  } else {
-    router.replace("/homePro");
-  }
-} else {
-  router.replace("/homeClient");
-}
+      if (data.role === "pro") {
+        if (!data.onboardingCompleted) {
+          router.replace("/onboardingPro");
+        } else {
+          router.replace("/homePro");
+        }
+      } else {
+        router.replace("/homeClient");
+      }
     } catch (err) {
       console.error(err);
       Alert.alert('Erreur', 'Impossible de contacter le serveur');
@@ -66,12 +66,13 @@ if (data.role === "pro") {
 
   return (
     <View style={styles.container}>
-      <Image source={logo} style={{height: 180, width: 180, backgroundColor: "#fff", borderRadius: 90}}/>
+      <Image source={logo} style={{ height: 180, width: 180, backgroundColor: "#fff", borderRadius: 90 }} />
 
-      <Text style={styles.title}>
+      <Text style={styles.title} accessibilityRole="header">
         Connexion {role === 'pro' ? 'Professionnel' : 'Particulier'}
       </Text>
-      <Text style={styles.subtitle}>
+      <Text style={styles.subtitle} accessible
+        accessibilityRole="text">
         {role === 'pro' ? 'Rejoignez la plateforme et recevez des missions' : 'Trouvez rapidement un bricoleur qualifié'}
       </Text>
 
@@ -83,6 +84,9 @@ if (data.role === "pro") {
         autoCapitalize="none"
         style={styles.input}
         editable={!loading}
+        accessible
+        accessibilityLabel="Adresse email"
+        accessibilityHint="Entrer votre email pour vous connecter"
       />
 
       <TextInput
@@ -92,14 +96,22 @@ if (data.role === "pro") {
         onChangeText={setPassword}
         style={styles.input}
         editable={!loading}
+        accessible
+        accessibilityLabel="Mot de passe"
+        accessibilityHint="Entrer votre mot de passe"
       />
 
       <View style={{ marginVertical: 10 }}>
         {loading ? (
           <ActivityIndicator size="large" color="#007AFF" />
         ) : (
-          <TouchableOpacity onPress={handleLogin} style={{backgroundColor: "#007AFF", padding: 10, borderRadius: 12, marginBlock: 10}} >
-            <Text style={{color: "#fff", fontFamily: "Mont", fontSize: 16}}>Se connecter</Text>
+          <TouchableOpacity onPress={handleLogin}
+            style={{ backgroundColor: "#007AFF", padding: 10, borderRadius: 12, marginBlock: 10 }}
+            accessible
+            accessibilityRole="button"
+            accessibilityLabel="Se connecter"
+            accessibilityHint="Valider vos identifiants pour accéder à votre compte" >
+            <Text style={{ color: "#fff", fontFamily: "Mont", fontSize: 16 }}>Se connecter</Text>
           </TouchableOpacity>
         )}
       </View>
@@ -107,8 +119,12 @@ if (data.role === "pro") {
       {!loading && (
         <TouchableOpacity
           onPress={() => router.push({ pathname: '/register', params: { role } })}
+          accessible
+          accessibilityRole="button"
+          accessibilityLabel="Créer un compte"
+          accessibilityHint="Aller à la page d'inscription"
         >
-          <Text style={{color: "#007AFF", fontFamily: "Mont" }}>Créer un compte</Text>
+          <Text style={{ color: "#007AFF", fontFamily: "Mont" }}>Créer un compte</Text>
         </TouchableOpacity>
       )}
     </View>
@@ -118,7 +134,7 @@ if (data.role === "pro") {
 const styles = StyleSheet.create({
   container: { flex: 1, justifyContent: 'center', padding: 20, alignItems: "center", backgroundColor: "#fff" },
   title: { fontSize: 24, marginBottom: 20, textAlign: 'center', fontFamily: "Montt", color: "#1a5b4f" },
-  subtitle : {fontSize: 16, textAlign: "center", marginBottom: 20, fontFamily: "Montt", color: "#1a5b4f"},
+  subtitle: { fontSize: 16, textAlign: "center", marginBottom: 20, fontFamily: "Montt", color: "#1a5b4f" },
   input: {
     borderWidth: 1,
     padding: 10,

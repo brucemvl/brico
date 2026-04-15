@@ -107,7 +107,7 @@ export default function Welcome() {
         ]}
       >
 <Image source={logo} style={{height: 180, width: 180, backgroundColor: "#fff", borderRadius: 90}}/>
-       <Text style={styles.subtitle}>
+       <Text style={styles.subtitle} accessibilityRole="header">
           Trouvez le bon professionnel en quelques secondes.
         </Text>
 
@@ -118,6 +118,10 @@ export default function Welcome() {
           }
           onPressIn={clientAnim.onPressIn}
           onPressOut={clientAnim.onPressOut}
+          accessible
+  accessibilityRole="button"
+  accessibilityLabel="Besoin d’un bricoleur"
+  accessibilityHint="Aller vers la connexion en tant que client"
         >
           <Animated.View
             style={[
@@ -142,6 +146,10 @@ export default function Welcome() {
           }
           onPressIn={proAnim.onPressIn}
           onPressOut={proAnim.onPressOut}
+           accessible
+  accessibilityRole="button"
+  accessibilityLabel="Je propose mes services"
+  accessibilityHint="Aller vers la connexion en tant que professionnel"
         >
           <Animated.View
             style={[
