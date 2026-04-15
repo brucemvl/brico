@@ -356,21 +356,36 @@ Alert.alert(
   scrollEventThrottle={6}
 > 
 
-<View style={{alignItems: "center", gap: 10, backgroundColor: "#d8d8d8", padding: 15, borderRadius: 20, width: "100%"}}>
+<View 
+style={{alignItems: "center", gap: 10, backgroundColor: "#d8d8d8", padding: 15, borderRadius: 20, width: "100%"}}
+accessible
+  accessibilityLabel="Photo de profil" >
       <Text style={{fontFamily: "Mont", color: "#000000"}}>Photo de profil</Text>
       {profileImage && (
     <Image
       source={{ uri: profileImage.url || profileImage.uri }}
       style={styles.profileImage}
+      accessible
+  accessibilityLabel="Photo de profil actuelle"
     />
 )}
 <View style={{flexDirection: "row", gap: 20}}>
-      <TouchableOpacity style={styles.addProfileButton} onPress={handlePickProfileImage} >
+      <TouchableOpacity 
+      style={styles.addProfileButton} 
+      onPress={handlePickProfileImage}
+      accessible
+  accessibilityRole="button"
+  accessibilityLabel="Choisir une photo de profil"
+  accessibilityHint="Ouvrir la galerie pour sélectionner une image" >
         <Text style={{ color: "white", fontFamily: "Mont" }}>Choisir une photo</Text>
         </TouchableOpacity>
       <TouchableOpacity
       style={styles.deleteProfileButton}
       onPress={handleDeleteProfileImage}
+      accessible
+  accessibilityRole="button"
+  accessibilityLabel="Supprimer la photo de profil"
+  accessibilityHint="Retirer la photo actuelle"
     >
       <Text style={{ color: "white", fontFamily: "Mont" }}>Supprimer</Text>
     </TouchableOpacity>
@@ -379,17 +394,26 @@ Alert.alert(
 
 <View style={styles.box}>
       <Text style={{fontFamily: "Mont", color: "#ffffff"}}>Nom</Text>
-      <TextInput style={styles.input} value={name} onChangeText={setName} />
-</View>
-
-<View style={styles.box}>
-      <Text style={{fontFamily: "Mont", color: "#ffffff"}}>Email</Text>
-      <TextInput style={styles.input} value={email} editable={false} />
+      <TextInput 
+      style={styles.input} 
+      value={name} 
+      onChangeText={setName}
+      accessible
+  accessibilityLabel="Nom"
+  accessibilityHint="Modifier votre nom" />
 </View>
 
 <View style={styles.box}>
       <Text style={{fontFamily: "Mont", color: "#ffffff"}}>Téléphone</Text>
-      <TextInput style={styles.input} value={phone} onChangeText={setPhone} keyboardType="numeric" maxLength={10} />
+      <TextInput 
+      style={styles.input} 
+      value={phone} 
+      onChangeText={setPhone} 
+      keyboardType="numeric" 
+      maxLength={10} 
+      accessible
+  accessibilityLabel="Numéro de téléphone"
+  accessibilityHint="Saisir votre numéro de téléphone" />
 </View>
 
 <View style={[styles.box, {paddingBottom: 20}]}>
@@ -400,6 +424,9 @@ Alert.alert(
         onChangeText={searchCities}
         placeholder="Tapez une ville..."
         style={{width: 320, fontFamily: "Londrina"}}
+        accessible
+  accessibilityLabel="Rechercher une ville"
+  accessibilityHint="Tapez pour afficher des suggestions"
       
         flatListProps={{
           keyExtractor: (item) => item.code,
@@ -411,6 +438,9 @@ Alert.alert(
                 setLocationQuery(selected);
                 setCities([]);
               }}
+              accessible
+  accessibilityRole="button"
+  accessibilityLabel={`Choisir ${item.nom}`}
             >
               <Text style={{ padding: 10 }}>
                 {item.nom} ({item.departement.code})
@@ -423,7 +453,7 @@ Alert.alert(
 
 <View style={styles.box}>
       <Text style={{fontFamily: "Mont", color: "#ffffff"}}>SIRET</Text>
-      <TextInput style={styles.input} value={siret} onChangeText={setSiret} keyboardType="numeric" maxLength={14} />
+      <TextInput style={styles.input} value={siret} onChangeText={setSiret} keyboardType="numeric" maxLength={14} accessible accessibilityLabel="Numéro SIRET" accessibilityHint="Saisir votre numéro professionnel" />
       {siret.length === 14 && (
         <View style={styles.badge}><Text style={styles.badgeText}>✔ Badge PRO activé</Text></View>
       )}
@@ -431,12 +461,19 @@ Alert.alert(
 
 <View style={styles.box}>
       <Text style={{fontFamily: "Mont", color: "#ffffff"}}>Description</Text>
-      <TextInput style={[styles.input, { height: 100 }]} value={description} onChangeText={setDescription} multiline />
+      <TextInput 
+      style={[styles.input, { height: 100 }]} 
+      value={description} 
+      onChangeText={setDescription} 
+      multiline 
+      accessible
+  accessibilityLabel="Description"
+  accessibilityHint="Décrire votre activité" />
 </View>
 
 <View style={styles.box}>
       <Text style={{ marginBottom: 15, fontFamily: "Mont", color: "#ffffff" }}>Compétences</Text>
-      <View style={styles.skillsContainer}>
+      <View style={styles.skillsContainer} accessible accessibilityLabel="Sélection des compétences">
         {categories.map((cat) => (
           <TouchableOpacity key={cat} style={[styles.skillButton, skills.includes(cat) && styles.skillSelected]} onPress={() => toggleSkill(cat)}>
             <Text style={{fontFamily: "Montt", color: skills.includes(cat) ?  "black" : "#ccc" }}>{cat}</Text>
