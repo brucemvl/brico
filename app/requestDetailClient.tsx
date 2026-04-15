@@ -146,7 +146,12 @@ export default function RequestDetailClient() {
                 
               }}
             >
-            <LinearGradient colors={[ "#30a590", "#1a5b4f" ]} style={{padding: 20, borderRadius: 20, width: "100%", flexDirection: "row", justifyContent: "space-between"}}>
+            <LinearGradient 
+            colors={[ "#30a590", "#1a5b4f" ]} 
+            style={{padding: 20, borderRadius: 20, width: "100%", flexDirection: "row", justifyContent: "space-between"}}
+            accessible
+  accessibilityLabel={`Demande ${request.title}, catégorie ${request.category}, budget ${request.budget} euros, à ${request.location}`}
+  >
                       <View style={{gap: 5}}>
                               <Text style={styles.title}>{request.title}</Text>
                     <Text style={{fontFamily: "Montt", color: "#fff"}}>Catégorie: {request.category}</Text>
@@ -155,7 +160,7 @@ export default function RequestDetailClient() {
                     </View>
                     <View style={{flexDirection: "row-reverse", alignItems: "flex-end", gap: 5}}>
                       {request?.client?.profileImage?.url && (
-                    <Image source={{uri: request?.client?.profileImage?.url}} style={{height: 30, width: 30, borderRadius: 15}}/>
+                    <Image source={{uri: request?.client?.profileImage?.url}} style={{height: 30, width: 30, borderRadius: 15}} />
                       )}
                     <Text style={{fontSize: 11, color: "#fff", fontFamily: "Montt"}}>{formatDate(request?.createdAt)}</Text>
                     </View>
@@ -166,7 +171,12 @@ export default function RequestDetailClient() {
       <RequestImages request={request} setRequest={setRequest} />
 
       {/* 🔹 Conversations */}
-      <Text style={{ marginTop: 20, fontFamily: "Montt" }}>Conversations avec les pros</Text>
+      <Text 
+      style={{ marginTop: 20, fontFamily: "Montt" }} accessible
+  accessibilityRole="header"
+  accessibilityLabel="Liste des conversations avec les professionnels" >
+    Conversations avec les pros
+    </Text>
       {request.conversations?.map((conv) => {
         const unread = userId
   ? conv.messages?.filter(
@@ -203,14 +213,24 @@ export default function RequestDetailClient() {
 };
 
         return (
-          <TouchableOpacity key={conv._id} style={styles.conversationCard} onPress={openConversation}>
-            {conv.pro.profileImage?.url && <Image source={{ uri: conv.pro.profileImage.url }} style={styles.avatar} />}
+          <TouchableOpacity 
+          key={conv._id} 
+          style={styles.conversationCard} 
+          onPress={openConversation}
+          accessible
+  accessibilityRole="button"
+  accessibilityLabel={`Conversation avec ${conv.pro.name}`}
+  accessibilityHint="Ouvrir la discussion"
+  >
+            {conv.pro.profileImage?.url && <Image source={{ uri: conv.pro.profileImage.url }} style={styles.avatar} accessible={false} />}
             <View style={{ flex: 1 }}>
               <Text style={{ fontFamily: "Londrinak", fontSize: 17 }}>{conv.pro.name}</Text>
-              {conv.messages?.length > 0 && <Text numberOfLines={1} style={{fontFamily: "Kanit"}}>{conv.messages[conv.messages.length - 1].content}</Text>}
+              {conv.messages?.length > 0 && <Text numberOfLines={1} style={{fontFamily: "Kanit"}} accessible
+  accessibilityLabel={`Dernier message : ${conv.messages?.at(-1)?.content || "Aucun message"}`}>{conv.messages[conv.messages.length - 1].content}</Text>}
             </View>
             {unread > 0 && (
-              <View style={styles.unreadBadge}>
+              <View style={styles.unreadBadge} accessible
+  accessibilityLabel={`${unread} messages non lus`}>
                 <Text style={styles.unreadText}>{unread}</Text>
               </View>
             )}

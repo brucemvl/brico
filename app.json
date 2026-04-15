@@ -2,9 +2,9 @@
   "expo": {
     "name": "Briconnect",
     "slug": "briconnect",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "orientation": "portrait",
-    "icon": "./assets/images/briconnectICON.png",
+    "icon": "./assets/images/briconnectICON2.png",
     "scheme": "bricoconnect",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,

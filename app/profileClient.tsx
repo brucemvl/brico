@@ -19,14 +19,17 @@ import {
   TouchableWithoutFeedback,
   View
 } from "react-native";
-import Autocomplete from "react-native-autocomplete-input";
 import fond from "../assets/convert_1.png";
 
-
-
-
-
 import { useApi } from "../services/api";
+
+type City = {
+  code: string;
+  nom: string;
+  departement: {
+    code: string;
+  };
+};
 
 export default function ProfileClient() {
 
@@ -44,11 +47,11 @@ export default function ProfileClient() {
   const [saving,setSaving] = useState(false);
 
   const [locationQuery, setLocationQuery] = useState("");
-    const [cities, setCities] = useState([]);
-
+const [cities, setCities] = useState<City[]>([]);
     const scaleAnim = useRef(new Animated.Value(1)).current;
 
     const scrollY = new Animated.Value(0);
+    const [showCityOverlay, setShowCityOverlay] = useState(false);
       
         const headerOpacity = scrollY.interpolate({
         inputRange: [0, 100],
@@ -145,30 +148,80 @@ export default function ProfileClient() {
     );
   };
 
+  const IDF_DEPARTMENTS = ["75", "92", "93", "94", "77", "78", "91", "95"];
+
+  const PARIS_ARRONDISSEMENTS = [
+  "Paris 1er",
+  "Paris 2e",
+  "Paris 3e",
+  "Paris 4e",
+  "Paris 5e",
+  "Paris 6e",
+  "Paris 7e",
+  "Paris 8e",
+  "Paris 9e",
+  "Paris 10e",
+  "Paris 11e",
+  "Paris 12e",
+  "Paris 13e",
+  "Paris 14e",
+  "Paris 15e",
+  "Paris 16e",
+  "Paris 17e",
+  "Paris 18e",
+  "Paris 19e",
+  "Paris 20e",
+];
+
   const searchCities = async (text) => {
   setLocationQuery(text);
 
+
   if (text.length < 2) {
-    setCities([]);
-    return;
+  setCities([]);
+  setShowCityOverlay(false);
+  return;
+}
+
+  if (text.toLowerCase().includes("paris")) {
+    setCities(
+      PARIS_ARRONDISSEMENTS.map((a, i) => ({
+        code: `paris-${i + 1}`,
+        nom: a,
+        departement: { code: "75" },
+      }))
+    );
+    return; // 🔥 stop API ici
   }
 
   try {
-    // On filtre par nom + département
     const res = await fetch(
-      `https://geo.api.gouv.fr/communes?nom=${text}&fields=departement,code,centre&limit=10`
+      `https://geo.api.gouv.fr/communes?nom=${text}&fields=departement,code,centre&limit=20`
     );
 
     const data = await res.json();
 
-    // Trier pour mettre Bagneux 92 en premier
     const sorted = data.sort((a, b) => {
+      const aIsIDF = IDF_DEPARTMENTS.includes(a.departement.code);
+      const bIsIDF = IDF_DEPARTMENTS.includes(b.departement.code);
+
+      if (aIsIDF && !bIsIDF) return -1;
+      if (!aIsIDF && bIsIDF) return 1;
+
+      
+
+      // ensuite priorité 92
       if (a.departement.code === "92") return -1;
       if (b.departement.code === "92") return 1;
+
       return 0;
     });
 
+   
+
     setCities(sorted);
+    setShowCityOverlay(true);
+
   } catch (err) {
     console.log("Erreur villes:", err);
   }
@@ -237,6 +290,7 @@ export default function ProfileClient() {
     { useNativeDriver: false }
   )}
   scrollEventThrottle={6}
+  keyboardShouldPersistTaps="handled"
 > 
 <Text style={styles.title}>Mon Profil</Text>
 <View style={{alignItems: "center", gap: 10, backgroundColor: "#d8d8d8", padding: 15, borderRadius: 20, width: "100%"}}>
@@ -273,34 +327,29 @@ style={styles.profileImage}
       <TextInput style={styles.input} value={phone} onChangeText={setPhone} keyboardType="numeric" maxLength={10} />
 </View>
 
-<View style={[styles.box, {paddingBottom: 20}]}>
-      <Text style={{fontFamily: "Mont", color: "#ffffff", marginBottom: 10}}>Localisation</Text>
-      <Autocomplete
-        data={cities}
-        value={locationQuery}
-        onChangeText={searchCities}
-        placeholder="Tapez une ville..."
-        style={{width: 300, fontFamily: "Londrina"}}
-      
-        flatListProps={{
-          keyExtractor: (item) => item.code,
-          renderItem: ({ item }) => (
-            <TouchableOpacity
-              onPress={() => {
-                const selected = `${item.nom} (${item.departement.code})`;
-                setLocation(selected);
-                setLocationQuery(selected);
-                setCities([]);
-              }}
-            >
-              <Text style={{ padding: 10 }}>
-                {item.nom} ({item.departement.code})
-              </Text>
-            </TouchableOpacity>
-          ),
-        }}
-      />
-      </View>
+<View style={[styles.box, { paddingBottom: 20 }]}>
+  <Text style={{ fontFamily: "Mont", color: "#ffffff", marginBottom: 10 }}>
+    Localisation
+  </Text>
+
+  <TextInput
+    value={locationQuery}
+    onChangeText={searchCities}
+    placeholder="Tapez une ville..."
+    style={{
+      width: 320,
+      fontFamily: "Londrina",
+      backgroundColor: "#fff",
+      padding: 10,
+      borderRadius: 8,
+    }}
+    accessible
+    accessibilityLabel="Rechercher une ville"
+    accessibilityHint="Tapez pour afficher les suggestions"
+    autoCorrect={false}
+    autoCapitalize="words"
+  />
+</View>
 
 
 
@@ -327,6 +376,46 @@ style={styles.profileImage}
 
 </Animated.ScrollView>
     </KeyboardAvoidingView>
+    {showCityOverlay && cities.length > 0 && (
+  <TouchableWithoutFeedback onPress={() => setShowCityOverlay(false)}>
+    <View style={styles.overlay}>
+      
+      <TouchableWithoutFeedback>
+        <View style={styles.overlayBox}>
+          
+          <Text style={styles.overlayTitle}>
+            Sélectionner une ville
+          </Text>
+
+          <Animated.FlatList
+            data={cities}
+            keyExtractor={(item) => item.code}
+            keyboardShouldPersistTaps="handled"
+            style={{ width: "100%" }}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                onPress={() => {
+                  const selected = `${item.nom} (${item.departement.code})`;
+                  setLocation(selected);
+                  setLocationQuery(selected);
+                  setCities([]);
+                  setShowCityOverlay(false);
+                }}
+                style={styles.cityItem}
+              >
+                <Text style={styles.cityText}>
+                  {item.nom} ({item.departement.code})
+                </Text>
+              </TouchableOpacity>
+            )}
+          />
+
+        </View>
+      </TouchableWithoutFeedback>
+
+    </View>
+  </TouchableWithoutFeedback>
+)}
     </ImageBackground>
       );
 }
@@ -401,6 +490,41 @@ saveText: {
   color: "white",
   fontFamily: "Montt",
   fontSize: 16,
+},
+overlay: {
+  position: "absolute",
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  backgroundColor: "rgba(0,0,0,0.5)",
+  justifyContent: "center",
+  alignItems: "center",
+  zIndex: 999,
+},
+
+overlayBox: {
+  width: "90%",
+  maxHeight: "70%",
+  backgroundColor: "white",
+  borderRadius: 15,
+  padding: 15,
+},
+
+overlayTitle: {
+  fontSize: 16,
+  fontFamily: "Montt",
+  marginBottom: 10,
+},
+
+cityItem: {
+  padding: 12,
+  borderBottomWidth: 1,
+  borderBottomColor: "#eee",
+},
+
+cityText: {
+  fontFamily: "Londrina",
 },
 
 });

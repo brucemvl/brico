@@ -130,7 +130,7 @@ setRequest((prev: any) =>
         renderItem={({ item }) => (
           <View style={{ margin: 5 }}>
             <TouchableOpacity onPress={() => openPreview(item.url)}>
-              <Image source={{ uri: item.url }} style={styles.image} />
+              <Image source={{ uri: item.url }} style={styles.image} accessible={false} />
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -143,7 +143,7 @@ setRequest((prev: any) =>
         )}
       />
 
-      <TouchableOpacity onPress={addImages} style={styles.uploadButton}>
+      <TouchableOpacity onPress={addImages} style={styles.uploadButton} accessible accessibilityRole="button" accessibilityLabel="ajouter des images à la demande">
         <Text style={{color: "#1a5b4f", fontFamily: "Mont"}}>+ Ajouter des images</Text>
       </TouchableOpacity>
 

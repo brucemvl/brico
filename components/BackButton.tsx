@@ -15,6 +15,10 @@ export default function BackButton({ style, label = "Retour" }: Props) {
       style={[styles.button, style]}
       onPress={() => router.back()}
       activeOpacity={0.7}
+      accessible
+      accessibilityRole="button"
+      accessibilityLabel="Retour"
+      accessibilityHint="Revenir à l'écran précédent"
     >
       <Ionicons name="arrow-back" size={22} color="white" />
     </TouchableOpacity>
