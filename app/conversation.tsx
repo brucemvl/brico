@@ -384,9 +384,9 @@ const canReview =
       {/* COORDONNÉES */}
       {dealAccepted && contact && (
         <View style={styles.contactBox}>
-          <View style={{alignItems: "center"}}>
+          <View style={{alignItems: "center", width: 70}}>
             <Image source={{ uri: conversation.pro?.profileImage?.url }} style={{height: 35, width: 35, borderRadius: 18}} />
-            <Text style={{fontFamily: "Londrina"}}>{conversation.pro?.name}</Text>
+            <Text style={{fontFamily: "Londrina", textAlign: "center"}}>{conversation.pro?.name}</Text>
           </View>
           <View>
           {contact.phone && (
@@ -468,7 +468,7 @@ style={styles.inputModal}
 </Modal>
       
 
-      <View style={{ flexDirection: "row", alignItems: "center", paddingBlock: 10, paddingInline: 30, justifyContent: "space-between"}}>
+      <View style={{ flexDirection: "row", alignItems: "center", paddingBlock: 10, paddingInline: 10, justifyContent: "space-between"}}>
         <View style={{flexDirection: "row", alignItems: "center"}}>
   <Image
     source={{ uri: conversation.pro?.profileImage?.url }}
