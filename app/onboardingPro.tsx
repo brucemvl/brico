@@ -53,7 +53,6 @@ if (!context) throw new Error("AuthContext non fourni");
 const { user, updateUser } = context;
 
   // 🔹 states
-  const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [location, setLocation] = useState("");
   const [skills, setSkills] = useState<string[]>([]);
@@ -68,7 +67,6 @@ const [loadingSubmit, setLoadingSubmit] = useState(false);
     const [cities, setCities] = useState([]);
 
   const steps = [
-  "infos",
   "phone",
   "location",
   "skills",
@@ -180,7 +178,6 @@ setPortfolio((prev) => [...prev, ...result.assets]);
 
     const formData = new FormData();
 
-    formData.append("name", name);
     formData.append("phone", phone);
     formData.append("location", location);
     formData.append("description", description);
@@ -246,48 +243,19 @@ router.replace("/homePro");
 
   return (
     <View style={styles.container}>
-{step !== 0 && (
   <TouchableOpacity onPress={skipStep} style={{marginBottom: 50, alignSelf: "flex-end"}}>
     <Text style={styles.skip}>Ignorer  {">>"}</Text>
   </TouchableOpacity>
-)}
+
       {/* 🔥 Progress bar */}
       <View style={styles.progressBar}>
         <View style={[styles.progress, { width: `${progress * 100}%` }]} />
       </View>
 
+      
+
       {/* 🔹 STEP 1 */}
       {step === 0 && (
-        <View style={styles.step}>
-          <Text style={[styles.title, {marginBottom: 0}]}>Ton nom</Text>
-          <Text style={{fontFamily: "Mont", color: "#555555", marginBottom: 20}}>(Obligatoire)</Text>
-
-          <TextInput
-            style={styles.input}
-            value={name}
-            onChangeText={setName}
-          />
-
-          <TouchableOpacity
-  style={[
-    styles.button,
-    !name.trim() && { backgroundColor: "#ccc" } // visuel désactivé
-  ]}
-  disabled={!name.trim()}
-  onPress={async () => {
-    await saveStep({ name });
-    nextStep();
-  }}
->
-  <Text style={styles.buttonText}>Continuer</Text>
-</TouchableOpacity>
-
-          
-        </View>
-      )}
-
-      {/* 🔹 STEP 2 */}
-      {step === 1 && (
         <View style={styles.step}>
           <Text style={styles.title}>Ton numero</Text>
 
@@ -297,6 +265,7 @@ router.replace("/homePro");
             keyboardType="numeric"
             onChangeText={setPhone}
           />
+          <Text style={{fontFamily: "Mont", color: "#1a5b4f", marginTop: -10, marginBottom: 10}}>* visible uniquement en cas d'accord</Text>
 
           <TouchableOpacity
             style={styles.button}
@@ -312,8 +281,8 @@ router.replace("/homePro");
         </View>
       )}
 
-      {/* 🔹 STEP 3 */}
-      {step === 2 && (
+      {/* 🔹 STEP 2 */}
+      {step === 1 && (
         <View style={styles.step}>
           <Text style={styles.title}>Ta ville</Text>
 
@@ -357,8 +326,8 @@ router.replace("/homePro");
         </View>
       )}      
 
-      {/* 🔹 STEP 4 */}
-      {step === 3 && (
+      {/* 🔹 STEP 3 */}
+      {step === 2 && (
         <View style={styles.step}>
           <Text style={styles.title}>Tes compétences</Text>
 
@@ -391,8 +360,8 @@ router.replace("/homePro");
         </View>
       )}
 
-      {/* 🔹 STEP 5 */}
-      {step === 4 && (
+      {/* 🔹 STEP 4 */}
+      {step === 3 && (
         <View style={styles.step}>
           <Text style={styles.title}>Ton matériel</Text>
 
@@ -425,8 +394,8 @@ router.replace("/homePro");
         </View>
       )}
 
-      {/* 🔹 STEP 6 */}
-      {step === 5 && (
+      {/* 🔹 STEP 5 */}
+      {step === 4 && (
         <View style={styles.step}>
           <Text style={styles.title}>Description</Text>
 
@@ -452,8 +421,8 @@ router.replace("/homePro");
         </View>
       )}
 
-{/* 🔹 STEP 7 */}
-      {step === 6 && (
+{/* 🔹 STEP 6 */}
+      {step === 5 && (
   <View style={styles.step}>
     <Text style={styles.title}>Photo de profil</Text>
 {profileImage && (
@@ -472,9 +441,9 @@ router.replace("/homePro");
   </View>
 )}
 
-{/* 🔹 STEP 8 */}
+{/* 🔹 STEP 7 */}
 
-{step === 7 && (
+{step === 6 && (
   <View style={styles.step}>
     <Text style={styles.title}>Tes réalisations</Text>
     <View style={{flexDirection: "row", flexWrap: "wrap", width: "90%"}}>
