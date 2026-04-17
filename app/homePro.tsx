@@ -20,6 +20,7 @@ import msg from "../assets/icons/enveloppe.png";
 import modifier from "../assets/icons/modifier.png";
 import notifIcon from "../assets/icons/notif.png";
 import settings from "../assets/icons/settings.png";
+import share from "../assets/icons/share.png";
 import star from "../assets/icons/star.png";
 import { useApi } from "../services/api";
 
@@ -350,9 +351,19 @@ const filteredRequests = (() => {
     top: 70,
     right: 15,
     zIndex: 99,
+    gap: 6,
+    flexDirection: "row",
+    alignItems: "center",
     opacity: settingsOpacity,
   }}
 >
+  <TouchableOpacity onPress={() => router.push({ pathname: "/settings" })}
+    accessible
+  accessibilityRole="button"
+  accessibilityLabel="Paramètres"
+  accessibilityHint={`Accéder aux paramètres`}>
+    <Image source={share} style={{ height: 26, width: 26 }} />
+  </TouchableOpacity>
   <TouchableOpacity onPress={() => router.push({ pathname: "/settings" })}
     accessible
   accessibilityRole="button"
