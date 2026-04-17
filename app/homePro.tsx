@@ -412,7 +412,7 @@ accessible
       <LinearGradient colors={[ "#30a590", "#1a5b4f","#1a5b4f" ]} style={{width: "100%", alignItems: "center", paddingInline: 6, paddingTop: 56, paddingBottom: 24, borderRadius: 20}}>
       <View style={{flexDirection: "row", justifyContent: "space-between"}}>
         <View style={{width: "34%", alignItems: "center", justifyContent: "center", gap: 5}}>
-      <Text style={{fontFamily: "Londrinak", fontSize: 14, color: "white", letterSpacing: 0.3 }}>{profile?.name}</Text>
+      <Text style={{fontFamily: "Londrinak", fontSize: 14, color: "white", letterSpacing: 0.3, textAlign: "center" }}>{profile?.name}</Text>
       {profile?.location && 
       <Text style={{fontFamily: "Londrina", fontSize: 12, color: "white", letterSpacing: 0.3, textAlign: "center" }}>{profile?.location}</Text>
       }

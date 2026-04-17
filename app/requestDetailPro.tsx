@@ -402,7 +402,7 @@ export default function RequestDetailPro() {
           </Animated.View>
           {request.description &&
             <View style={{ alignItems: "center", gap: 10, flex: 1, borderBottomWidth: 1, borderBottomColor: "#7a7a7a", paddingBottom: 10, width: "100%" }}>
-              <Text style={{ fontFamily: "Montt", fontSize: 20, marginTop: 10, textAlign: "center" }}>Description</Text>
+              <Text style={{ fontFamily: "Montt", fontSize: 20, marginTop: 10, textAlign: "center", color: "#1a5b4f" }}>Description</Text>
               <View style={{ width: "100%", paddingInline: 12, alignItems: "center" }}>
                 <Text style={{ fontFamily: "Londrina", fontSize: 16, color: "#000000", textAlign: "center" }}>{request.description}</Text>
               </View>
@@ -479,10 +479,10 @@ export default function RequestDetailPro() {
                   borderRadius: 20
                 }}
                 accessible
-  accessibilityRole="button"
-  accessibilityLabel="Proposer un accord"
-  accessibilityHint="Envoyer une proposition d'accord au client"
-  accessibilityState={{ disabled: proposingDeal, busy: proposingDeal }}
+                accessibilityRole="button"
+                accessibilityLabel="Proposer un accord"
+                accessibilityHint="Envoyer une proposition d'accord au client"
+                accessibilityState={{ disabled: proposingDeal, busy: proposingDeal }}
               >
                 <Text style={{ color: "#fff", fontFamily: "Mont" }}>
                   {proposingDeal ? "Envoi..." : "Proposer un accord"}
@@ -491,13 +491,13 @@ export default function RequestDetailPro() {
             )}
 
             {clientProposed && !dealAccepted && (
-              <TouchableOpacity 
-              onPress={acceptDeal} 
-              style={{ backgroundColor: "#007AFF", padding: 14, width: 300, alignItems: "center", justifyContent: "center", borderRadius: 20 }}
-              accessible
-  accessibilityRole="button"
-  accessibilityLabel="Accepter l'accord proposé par le client"
-  accessibilityHint="Valider l'accord et accéder aux coordonnées" >
+              <TouchableOpacity
+                onPress={acceptDeal}
+                style={{ backgroundColor: "#007AFF", padding: 14, width: 300, alignItems: "center", justifyContent: "center", borderRadius: 20 }}
+                accessible
+                accessibilityRole="button"
+                accessibilityLabel="Accepter l'accord proposé par le client"
+                accessibilityHint="Valider l'accord et accéder aux coordonnées" >
                 <Animated.Text
                   style={{
                     color: "#fefefe",
@@ -525,9 +525,9 @@ export default function RequestDetailPro() {
               style={styles.reviewButton}
               onPress={() => setReviewModal(true)}
               accessible
-  accessibilityRole="button"
-  accessibilityLabel="Donner un avis"
-  accessibilityHint="Ouvrir la fenêtre pour noter le client"
+              accessibilityRole="button"
+              accessibilityLabel="Donner un avis"
+              accessibilityHint="Ouvrir la fenêtre pour noter le client"
             >
               <Animated.Text
                 style={{
@@ -550,21 +550,21 @@ export default function RequestDetailPro() {
           {/* Modal review */}
           <Modal visible={reviewModal} transparent animationType="slide" accessible>
             <View style={styles.modalOverlay}>
-              <View 
-              style={styles.modal}
-              accessible
-  accessibilityViewIsModal={true}
-  accessibilityLabel="Évaluation de la mission" >
+              <View
+                style={styles.modal}
+                accessible
+                accessibilityViewIsModal={true}
+                accessibilityLabel="Évaluation de la mission" >
                 <Text style={styles.modalTitle} accessibilityRole="header">Comment s'est deroulée la mission ?</Text>
                 <View style={styles.stars}>
                   {[1, 2, 3, 4, 5].map((s) => (
-                    <TouchableOpacity 
-                    key={s} 
-                    onPress={() => setRating(s)}
-                    accessible
-      accessibilityRole="button"
-      accessibilityLabel={`${s} étoile${s > 1 ? "s" : ""}`}
-      accessibilityState={{ selected: rating === s }} >
+                    <TouchableOpacity
+                      key={s}
+                      onPress={() => setRating(s)}
+                      accessible
+                      accessibilityRole="button"
+                      accessibilityLabel={`${s} étoile${s > 1 ? "s" : ""}`}
+                      accessibilityState={{ selected: rating === s }} >
                       <Text style={{ fontSize: 30 }}>{s <= rating ? "⭐" : "☆"}</Text>
                     </TouchableOpacity>
                   ))}
@@ -575,24 +575,24 @@ export default function RequestDetailPro() {
                   onChangeText={setComment}
                   style={styles.input}
                   accessible
-  accessibilityLabel="Ajouter un commentaire"
-  accessibilityHint="Écrire un commentaire sur la mission"
+                  accessibilityLabel="Ajouter un commentaire"
+                  accessibilityHint="Écrire un commentaire sur la mission"
                 />
-                <TouchableOpacity 
-                style={styles.sendReview} 
-                onPress={submitReview}
-                accessible
-  accessibilityRole="button"
-  accessibilityLabel="Envoyer l'avis"
-  accessibilityHint="Soumettre la note et le commentaire" >
+                <TouchableOpacity
+                  style={styles.sendReview}
+                  onPress={submitReview}
+                  accessible
+                  accessibilityRole="button"
+                  accessibilityLabel="Envoyer l'avis"
+                  accessibilityHint="Soumettre la note et le commentaire" >
                   <Text style={{ color: "#fff", fontFamily: "Mont" }}>Envoyer l'avis</Text>
                 </TouchableOpacity>
-                <TouchableOpacity 
-                onPress={() => setReviewModal(false)}
-                accessible
-  accessibilityRole="button"
-  accessibilityLabel="Fermer"
-  accessibilityHint="Fermer la fenêtre d'évaluation" >
+                <TouchableOpacity
+                  onPress={() => setReviewModal(false)}
+                  accessible
+                  accessibilityRole="button"
+                  accessibilityLabel="Fermer"
+                  accessibilityHint="Fermer la fenêtre d'évaluation" >
                   <Text style={{ textAlign: "center", marginTop: 10, fontFamily: "Mont" }}>Fermer</Text>
                 </TouchableOpacity>
               </View>
@@ -611,11 +611,11 @@ export default function RequestDetailPro() {
               }
               const msgTime = new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
               return (
-                <View 
-                key={i} 
-                style={[styles.messageRow, isMe ? styles.myMessageRow : styles.otherMessageRow]}
-                accessible
-      accessibilityLabel={`${isMe ? "Vous" : msg.from.name}, ${msg.content}, à ${msgTime}${isMe ? `, ${status}` : ""}`} >
+                <View
+                  key={i}
+                  style={[styles.messageRow, isMe ? styles.myMessageRow : styles.otherMessageRow]}
+                  accessible
+                  accessibilityLabel={`${isMe ? "Vous" : msg.from.name}, ${msg.content}, à ${msgTime}${isMe ? `, ${status}` : ""}`} >
                   {!isMe && request.client?.profileImage && (
                     <Image source={{ uri: request.client?.profileImage?.url }} style={styles.avatar} />
                   )}
@@ -639,16 +639,16 @@ export default function RequestDetailPro() {
               placeholder="Votre message..."
               style={styles.inputMsg}
               accessible
-  accessibilityLabel="Écrire un message"
-  accessibilityHint="Saisir votre message"
+              accessibilityLabel="Écrire un message"
+              accessibilityHint="Saisir votre message"
             />
-            <TouchableOpacity 
-            onPress={sendMessage} 
-            style={styles.sendButton}
-            accessible
-  accessibilityRole="button"
-  accessibilityLabel="Envoyer le message"
-  accessibilityHint="Envoyer le message dans la conversation" >
+            <TouchableOpacity
+              onPress={sendMessage}
+              style={styles.sendButton}
+              accessible
+              accessibilityRole="button"
+              accessibilityLabel="Envoyer le message"
+              accessibilityHint="Envoyer le message dans la conversation" >
               <Text style={{ color: "#fff", fontFamily: "Mont", fontSize: 12 }}>Envoyer</Text>
             </TouchableOpacity>
           </View>
@@ -683,8 +683,8 @@ const styles = StyleSheet.create({
     paddingInline: 10,
     paddingBottom: 140, alignItems: "center"
   },
-  title: { fontSize: 22, fontFamily: "Montt", marginBottom: 10 },
-  chatTitle: { marginTop: 20, marginBottom: 10, fontFamily: "Montt", textAlign: "center", fontSize: 16 },
+  title: { fontSize: 22, fontFamily: "Londrinak", marginBottom: 10 },
+  chatTitle: { marginTop: 20, marginBottom: 10, fontFamily: "Montt", textAlign: "center", fontSize: 20, color: "#1a5b4f" },
   dealBox: { borderRadius: 8, marginVertical: 10, alignItems: "center" },
   dealAction: { color: "#fff", fontFamily: "Mont" },
   dealStatus: { color: "#555", fontFamily: "Kanito" },
