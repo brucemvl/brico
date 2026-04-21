@@ -400,7 +400,7 @@ router.replace("/homePro");
           <Text style={styles.title}>Description</Text>
 
           <TextInput
-            style={[styles.input, { height: 100 }]}
+            style={[styles.input, { height: 100, fontFamily: "Londrina" }]}
             placeholder="Décris ton activité..."
             value={description}
             onChangeText={setDescription}
@@ -446,7 +446,9 @@ router.replace("/homePro");
 {step === 6 && (
   <View style={styles.step}>
     <Text style={styles.title}>Tes réalisations</Text>
-    <View style={{flexDirection: "row", flexWrap: "wrap", width: "90%"}}>
+              <Text style={{fontFamily: "Mont", color: "#1a5b4f", marginTop: -10, marginBottom: 10}}>* 10 photos maximum</Text>
+
+    <View style={{flexDirection: "row", flexWrap: "wrap", width: "100%", alignItems: "center", justifyContent: "center"}}>
 {portfolio.map((image, index) => (
   <Image
     key={index}

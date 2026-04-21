@@ -59,6 +59,8 @@ export default function ProfilePro() {
   const router = useRouter();
 
   const scrollY = new Animated.Value(0);
+
+  const [deletingIndex, setDeletingIndex] = useState<number | null>(null);
   
     const headerOpacity = scrollY.interpolate({
     inputRange: [0, 100],
@@ -206,22 +208,23 @@ setSkills(Array.isArray(data.skills) ? data.skills : []);
   };
 
   // 🔹 Animation suppression
-  const removePortfolioImage = (img: any, index: number) => {
-    const fadeAnim = new Animated.Value(1);
+ const removePortfolioImage = async (img: any, index: number) => {
+  setDeletingIndex(index); // 👈 active le loader
 
-    Animated.timing(fadeAnim, {
-      toValue: 0,
-      duration: 300,
-      useNativeDriver: true,
-    }).start(async () => {
-      if (img._id) {
-        await apiFetch(`/users/profile/pro/portfolio/${img._id}`, {
-          method: "DELETE",
-        });
-      }
-      setPortfolio((prev) => prev.filter((_, i) => i !== index));
-    });
-  };
+  try {
+    if (img._id) {
+      await apiFetch(`/users/profile/pro/portfolio/${img._id}`, {
+        method: "DELETE",
+      });
+    }
+
+    setPortfolio((prev) => prev.filter((_, i) => i !== index));
+  } catch (e) {
+    Alert.alert("Erreur", "Impossible de supprimer l'image");
+  } finally {
+    setDeletingIndex(null); // 👈 reset
+  }
+};
 
   const toggleEquipment = (item: string) => {
   if (equipment.includes(item)) {
@@ -573,12 +576,15 @@ accessible
             )}
 
             
-            <TouchableOpacity
-              onPress={() => removePortfolioImage(img, index)}
-              style={styles.deleteButton}
-            >
-              <Image source={trash} style={{height: 18, width: 18}}/>
-            </TouchableOpacity>
+            <View style={styles.deleteButton}>
+  {deletingIndex === index ? (
+    <ActivityIndicator size="small" color="red" />
+  ) : (
+    <TouchableOpacity onPress={() => removePortfolioImage(img, index)}>
+      <Image source={trash} style={{ height: 18, width: 18 }} />
+    </TouchableOpacity>
+  )}
+</View>
           </View>
         ))}
       </View>

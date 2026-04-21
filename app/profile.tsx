@@ -523,7 +523,8 @@ borderBottomWidth:1,
 borderColor:"#e1e1e1",
 flexDirection: "row",
 justifyContent: "space-between",
-alignItems: "baseline"
+alignItems: "baseline",
+width: "85%"
 },
 
 reviewStars:{
@@ -534,7 +535,7 @@ reviewComment:{
 color:"#353535",
 marginTop:4,
 fontFamily: "Londrinak",
-fontSize: 15
+fontSize: 16
 },
 map:{
 height:200,

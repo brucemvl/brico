@@ -570,7 +570,7 @@ accessible
 accessibilityLabel={`Mission ${item.title}, catégorie ${item.category}, à ${item.location}, budget ${item.budget} euros${isAssignedToMe ? ", accord conclu" : ""}${isMatchingSkill ? ", correspond à vos compétences" : ""}`} 
  accessibilityHint="Ouvrir le détail de la mission" >
                 <View style={styles.card}>
-                  <View style={{ flexDirection: "row", justifyContent: "space-between", backgroundColor: "#1a5b4f", paddingBlock: 6, paddingInline: 6 }}>
+                  <View style={{ flexDirection: "row", justifyContent: "space-between", backgroundColor: "#1a5b4f", padding: 6 }}>
                     <Text style={styles.cardTitle}>{item.title}</Text>
                     <Text style={{ fontFamily: "Montt", fontSize: 11, color: "#ffffff" }}>
   {formatDate(item.createdAt)}

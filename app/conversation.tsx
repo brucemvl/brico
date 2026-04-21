@@ -396,7 +396,7 @@ const canReview =
           )}
           {contact.email && (
             <TouchableOpacity onPress={() => Linking.openURL(`mailto:${contact.email}`)}>
-              <Text style={styles.contactText}>✉️ {contact.email}</Text>
+              <Text style={[styles.contactText, contact.email.length > 30 && {fontSize: 12.5}]}>✉️ {contact.email}</Text>
             </TouchableOpacity>
           )}
           </View>
@@ -474,7 +474,7 @@ style={styles.inputModal}
     source={{ uri: conversation.pro?.profileImage?.url }}
     style={{ width: 50, height: 50, borderRadius: 25, marginRight: 10 }}
   />
-  <Text style={{ fontSize: 18, fontFamily: "Montt" }}>{conversation.pro?.name}</Text>
+  <Text style={{ fontSize: 17.5, fontFamily: "Montt" }}>{conversation.pro?.name}</Text>
   </View>
   <View style={{alignItems: "center", justifyContent: "center", marginTop: 20}}>
 <TouchableWithoutFeedback
@@ -586,7 +586,7 @@ const styles = StyleSheet.create({
   buttonText: { color: "white", fontFamily: "Mont", fontSize: 13 },
   dealStatus: { textAlign: "center", color: "#1a5b4f", marginBottom: 5, fontFamily: "Mont" },
   dealAccepted: { textAlign: "center", color: "green", fontFamily: "Kanito", marginBottom: 5 },
-  contactBox: { padding: 10, backgroundColor: "#dfdfdf", margin: 10, borderRadius: 8, flexDirection: "row", alignItems: "center", gap: 20 },
+  contactBox: { padding: 10, backgroundColor: "#dfdfdf", margin: 10, borderRadius: 8, flexDirection: "row", alignItems: "center", gap: 16 },
   contactText: { fontSize: 16, marginBottom: 5, fontFamily: "Kanito", color: "#007AFF" },
   messages: {  padding: 15 },
   messageBubble: { paddingInline: 10, paddingBlock: 4, borderRadius: 10,  maxWidth: "80%" },
