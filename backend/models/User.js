@@ -5,6 +5,12 @@ const ratingSchema = new mongoose.Schema({
   request: { type: mongoose.Schema.Types.ObjectId, ref: "Request", required: true },
   score: { type: Number, min: 1, max: 5, required: true },
   comment: String,
+  photos: [
+    {
+      url: String,
+      public_id: String
+    }
+  ],
   date: { type: Date, default: Date.now },
 
 });

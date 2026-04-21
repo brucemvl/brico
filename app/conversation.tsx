@@ -1,5 +1,6 @@
 import BackButton from '@/components/BackButton';
 import * as Haptics from 'expo-haptics';
+import * as ImagePicker from "expo-image-picker";
 import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
@@ -22,6 +23,8 @@ import {
 } from "react-native";
 import fond from "../assets/convert_1.png";
 import { useApi } from "../services/api";
+
+
 
 
 
@@ -76,6 +79,7 @@ export default function Conversation() {
   const [currentUserId, setCurrentUserId] = useState("");
   const [loading, setLoading] = useState(true);
   const [contact, setContact] = useState<{ phone?: string; email?: string } | null>(null);
+  const [reviewImages, setReviewImages] = useState<any[]>([]);
 
   const [reviewModal, setReviewModal] = useState(false);
 const [rating, setRating] = useState(5);
@@ -277,36 +281,79 @@ const reviewScale = useRef(new Animated.Value(1)).current;
   }
 };
 
+const openReviewModal = async () => {
+  if (!conversation?.pro?._id || !request?._id) return;
+
+  try {
+    const res = await apiFetch(
+      `/users/${conversation.pro._id}/my-review?requestId=${request._id}`
+    );
+
+    if (res.review) {
+      setRating(res.review.score);
+      setComment(res.review.comment || "");
+      setReviewImages(res.review.photos || []);
+    }
+
+    setReviewModal(true);
+  } catch (err) {
+    console.log(err);
+    setReviewModal(true);
+  }
+};
+
   const submitReview = async () => {
   if (!conversation || !request || !conversation.pro?._id) return;
 
   try {
-    const targetUser = conversation.pro._id;
+    const formData = new FormData();
 
-    await apiFetch(`/users/${targetUser}/review`, {
-      method: "POST",
-      body: JSON.stringify({
-        score: rating,
-        comment,
-        requestId: request._id,
-      }),
+    formData.append("score", String(rating));
+    formData.append("comment", comment);
+    formData.append("requestId", request._id);
+    formData.append(
+  "existingPhotos",
+  JSON.stringify(
+    reviewImages.filter(img => img.url) // 🔥 seulement les anciennes
+  )
+);
+
+    reviewImages.forEach((img, index) => {
+      formData.append("photos", {
+        uri: img.uri,
+        name: `review_${index}.jpg`,
+        type: "image/jpeg",
+      } as any);
     });
 
-    await apiFetch(`/requests/${request._id}/review-complete`, {
+    await apiFetch(`/users/${conversation.pro._id}/review`, {
       method: "POST",
-      body: JSON.stringify({ proId: targetUser }),
+      body: formData,
     });
 
     setReviewModal(false);
-    Alert.alert("Merci !", "Votre avis a été enregistré");
+    setReviewImages([]);
 
+    Alert.alert("Merci !", "Votre avis a été enregistré");
     await loadConversation();
+
   } catch (err) {
-    console.log(err);
-    Alert.alert(
-      "Erreur",
-      err instanceof Error ? err.message : "Impossible d'envoyer l'avis"
-    );
+    Alert.alert("Erreur", err instanceof Error ? err.message : "Erreur");
+  }
+};
+
+const pickReviewImages = async () => {
+  const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+  if (!permission.granted) return;
+
+  const result = await ImagePicker.launchImageLibraryAsync({
+    mediaTypes: ImagePicker.MediaTypeOptions.Images,
+    allowsMultipleSelection: true,
+    quality: 0.7,
+  });
+
+  if (!result.canceled) {
+    setReviewImages(result.assets);
   }
 };
 
@@ -339,9 +386,9 @@ const proProposed =
 
 const canReview =
   !!currentAssignment &&
-  dealAccepted &&
-  !request?.reviewByClient;
+  dealAccepted;
 
+  
 
   return (
     
@@ -412,9 +459,12 @@ const canReview =
 {canReview && !missionCompleted &&(
   <TouchableOpacity
     style={styles.completeButton}
-    onPress={() => setReviewModal(true)}
+    onPress={openReviewModal}
   >
-    <Text style={{ color: "#fff", fontFamily: "Mont" }}>Terminer la mission</Text>
+    <Text style={{ color: "#fff", fontFamily: "Mont" }}>
+  {clientHasReviewed ? "Modifier votre avis ✏️" : "Laisser un avis ⭐"}
+</Text>
+    
   </TouchableOpacity>
 )}
 
@@ -455,6 +505,39 @@ value={comment}
 onChangeText={setComment}
 style={styles.inputModal}
 />
+
+<TouchableOpacity style={{borderRadius: 20, marginBlock: 8, backgroundColor: "#1a5b4f", alignItems: "center", justifyContent: "center", padding: 10, width: 180}} onPress={pickReviewImages}>
+  <Text style={{fontFamily: "Mont", color: "#fff"}}>Ajouter des photos</Text>
+</TouchableOpacity>
+
+<View style={{ flexDirection: "row", flexWrap: "wrap" }}>
+  {reviewImages.map((img, i) => (
+    <View key={i} style={{ position: "relative", margin: 5 }}>
+      
+      <Image
+        source={{ uri: img.uri || img.url }}
+        style={{ width: 70, height: 70, borderRadius: 8 }}
+      />
+
+      <TouchableOpacity
+        onPress={() =>
+          setReviewImages(prev => prev.filter((_, index) => index !== i))
+        }
+        style={{
+          position: "absolute",
+          top: -5,
+          right: -5,
+          backgroundColor: "red",
+          borderRadius: 10,
+          padding: 4
+        }}
+      >
+        <Text style={{ color: "#fff", fontSize: 10 }}>✕</Text>
+      </TouchableOpacity>
+
+    </View>
+  ))}
+</View>
 
 <TouchableOpacity style={styles.sendReview} onPress={submitReview}>
                 <Text style={{color:"#fff", fontFamily: "Mont"}}>Envoyer l'avis</Text>
@@ -596,7 +679,7 @@ const styles = StyleSheet.create({
   inputContainer: { flexDirection: "row", padding: 10 },
   input: { flex: 1, borderWidth: 1, borderColor: "#ccc", backgroundColor: "#fff", fontFamily: "Mont", borderRadius: 8, marginRight: 10, padding: 8 },
 inputModal: {
-  borderColor: "#ccc", backgroundColor: "#fff", fontFamily: "Mont", padding: 8, borderWidth: 1, borderRadius: 8
+  borderColor: "#ccc", backgroundColor: "#fff", fontFamily: "Mont", padding: 8, borderWidth: 1, borderRadius: 8, width: "100%"
 },
   messageRow: {
   flexDirection: "row",
@@ -652,7 +735,8 @@ modal:{
 backgroundColor:"white",
 padding:20,
 borderRadius:10,
-width:"85%"
+width:"85%",
+alignItems: "center"
 },
 
 modalTitle:{
@@ -667,7 +751,7 @@ flexDirection:"row",
 justifyContent:"center",
 marginBottom:20
 },
-  sendReview: { backgroundColor:"#007AFF", padding:12, borderRadius:8, alignItems:"center", marginBlock: 10 },
+  sendReview: { width: "100%", backgroundColor:"#007AFF", padding:12, borderRadius:8, alignItems:"center", marginBlock: 10 },
 
 
 completeButton:{

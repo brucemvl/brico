@@ -328,8 +328,8 @@ router.get("/:id", auth, async (req, res) => {
 });
 
 //AVIS
-router.post("/:id/review", auth, async (req, res) => {
-  try {
+router.post("/:id/review", auth, upload.array("photos", 5), async (req, res) => {
+    try {
     const { score, comment, requestId } = req.body;
 
     // 🔹 Vérifier user cible (le pro noté)
@@ -344,25 +344,45 @@ router.post("/:id/review", auth, async (req, res) => {
       return res.status(404).json({ error: "Demande introuvable" });
     }
 
+    const photos = req.files?.map(file => ({
+  url: file.path, // ou cloudinary secure_url
+  public_id: file.filename
+})) || [];
+
+let existingPhotos = [];
+
+if (req.body.existingPhotos) {
+  existingPhotos = JSON.parse(req.body.existingPhotos);
+}
+
     // 🔴 NOUVELLE SÉCURITÉ : empêcher plusieurs avis pour UNE demande
-    const existingReview = await User.findOne({
-      "ratings.fromUser": req.user.id,
-      "ratings.request": requestId
-    });
+    const existingReview = user.ratings.find(
+  r =>
+    r.fromUser.toString() === req.user.id &&
+    r.request.toString() === requestId
+);
 
-    if (existingReview) {
-      return res.status(400).json({
-        error: "Vous avez déjà donné un avis pour cette demande"
-      });
-    }
+  if (existingReview) {
+  existingReview.score = score;
+  existingReview.comment = comment;
 
-    // 🔹 Ajouter le rating au pro
-    user.ratings.push({
-      fromUser: req.user.id,
-      request: requestId,
-      score,
-      comment
-    });
+  // 🔥 remplace complètement les photos
+  existingReview.photos = [
+    ...existingPhotos,
+    ...photos
+  ];
+}
+
+else {
+  user.ratings.push({
+    fromUser: req.user.id,
+    request: requestId,
+    score,
+    comment,
+    photos
+  });
+}
+
 
     user.updateAverageRating();
     await user.save();
@@ -416,6 +436,20 @@ if (req.user.role === "pro") {
     console.error(err);
     res.status(500).json({ error: err.message });
   }
+});
+
+router.get("/:id/my-review", auth, async (req, res) => {
+  const { requestId } = req.query;
+
+  const user = await User.findById(req.params.id);
+
+  const review = user.ratings.find(
+    r =>
+      r.fromUser.toString() === req.user.id &&
+      r.request.toString() === requestId
+  );
+
+  res.json({ review: review || null });
 });
 
 // 🔹 PUT /users/change-password
