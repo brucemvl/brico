@@ -12,9 +12,11 @@ import {
   TouchableOpacity,
   View
 } from "react-native";
+import logo from "../assets/briconnect33.png";
 import fond from "../assets/convert_1.png";
 import RequestImages from "../components/RequestImages"; // ← notre nouveau composant
 import { useApi } from "../services/api";
+
 
 
 
@@ -123,7 +125,11 @@ export default function RequestDetailClient() {
 
   return (
       <ImageBackground source={fond} style={{flex: 1}}>
-              <Animated.Text style={{ fontFamily: "Montt", opacity: headerOpacity, marginTop: 50, marginLeft: 10, fontSize: 16 }}>{request.title}</Animated.Text>
+              <Animated.View style={{ opacity: headerOpacity, flexDirection: "row", alignItems: "center", position: "relative", top: 30, paddingBottom: 15 }}>
+                <Image source={logo} style={{ height: 60, width: 60 }} />
+                <Text style={{ fontFamily: "Montt", fontSize: 16}}>{request.title}</Text>
+              
+</Animated.View>
     <BackButton />
 <Animated.ScrollView
         contentContainerStyle={styles.container}

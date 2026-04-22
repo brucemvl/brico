@@ -33,6 +33,8 @@ export default function Profile() {
 
 const isModalVisible = selectedImageIndex !== null;
 
+const [reviewImagesModal, setReviewImagesModal] = useState<any[]>([]);
+
 const openImageModal = (index: number) => {
   setSelectedImageIndex(index);
 };
@@ -42,20 +44,20 @@ const closeImageModal = () => {
 };
 
 const showPreviousImage = () => {
-  if (!user?.portfolio?.length || selectedImageIndex === null) return;
+  if (!reviewImagesModal.length || selectedImageIndex === null) return;
 
   setSelectedImageIndex((prev) => {
     if (prev === null) return null;
-    return prev === 0 ? user.portfolio.length - 1 : prev - 1;
+    return prev === 0 ? reviewImagesModal.length - 1 : prev - 1;
   });
 };
 
 const showNextImage = () => {
-  if (!user?.portfolio?.length || selectedImageIndex === null) return;
+  if (!reviewImagesModal.length || selectedImageIndex === null) return;
 
   setSelectedImageIndex((prev) => {
     if (prev === null) return null;
-    return prev === user.portfolio.length - 1 ? 0 : prev + 1;
+    return prev === reviewImagesModal.length - 1 ? 0 : prev + 1;
   });
 };
 
@@ -342,21 +344,39 @@ title={user.name}
 </View>
 {user.ratings.map((rating:any)=>(
 <View key={rating._id} style={styles.review}>
-<View>
+<View style={{flexDirection: "row", justifyContent: "space-between", width: "100%"}}>
 <Text style={styles.reviewStars}>
 {"⭐".repeat(rating.score)}
 </Text>
-
+<Text style={{fontFamily: "Kanit"}}>{formatDate(rating.date)}</Text>
+</View>
 {rating.comment && (
 <Text style={styles.reviewComment}>
 {rating.comment}
 </Text>
 )}
-</View>
-<View>
-  <Text>{rating?.userName}</Text>
-<Text style={{fontFamily: "Kanit"}}>{formatDate(rating.date)}</Text>
-</View>
+
+
+
+{rating.photos?.length > 0 && (
+      <View style={styles.reviewPhotos}>
+        {rating.photos.map((photo: any, index: number) => (
+          <Pressable
+            key={index}
+            onPress={() => {
+              setReviewImagesModal(rating.photos);
+              setSelectedImageIndex(index);
+              
+            }}
+          >
+            <Image
+              source={{ uri: photo.url }}
+              style={styles.reviewPhoto}
+            />
+          </Pressable>
+        ))}
+      </View>
+    )}
 </View>
 ))}
 
@@ -375,18 +395,18 @@ title={user.name}
       {selectedImageIndex !== null && user?.portfolio?.[selectedImageIndex] && (
         <>
           <Image
-            source={{ uri: user.portfolio[selectedImageIndex].url }}
+            source={{ uri: reviewImagesModal[selectedImageIndex].url }}
             style={styles.modalImage}
           />
 
-          {user.portfolio.length > 1 && (
+          {reviewImagesModal.length > 1 && (
             <View style={styles.modalNav}>
               <Pressable style={styles.navButton} onPress={showPreviousImage}>
                 <Text style={styles.navButtonText}>‹</Text>
               </Pressable>
 
               <Text style={styles.imageCounter}>
-                {selectedImageIndex + 1} / {user.portfolio.length}
+                {selectedImageIndex + 1} / {reviewImagesModal.length}
               </Text>
 
               <Pressable style={styles.navButton} onPress={showNextImage}>
@@ -521,10 +541,10 @@ marginBlock:12,
 paddingBottom:10,
 borderBottomWidth:1,
 borderColor:"#e1e1e1",
-flexDirection: "row",
+flexDirection: "column",
 justifyContent: "space-between",
 alignItems: "baseline",
-width: "85%"
+width: "100%"
 },
 
 reviewStars:{
@@ -535,7 +555,19 @@ reviewComment:{
 color:"#353535",
 marginTop:4,
 fontFamily: "Londrinak",
-fontSize: 16
+fontSize: 16,
+},
+reviewPhotos: {
+  flexDirection: "row",
+  gap: 6,
+  alignItems: "center",
+  justifyContent: "center",
+},
+
+reviewPhoto: {
+  width: 70,
+  height: 70,
+  borderRadius: 8
 },
 map:{
 height:200,

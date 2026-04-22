@@ -669,7 +669,7 @@ const styles = StyleSheet.create({
   buttonText: { color: "white", fontFamily: "Mont", fontSize: 13 },
   dealStatus: { textAlign: "center", color: "#1a5b4f", marginBottom: 5, fontFamily: "Mont" },
   dealAccepted: { textAlign: "center", color: "green", fontFamily: "Kanito", marginBottom: 5 },
-  contactBox: { padding: 10, backgroundColor: "#dfdfdf", margin: 10, borderRadius: 8, flexDirection: "row", alignItems: "center", gap: 16 },
+  contactBox: { padding: 10, backgroundColor: "#dfdfdf", margin: 6, borderRadius: 8, flexDirection: "row", alignItems: "center", gap: 16 },
   contactText: { fontSize: 16, marginBottom: 5, fontFamily: "Kanito", color: "#007AFF" },
   messages: {  padding: 15 },
   messageBubble: { paddingInline: 10, paddingBlock: 4, borderRadius: 10,  maxWidth: "80%" },
