@@ -4,13 +4,14 @@ import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
-import { Alert, Animated, Image, ImageBackground, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import { ActivityIndicator, Alert, Animated, Image, ImageBackground, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import logo from "../assets/briconnect33.png";
 import fond from "../assets/convert_1.png";
 import msg from "../assets/icons/enveloppe.png";
 import modifier from "../assets/icons/modifier.png";
 import notifIcon from "../assets/icons/notif.png";
 import settings from "../assets/icons/settings.png";
+import share from "../assets/icons/share.png";
 import star from "../assets/icons/star.png";
 import trash from "../assets/icons/trash2.png";
 import { AuthContext } from '../context/AuthContext';
@@ -287,7 +288,8 @@ export default function HomeClient() {
   if (loading) {
     return (
       <View style={styles.container}>
-        <Text>Chargement des demandes...</Text>
+        <ActivityIndicator color={"#1a5b4f"} />
+        <Text style={{fontFamily: "Londrinak", color: "#1a5b4f"}}>Chargement des demandes...</Text>
       </View>
     );
   }
@@ -298,15 +300,26 @@ export default function HomeClient() {
     <ImageBackground source={fond} style={{ flex: 1 }}>
       <Animated.View style={{ opacity: headerOpacity, flexDirection: "row", alignItems: "center", position: "relative", top: 30, paddingBottom: 15 }}>
         <Image source={logo} style={{ height: 60, width: 60 }} />
-        <Text style={{ fontFamily: "Montt", fontSize: 16 }}>Accueil</Text></Animated.View>      <Animated.View
+        <Text style={{ fontFamily: "Montt", fontSize: 16 }}>Accueil</Text></Animated.View>
+              <Animated.View
           style={{
             position: "absolute",
             top: 70,
             right: 15,
             zIndex: 99,
             opacity: settingsOpacity,
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 6
           }}
         >
+          <TouchableOpacity
+    accessible
+  accessibilityRole="button"
+  accessibilityLabel="Paramètres"
+  accessibilityHint={`Accéder aux paramètres`}>
+    <Image source={share} style={{ height: 26, width: 26 }} />
+  </TouchableOpacity>
         <TouchableOpacity
           onPress={() => router.push({ pathname: "/settings" })}
           accessible

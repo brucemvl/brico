@@ -35,7 +35,8 @@ const isModalVisible = selectedImageIndex !== null;
 
 const [reviewImagesModal, setReviewImagesModal] = useState<any[]>([]);
 
-const openImageModal = (index: number) => {
+const openImageModal = (images: any[], index: number) => {
+  setReviewImagesModal(images);
   setSelectedImageIndex(index);
 };
 
@@ -297,7 +298,7 @@ useEffect(() => {
 
           <View style={styles.portfolio}>
             {user.portfolio.map((img: any, index: number) => (
-  <Pressable key={img._id} onPress={() => openImageModal(index)}>
+  <Pressable key={img._id} onPress={() => openImageModal(user.portfolio, index)}>
     <Image
       source={{ uri: img.url }}
       style={styles.portfolioImage}
@@ -363,11 +364,7 @@ title={user.name}
         {rating.photos.map((photo: any, index: number) => (
           <Pressable
             key={index}
-            onPress={() => {
-              setReviewImagesModal(rating.photos);
-              setSelectedImageIndex(index);
-              
-            }}
+            onPress={() => openImageModal(rating.photos, index)}
           >
             <Image
               source={{ uri: photo.url }}
@@ -392,30 +389,31 @@ title={user.name}
 >
   <Pressable style={styles.modalOverlay} onPress={closeImageModal}>
     <Pressable style={styles.modalContent} onPress={(e) => e.stopPropagation()}>
-      {selectedImageIndex !== null && user?.portfolio?.[selectedImageIndex] && (
-        <>
-          <Image
-            source={{ uri: reviewImagesModal[selectedImageIndex].url }}
-            style={styles.modalImage}
-          />
+      {selectedImageIndex !== null &&
+ reviewImagesModal[selectedImageIndex] && (
+  <>
+    <Image
+      source={{ uri: reviewImagesModal[selectedImageIndex].url }}
+      style={styles.modalImage}
+    />
 
-          {reviewImagesModal.length > 1 && (
-            <View style={styles.modalNav}>
-              <Pressable style={styles.navButton} onPress={showPreviousImage}>
-                <Text style={styles.navButtonText}>‹</Text>
-              </Pressable>
+    {reviewImagesModal.length > 1 && (
+      <View style={styles.modalNav}>
+        <Pressable style={styles.navButton} onPress={showPreviousImage}>
+          <Text style={styles.navButtonText}>‹</Text>
+        </Pressable>
 
-              <Text style={styles.imageCounter}>
-                {selectedImageIndex + 1} / {reviewImagesModal.length}
-              </Text>
+        <Text style={styles.imageCounter}>
+          {selectedImageIndex + 1} / {reviewImagesModal.length}
+        </Text>
 
-              <Pressable style={styles.navButton} onPress={showNextImage}>
-                <Text style={styles.navButtonText}>›</Text>
-              </Pressable>
-            </View>
-          )}
-        </>
-      )}
+        <Pressable style={styles.navButton} onPress={showNextImage}>
+          <Text style={styles.navButtonText}>›</Text>
+        </Pressable>
+      </View>
+    )}
+  </>
+)}
     </Pressable>
   </Pressable>
 </Modal>

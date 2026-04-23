@@ -5,6 +5,7 @@ import * as Notifications from 'expo-notifications';
 import { useRouter } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
 import {
+  ActivityIndicator,
   Animated,
   Image,
   ImageBackground,
@@ -332,7 +333,8 @@ const filteredRequests = (() => {
   if (loading) {
     return (
       <View style={styles.center}>
-        <Text>Chargement des demandes...</Text>
+        <ActivityIndicator color={"#1a5b4f"} />
+        <Text style={{fontFamily: "Londrinak", color: "#1a5b4f"}}>Chargement des demandes...</Text>
       </View>
     );
   }
@@ -357,7 +359,7 @@ const filteredRequests = (() => {
     opacity: settingsOpacity,
   }}
 >
-  <TouchableOpacity onPress={() => router.push({ pathname: "/settings" })}
+  <TouchableOpacity 
     accessible
   accessibilityRole="button"
   accessibilityLabel="Paramètres"
