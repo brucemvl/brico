@@ -472,10 +472,10 @@ export default function HomeClient() {
 
                 <View
                   key={item._id}
-                  style={{ flexDirection: "row", alignItems: "center", gap: 10, width: "95%", justifyContent: "center" }}
+                  style={{ flexDirection: "row", alignItems: "center", gap: 10, width: 350, justifyContent: "center" }}
                 >
                   <TouchableOpacity
-                    style={{ width: "90%" }}
+                    style={{ width: 300 }}
                     onPress={() => router.push(`/requestDetailClient?id=${item._id}`)}
                     accessible
                     accessibilityRole="button"
@@ -526,6 +526,7 @@ export default function HomeClient() {
                       accessibilityRole="button"
                       accessibilityLabel="Supprimer la demande"
                       accessibilityHint="Supprimer définitivement cette demande"
+                      style={{position: "absolute", right: -5}}
                     >
                       <Image source={trash} style={{ height: 20, width: 20 }} />
                     </TouchableOpacity>}

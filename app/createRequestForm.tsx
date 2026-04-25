@@ -191,7 +191,7 @@ const [cities, setCities] = useState<City[]>([]);
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
-        keyboardVerticalOffset={10} // ajuste selon ton header
+        keyboardVerticalOffset={10}
       >
         <ScrollView style={{ padding: 20, paddingTop: 120 }}>
           <Text style={styles.title} accessible accessibilityRole="header">Titre*</Text>
@@ -220,7 +220,7 @@ const [cities, setCities] = useState<City[]>([]);
             accessibilityLabel="Catégorie"
             accessibilityHint="Choisir une catégorie de travaux"
           >
-            <Picker.Item label="Plomberie" value="Plomberie" />
+            <Picker.Item label="Plomberie" value="Plomberie"/>
             <Picker.Item label="Peinture" value="Peinture" />
             <Picker.Item label="Agencement" value="Agencement" />
             <Picker.Item label="Electricité" value="Electricité" />
@@ -278,7 +278,7 @@ const [cities, setCities] = useState<City[]>([]);
           {loading ? <ActivityIndicator size="large" /> :
             <TouchableOpacity
               onPress={handleSubmit}
-              style={{ alignSelf: "center", marginTop: 10, backgroundColor: "#007AFF", padding: 12, borderRadius: 20 }}
+              style={{ alignSelf: "center", marginTop: 10, backgroundColor: "#007AFF", padding: 12, borderRadius: 20, marginBottom: 20 }}
               accessible
               accessibilityRole="button"
               accessibilityLabel="Créer la demande"

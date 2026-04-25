@@ -7,10 +7,11 @@ import {
   Image,
   ImageBackground,
   Modal,
+  PanResponder,
   Pressable,
   StyleSheet,
   Text,
-  View,
+  View
 } from "react-native";
 import MapView, { Marker } from "react-native-maps";
 import logo from "../assets/briconnect33.png";
@@ -34,6 +35,8 @@ export default function Profile() {
 const isModalVisible = selectedImageIndex !== null;
 
 const [reviewImagesModal, setReviewImagesModal] = useState<any[]>([]);
+
+const translateX = useState(new Animated.Value(0))[0];
 
 const openImageModal = (images: any[], index: number) => {
   setReviewImagesModal(images);
@@ -61,6 +64,34 @@ const showNextImage = () => {
     return prev === reviewImagesModal.length - 1 ? 0 : prev + 1;
   });
 };
+
+const panResponder = React.useRef(
+  PanResponder.create({
+    onMoveShouldSetPanResponder: (_, gestureState) => {
+      return Math.abs(gestureState.dx) > 20;
+    },
+
+    onPanResponderMove: (_, gestureState) => {
+      translateX.setValue(gestureState.dx);
+    },
+
+    onPanResponderRelease: (_, gestureState) => {
+      if (gestureState.dx > 120) {
+        // swipe droite → image précédente
+        showPreviousImage();
+      } else if (gestureState.dx < -120) {
+        // swipe gauche → image suivante
+        showNextImage();
+      }
+
+      // reset position
+      Animated.spring(translateX, {
+        toValue: 0,
+        useNativeDriver: true,
+      }).start();
+    },
+  })
+).current;
 
   const scrollY = new Animated.Value(0);
 
@@ -392,10 +423,16 @@ title={user.name}
       {selectedImageIndex !== null &&
  reviewImagesModal[selectedImageIndex] && (
   <>
-    <Image
-      source={{ uri: reviewImagesModal[selectedImageIndex].url }}
-      style={styles.modalImage}
-    />
+    <Animated.Image
+  {...panResponder.panHandlers}
+  source={{ uri: reviewImagesModal[selectedImageIndex].url }}
+  style={[
+    styles.modalImage,
+    {
+      transform: [{ translateX }],
+    },
+  ]}
+/>
 
     {reviewImagesModal.length > 1 && (
       <View style={styles.modalNav}>
@@ -629,7 +666,7 @@ navButtonText: {
 
 imageCounter: {
   color: "#fff",
-  fontSize: 14,
+  fontSize: 16,
   fontFamily: "Mont",
 }
 });
