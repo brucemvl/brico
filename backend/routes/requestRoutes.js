@@ -191,20 +191,21 @@ router.get("/pro", auth, async (req, res) => {
 // =======================
 router.get("/:id", auth, async (req, res) => {
   try {
-    const request = await Request.findById(req.params.id)
+    let request = await Request.findById(req.params.id)
   .populate("client", "name profileImage")
   .populate("assignedPros.pro", "name profileImage");
-  
 
-    if (!request) return res.status(404).json({ error: "Demande introuvable" });
+if (!request) return res.status(404).json({ error: "Demande introuvable" });
 
-   if (
-  req.user.id.toString() !== request.client.toString()
-) {
-  await Request.updateOne(
-    { _id: req.params.id },
-    { $inc: { views: 1 } }
-  );
+// ✅ incrément propre (pas client)
+if (req.user.id.toString() !== request.client.toString()) {
+  request = await Request.findByIdAndUpdate(
+    req.params.id,
+    { $inc: { views: 1 } },
+    { new: true } // 🔥 récupère la valeur mise à jour
+  )
+    .populate("client", "name profileImage")
+    .populate("assignedPros.pro", "name profileImage");
 }
 
     if (req.user.role === "client") {
