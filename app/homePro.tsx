@@ -320,6 +320,10 @@ const filteredRequests = (() => {
   const openRequest = async (request: RequestType) => {
     router.push({ pathname: "/requestDetailPro", params: { id: request._id } });
 
+    setTimeout(() => {
+    fetchRequests();
+  }, 500);
+  
     if (!request.hasUnread) return;
 
     try {

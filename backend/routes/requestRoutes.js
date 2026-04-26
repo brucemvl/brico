@@ -157,6 +157,7 @@ router.get("/pro", auth, async (req, res) => {
         category: r.category,
         location: r.location,
         budget: r.budget,
+        views: r.views,
         status: r.status,
         hasUnread: !!unreadType,
         unreadType,
