@@ -50,6 +50,7 @@ const requestSchema = new mongoose.Schema({
   location: { type: String, required: true },
   budget: Number,
   images: [{ url: String, public_id: String }],
+  views: Number,
 
   status: {
     type: String,

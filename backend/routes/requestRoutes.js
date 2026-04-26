@@ -198,6 +198,15 @@ router.get("/:id", auth, async (req, res) => {
 
     if (!request) return res.status(404).json({ error: "Demande introuvable" });
 
+   if (
+  req.user.id.toString() !== request.client.toString()
+) {
+  await Request.updateOne(
+    { _id: req.params.id },
+    { $inc: { views: 1 } }
+  );
+}
+
     if (req.user.role === "client") {
       const conversations = await Conversation.find({
         request: req.params.id,

@@ -166,7 +166,7 @@ export default function RequestDetailClient() {
                     </View>
                     <View style={{flexDirection: "row-reverse", alignItems: "flex-end", gap: 5}}>
                       {request?.client?.profileImage?.url && (
-                    <Image source={{uri: request?.client?.profileImage?.url}} style={{height: 30, width: 30, borderRadius: 15}} />
+                    <Image source={{uri: request?.client?.profileImage?.url}} style={{height: 30, width: 30, borderRadius: 15, borderWidth: 1, borderColor: "#fff"}} />
                       )}
                     <Text style={{fontSize: 11, color: "#fff", fontFamily: "Montt"}}>{formatDate(request?.createdAt)}</Text>
                     </View>

@@ -392,7 +392,7 @@ export default function RequestDetailPro() {
                 <Text style={{ fontFamily: "Montt", color: "#fff" }}>Budget: {request.budget}€</Text>
               </View>
               <View style={{ alignSelf: "flex-end", flexDirection: "row-reverse", gap: 4, alignItems: "center" }}>
-                <Image source={{ uri: request?.client?.profileImage?.url }} style={{ height: 40, width: 35, borderRadius: 10 }} />
+                <Image source={{ uri: request?.client?.profileImage?.url }} style={{ height: 40, width: 35, borderRadius: 10, borderWidth: 1, borderColor: "#fff" }} />
                 <View style={{ alignItems: "flex-end" }}>
                   <Text style={{ fontSize: 15, color: "#fff", fontFamily: "Londrina" }}>{request?.client?.name}</Text>
                   <Text style={{ fontSize: 13, color: "#fff", fontFamily: "Londrina" }}>{formatDate(request?.createdAt)}</Text>

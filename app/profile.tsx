@@ -634,7 +634,7 @@ modalContent: {
 
 modalImage: {
   width: "100%",
-  height: 420,
+  height: 520,
   borderRadius: 18,
   backgroundColor: "#fff",
 borderColor: "#fff",

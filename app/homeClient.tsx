@@ -159,6 +159,25 @@ export default function HomeClient() {
     return new Date(dateString).toLocaleDateString("fr-FR");
   };
 
+  const formatRelativeDate = (dateString?: string) => {
+  if (!dateString) return "";
+
+  const now = new Date();
+  const date = new Date(dateString);
+
+  const diffMs = now.getTime() - date.getTime();
+  const diffMinutes = Math.floor(diffMs / (1000 * 60));
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+  if (diffMinutes < 1) return "À l’instant";
+  if (diffMinutes < 60) return `Il y a ${diffMinutes} min`;
+  if (diffHours < 24) return `Il y a ${diffHours} h`;
+  if (diffDays < 7) return `Il y a ${diffDays} jour${diffDays > 1 ? "s" : ""}`;
+
+  return date.toLocaleDateString("fr-FR");
+};
+
   const formatRating = (value?: number) => {
     if (value == null) return "0";
     const rounded = Math.round((value + Number.EPSILON) * 10) / 10;
@@ -486,7 +505,7 @@ export default function HomeClient() {
                       <View style={{ flexDirection: "row", justifyContent: "space-between", backgroundColor: "#1a5b4f", paddingBlock: 6, paddingInline: 6 }}>
                         <Text style={styles.cardTitle}>{item.title}</Text>
                         <Text style={{ fontFamily: "Montt", fontSize: 10, color: "#ffffff" }}>
-                          {formatDate(item.createdAt)}
+                          {formatRelativeDate(item.createdAt)}
                         </Text>
                       </View>
                       <View style={styles.cardContainer}>
