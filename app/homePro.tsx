@@ -47,12 +47,12 @@ assignedPros?: {
   completedAt?: string;
   reviewByClient?: boolean;
   reviewByPro?: boolean;
-  views?: number
 }[];
 
 myAssignmentStatus?: "active" | "cancelled" | "completed" | null;
 
 createdAt?: string;
+views?: number;
 };
 
 const categories = ["Plomberie", "Peinture", "Agencement", "Electricité", "Carrelage", "Divers"];
@@ -599,7 +599,7 @@ accessibilityLabel={`Mission ${item.title}, catégorie ${item.category}, à ${it
   {formatRelativeDate(item.createdAt)}
 </Text>
 <Text style={{ fontFamily: "Mont", fontSize: 12, color: "#ffffff" }}>
-  👀 {item.views ?? 0} vues
+  👀 {item?.views ?? 0} vues
 </Text>
 </View>
                   </View>
