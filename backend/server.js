@@ -46,6 +46,27 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: "Erreur serveur" });
 });
 
+app.get('/download', (req, res) => {
+  const userAgent = req.headers['user-agent'] || '';
+
+  // 📱 Android
+  if (/android/i.test(userAgent)) {
+    return res.redirect(
+      'https://play.google.com/store/apps/details?id=com.onzesur10.app'
+    );
+  }
+
+  //  iOS
+  if (/iphone|ipad|ipod/i.test(userAgent)) {
+    return res.redirect(
+      'https://apps.apple.com/fr/app/briconnect/id6761682000'
+    );
+  }
+
+  // 💻 Fallback (PC, autres)
+  return res.redirect('https://apps.apple.com/fr/app/briconnect/id6761682000');
+});
+
 // Port
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, "0.0.0.0", () =>

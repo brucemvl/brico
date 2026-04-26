@@ -31,6 +31,7 @@ type RequestType = {
   hasUnread: boolean;
   unreadType?: "message" | "deal" | "update";
   createdAt?: string;
+  views?: number;
 };
 
 type ProfileType = {
@@ -502,11 +503,16 @@ export default function HomeClient() {
                     accessibilityHint="Ouvrir les détails de la demande"
                   >
                     <View style={styles.card}>
-                      <View style={{ flexDirection: "row", justifyContent: "space-between", backgroundColor: "#1a5b4f", paddingBlock: 6, paddingInline: 6 }}>
+                      <View style={{ flexDirection: "row", justifyContent: "space-between", backgroundColor: "#1a5b4f", paddingBlock: 6, paddingInline: 6, alignItems: "center" }}>
                         <Text style={styles.cardTitle}>{item.title}</Text>
+                        <View style={{alignItems: "flex-end"}}>
                         <Text style={{ fontFamily: "Montt", fontSize: 10, color: "#ffffff" }}>
                           {formatRelativeDate(item.createdAt)}
                         </Text>
+                        <Text style={{ fontFamily: "Mont", fontSize: 12, color: "#ffffff" }}>
+                          👀 {item?.views ?? 0} {item?.views === 1 ? "vue" : "vues"}
+                        </Text>
+                        </View>
                       </View>
                       <View style={styles.cardContainer}>
                         <View style={{ gap: 4 }}>
@@ -525,7 +531,7 @@ export default function HomeClient() {
                         </View>
 
 
-                        {item.hasUnread && (
+                        {unreadType && (
                           <Animated.Image
                             accessible={false}
                             source={getUnreadIcon(item.unreadType)}

@@ -57,6 +57,7 @@ type RequestType = {
   client: UserType;
   conversations: ConversationType[];
   createdAt?: string;
+  views?: number
 
 };
 
@@ -163,6 +164,8 @@ export default function RequestDetailClient() {
                     <Text style={{fontFamily: "Montt", color: "#fff"}}>Catégorie: {request.category}</Text>
                     <Text style={{fontFamily: "Montt", color: "#fff"}}>Lieu: {request.location}</Text>
                     <Text style={{fontFamily: "Montt", color: "#fff"}}>Budget: {request.budget}€</Text>
+                                        <Text style={{fontFamily: "Mont", color: "#fff"}}>{request?.views ?? 0} {request?.views === 1 ? "vue" : "vues"}</Text>
+
                     </View>
                     <View style={{flexDirection: "row-reverse", alignItems: "flex-end", gap: 5}}>
                       {request?.client?.profileImage?.url && (
@@ -254,9 +257,9 @@ const styles = StyleSheet.create({
 paddingBottom: 140,
  alignItems: "center"
  },
-  title: { fontSize: 22, fontWeight: "bold", marginBottom: 10 },
+  title: { fontSize: 22, fontFamily: "Londrinak", marginBottom: 10 },
   avatar: { width: 40, height: 40, borderRadius: 20 },
   conversationCard: { flexDirection: "row", alignItems: "center", gap: 10, padding: 12, borderWidth: 4, borderColor: "#1a5b4f", borderRadius: 12, marginTop: 10, backgroundColor: "#F3F3F3", width: "90%" },
   unreadBadge: { backgroundColor: "red", borderRadius: 10, width: 20, height: 20, justifyContent: "center", alignItems: "center", marginLeft: 8 },
-  unreadText: { color: "white", fontSize: 12, fontWeight: "bold" },
+  unreadText: { color: "white", fontSize: 12, fontFamily: "Montt" },
 });

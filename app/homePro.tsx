@@ -10,6 +10,7 @@ import {
   Image,
   ImageBackground,
   RefreshControl,
+  Share,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -85,6 +86,19 @@ const [pickerOpen, setPickerOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
+  const shareApp = async () => {
+    try {
+      await Share.share({
+        message:
+          `⚽ Découvre Briconnect !\n` +
+          `Scores en direct, stats, notifications ⚡\n` +
+          `👉 https://brico-8fih.onrender.com/download`,
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   const scrollY = new Animated.Value(0);
 
   const headerOpacity = scrollY.interpolate({
@@ -143,10 +157,7 @@ const getUnreadIcon = (type?: string) => {
     "Kanito": require("../assets/fonts/Kanit/Kanit-Medium.ttf"), 
   });
 
-  const formatDate = (dateString?: string) => {
-  if (!dateString) return "";
-  return new Date(dateString).toLocaleDateString("fr-FR");
-};
+
 
 const formatRelativeDate = (dateString?: string) => {
   if (!dateString) return "";
@@ -599,11 +610,11 @@ accessibilityLabel={`Mission ${item.title}, catégorie ${item.category}, à ${it
                   <View style={{ flexDirection: "row", justifyContent: "space-between", backgroundColor: "#1a5b4f", padding: 6 }}>
                     <Text style={styles.cardTitle}>{item.title}</Text>
                     <View>
-                    <Text style={{ fontFamily: "Montt", fontSize: 11, color: "#ffffff" }}>
+                    <Text style={{ fontFamily: "Montt", fontSize: 11, color: "#ffffff", textAlign: "right" }}>
   {formatRelativeDate(item.createdAt)}
 </Text>
-<Text style={{ fontFamily: "Mont", fontSize: 12, color: "#ffffff" }}>
-  👀 {item?.views ?? 0} vues
+<Text style={{ fontFamily: "Mont", fontSize: 12, color: "#ffffff", textAlign: "right" }}>
+  👀 {item?.views ?? 0} {item?.views === 1 ? "vue" : "vues"}
 </Text>
 </View>
                   </View>

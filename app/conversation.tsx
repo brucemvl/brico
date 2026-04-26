@@ -557,7 +557,7 @@ style={styles.inputModal}
     source={{ uri: conversation.pro?.profileImage?.url }}
     style={{ width: 50, height: 50, borderRadius: 25, marginRight: 10 }}
   />
-  <Text style={{ fontSize: 17.5, fontFamily: "Montt" }}>{conversation.pro?.name}</Text>
+  <Text style={{ fontSize: 17.5, fontFamily: "Montt", color: "#1a5b4f" }}>{conversation.pro?.name}</Text>
   </View>
   <View style={{alignItems: "center", justifyContent: "center", marginTop: 20}}>
 <TouchableWithoutFeedback

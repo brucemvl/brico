@@ -102,10 +102,24 @@ export default function RequestDetailPro() {
   const [previewImage, setPreviewImage] = useState<string>("");
   const [uploading, setUploading] = useState(false);
 
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return "";
-    return new Date(dateString).toLocaleDateString("fr-FR");
-  };
+  const formatRelativeDate = (dateString?: string) => {
+  if (!dateString) return "";
+
+  const now = new Date();
+  const date = new Date(dateString);
+
+  const diffMs = now.getTime() - date.getTime();
+  const diffMinutes = Math.floor(diffMs / (1000 * 60));
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+  if (diffMinutes < 1) return "À l’instant";
+  if (diffMinutes < 60) return `Il y a ${diffMinutes} min`;
+  if (diffHours < 24) return `Il y a ${diffHours} h`;
+  if (diffDays < 7) return `Il y a ${diffDays} jour${diffDays > 1 ? "s" : ""}`;
+
+  return date.toLocaleDateString("fr-FR");
+};
 
   const scrollY = new Animated.Value(0);
 
@@ -395,7 +409,7 @@ export default function RequestDetailPro() {
                 <Image source={{ uri: request?.client?.profileImage?.url }} style={{ height: 40, width: 35, borderRadius: 10, borderWidth: 1, borderColor: "#fff" }} />
                 <View style={{ alignItems: "flex-end" }}>
                   <Text style={{ fontSize: 15, color: "#fff", fontFamily: "Londrina" }}>{request?.client?.name}</Text>
-                  <Text style={{ fontSize: 13, color: "#fff", fontFamily: "Londrina" }}>{formatDate(request?.createdAt)}</Text>
+                  <Text style={{ fontSize: 13, color: "#fff", fontFamily: "Londrina" }}>{formatRelativeDate(request?.createdAt)}</Text>
                 </View>
               </View>
             </LinearGradient>
