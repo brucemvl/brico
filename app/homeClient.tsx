@@ -4,7 +4,7 @@ import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, Animated, Image, ImageBackground, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import { ActivityIndicator, Alert, Animated, Image, ImageBackground, Share, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import logo from "../assets/briconnect33.png";
 import fond from "../assets/convert_1.png";
 import msg from "../assets/icons/enveloppe.png";
@@ -66,7 +66,18 @@ export default function HomeClient() {
     }
   }, []);
 
-
+const shareApp = async () => {
+    try {
+      await Share.share({
+        message:
+          `Découvre Briconnect !\n` +
+          `Trouvez un bricoleur facilement\n` +
+          `👉 https://brico-8fih.onrender.com/download`,
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   const scrollY = new Animated.Value(0);
 
@@ -333,7 +344,7 @@ export default function HomeClient() {
             gap: 6
           }}
         >
-          <TouchableOpacity
+          <TouchableOpacity onPress={shareApp}
     accessible
   accessibilityRole="button"
   accessibilityLabel="Paramètres"

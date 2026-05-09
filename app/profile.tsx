@@ -478,7 +478,10 @@ paddingBottom: 60  },
 
   name: {
     fontSize: 22,
-    fontFamily: "Londrinak"
+    fontFamily: "Londrinak",
+    textShadowColor: "white",
+    textShadowRadius: 3,
+    textShadowOffset: 6
   },
 
   rating: {

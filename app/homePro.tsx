@@ -90,8 +90,8 @@ const [pickerOpen, setPickerOpen] = useState(false);
     try {
       await Share.share({
         message:
-          `⚽ Découvre Briconnect !\n` +
-          `Scores en direct, stats, notifications ⚡\n` +
+          `Découvre Briconnect !\n` +
+          `Trouvez un bricoleur facilement\n` +
           `👉 https://brico-8fih.onrender.com/download`,
       });
     } catch (error) {
@@ -394,7 +394,7 @@ const filteredRequests = (() => {
     opacity: settingsOpacity,
   }}
 >
-  <TouchableOpacity 
+  <TouchableOpacity  onPress={shareApp}
     accessible
   accessibilityRole="button"
   accessibilityLabel="Paramètres"
