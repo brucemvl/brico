@@ -481,7 +481,7 @@ paddingBottom: 60  },
     fontFamily: "Londrinak",
     textShadowColor: "white",
     textShadowRadius: 3,
-    textShadowOffset: 6
+    textShadowOffset: {width: 0, height: 1}
   },
 
   rating: {
