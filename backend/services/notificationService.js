@@ -45,17 +45,16 @@ if (senderId) {
   }
 
   // 🔔 PUSH (toujours envoyé)
-const user = await User.findById(userId).select("expoPushToken notificationPreferences");
-
+const user = await User.findById(userId).select(
+  "expoPushToken notificationPreferences email"
+);
 if (!user) return;
 
 // 🔕 Vérifier préférences
 if (user.notificationPreferences?.[type] === false) {
   return;
 }
-
-  if (user?.expoPushToken) {
-    let title = "Notification";
+let title = "Notification";
 
     if (type === "message") title = "💬 Message";
     if (type === "deal") title = "🤝 Proposition";
@@ -90,6 +89,9 @@ if (type === "offer_accepted") {
   emailText = `Votre offre a été acceptée.`;
 }
 
+  if (user?.expoPushToken) {
+    
+
     await sendPushNotification(
       
       [user.expoPushToken],
@@ -101,9 +103,10 @@ if (type === "offer_accepted") {
       }
     );
 
-    if (user.email) {
-  await sendEmail(user.email, title, emailText);
 }
+
+if (user.email) {
+  await sendEmail(user.email, title, emailText);
   }
 
   return notif;
