@@ -1,6 +1,7 @@
 const Notification = require("../models/Notification");
 const User = require("../models/User");
 const sendPushNotification = require("../utils/sendPushNotification");
+const sendEmail = require("../utils/sendEmail");
 
 async function createNotification({ userId, type, requestId, conversationId, senderId }) {
 
@@ -75,7 +76,22 @@ if (user.notificationPreferences?.[type] === false) {
     if (type === "review") body = "Nouvel avis reçu";
     if (type === "offer_accepted") body = "Vous avez acces aux coordonnées";
 
+    let emailText = body;
+
+if (type === "message") {
+  emailText = `${senderName} vous a envoyé un message sur l'application.`;
+}
+
+if (type === "deal") {
+  emailText = `Vous avez reçu une nouvelle proposition.`;
+}
+
+if (type === "offer_accepted") {
+  emailText = `Votre offre a été acceptée.`;
+}
+
     await sendPushNotification(
+      
       [user.expoPushToken],
       title,
       body,
@@ -84,6 +100,10 @@ if (user.notificationPreferences?.[type] === false) {
         conversationId: conversationId || null
       }
     );
+
+    if (user.email) {
+  await sendEmail(user.email, title, emailText);
+}
   }
 
   return notif;

@@ -347,8 +347,8 @@ const shareApp = async () => {
           <TouchableOpacity onPress={shareApp}
     accessible
   accessibilityRole="button"
-  accessibilityLabel="Paramètres"
-  accessibilityHint={`Accéder aux paramètres`}>
+  accessibilityLabel="Partager"
+  accessibilityHint={`Partager l'application`}>
     <Image source={share} style={{ height: 26, width: 26 }} />
   </TouchableOpacity>
         <TouchableOpacity
