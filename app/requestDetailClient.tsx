@@ -159,7 +159,7 @@ export default function RequestDetailClient() {
             accessible
   accessibilityLabel={`Demande ${request.title}, catégorie ${request.category}, budget ${request.budget} euros, à ${request.location}`}
   >
-                      <View style={{gap: 5}}>
+                      <View style={{gap: 5, width: "75%"}}>
                               <Text style={styles.title}>{request.title}</Text>
                     <Text style={{fontFamily: "Montt", color: "#fff"}}>Catégorie: {request.category}</Text>
                     <Text style={{fontFamily: "Montt", color: "#fff"}}>Lieu: {request.location}</Text>
@@ -169,7 +169,7 @@ export default function RequestDetailClient() {
                     </View>
                     <View style={{flexDirection: "row-reverse", alignItems: "flex-end", gap: 5}}>
                       {request?.client?.profileImage?.url && (
-                    <Image source={{uri: request?.client?.profileImage?.url}} style={{height: 30, width: 30, borderRadius: 15, borderWidth: 1, borderColor: "#fff"}} />
+                    <Image source={{uri: request?.client?.profileImage?.url}} style={{height: 30, width: 30, borderRadius: 10, borderWidth: 1, borderColor: "#fff"}} />
                       )}
                     <Text style={{fontSize: 11, color: "#fff", fontFamily: "Montt"}}>{formatDate(request?.createdAt)}</Text>
                     </View>

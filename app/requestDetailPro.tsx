@@ -399,13 +399,13 @@ export default function RequestDetailPro() {
             }}
           >
             <LinearGradient colors={["#30a590", "#1a5b4f"]} style={{ padding: 15, borderRadius: 20, width: "100%", flexDirection: "row", justifyContent: "space-between" }}>
-              <View style={{ gap: 5 }}>
+              <View style={{ gap: 5, width: "75%" }}>
                 <Text style={styles.title}>{request.title}</Text>
                 <Text style={{ fontFamily: "Montt", color: "#fff" }}>Catégorie: {request.category}</Text>
                 <Text style={{ fontFamily: "Montt", color: "#fff" }}>Lieu: {request.location}</Text>
                 <Text style={{ fontFamily: "Montt", color: "#fff" }}>Budget: {request.budget}€</Text>
               </View>
-              <View style={{ alignSelf: "flex-end", flexDirection: "row-reverse", gap: 4, alignItems: "center" }}>
+              <View style={{ alignSelf: "flex-end", flexDirection: "row-reverse", gap: 4, alignItems: "center", width: "25%" }}>
                 <Image source={{ uri: request?.client?.profileImage?.url }} style={{ height: 40, width: 35, borderRadius: 10, borderWidth: 1, borderColor: "#fff" }} />
                 <View style={{ alignItems: "flex-end" }}>
                   <Text style={{ fontSize: 15, color: "#fff", fontFamily: "Londrina" }}>{request?.client?.name}</Text>

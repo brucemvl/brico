@@ -397,8 +397,8 @@ const filteredRequests = (() => {
   <TouchableOpacity  onPress={shareApp}
     accessible
   accessibilityRole="button"
-  accessibilityLabel="Paramètres"
-  accessibilityHint={`Accéder aux paramètres`}>
+  accessibilityLabel="Partager"
+  accessibilityHint={`Partager l'application`}>
     <Image source={share} style={{ height: 26, width: 26 }} />
   </TouchableOpacity>
   <TouchableOpacity onPress={() => router.push({ pathname: "/settings" })}
@@ -707,7 +707,7 @@ header: {
 
   requestsContainer: { width: "100%", paddingHorizontal: 20, alignItems: "center" },
   card: { borderWidth: 5, borderColor: "#1a5b4f", borderRadius: 16, marginBottom: 12, width: "100%", backgroundColor: "#f3f3f3" },
-  cardTitle: { color: "#ffffff", fontSize: 15, marginBottom: 5, fontFamily: "Montt" },
+  cardTitle: { color: "#ffffff", fontSize: 15, marginBottom: 5, fontFamily: "Montt", width: "80%" },
   cardContainer: {padding: 10,  flexDirection: "row", justifyContent: "space-between", alignItems: "center"},
   skillBadge: { margin: 5, backgroundColor: "#e2db1c", padding: 8, borderRadius: 8 },
   badgeText: { fontSize: 12, color: "#1a5b4f", fontFamily: "Mont" },

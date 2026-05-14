@@ -594,7 +594,7 @@ const styles = StyleSheet.create({
   profileButton: { padding: 5, borderRadius: 50, backgroundColor: "#999999", position: "absolute", bottom: 5, right: 8, borderColor: "#f5f5f5", borderWidth: 1 },
   title: { fontSize: 24, fontFamily: 'Montt', marginBottom: 20, textAlign: 'center' },
   card: { borderWidth: 5, borderColor: "#1a5b4f", borderRadius: 16, marginBottom: 12, backgroundColor: "#f3f3f3" },
-  cardTitle: { color: "#ffffff", fontSize: 14, marginBottom: 5, fontFamily: "Montt" },
+  cardTitle: { color: "#ffffff", fontSize: 14, marginBottom: 5, fontFamily: "Montt", width: "75%" },
   redDot: {
     width: 12,
     height: 12,
