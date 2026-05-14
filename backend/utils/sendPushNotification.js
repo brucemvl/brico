@@ -1,4 +1,3 @@
-const fetch = require("node-fetch");
 
 async function sendPushNotification(tokens, title, body, data = {}) {
   if (!tokens || tokens.length === 0) return;
