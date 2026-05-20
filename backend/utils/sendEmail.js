@@ -2,16 +2,30 @@ const sgMail = require("@sendgrid/mail");
 
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
-async function sendEmail(to, subject, text) {
+async function sendEmail(to, subject, html, text = "") {
   try {
     await sgMail.send({
       to,
-      from: process.env.EMAIL_FROM,
+
+      from: {
+        email: process.env.EMAIL_FROM,
+        name: "Briconnect",
+      },
+
       subject,
-      text,
+
+      text: text || "Notification Briconnect",
+
+      html,
     });
+
+    console.log("✅ Email envoyé :", to);
+
   } catch (error) {
-    console.error("Erreur SendGrid:", error.response?.body || error.message);
+    console.error(
+      "❌ Erreur SendGrid:",
+      error.response?.body || error.message
+    );
   }
 }
 

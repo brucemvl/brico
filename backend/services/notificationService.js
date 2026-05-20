@@ -2,6 +2,7 @@ const Notification = require("../models/Notification");
 const User = require("../models/User");
 const sendPushNotification = require("../utils/sendPushNotification");
 const sendEmail = require("../utils/sendEmail");
+const notificationTemplate = require("../utils/emailTemplates/notificationTemplate");
 
 async function createNotification({ userId, type, requestId, conversationId, senderId }) {
 
@@ -106,7 +107,13 @@ if (type === "offer_accepted") {
 }
 
 if (user.email) {
-  await sendEmail(user.email, title, emailText);
+  const html = notificationTemplate({
+  title,
+  message: emailText,
+  buttonText: "Voir la notification",
+  buttonUrl: "https://briconnectapp.com"
+});
+
   }
 
   return notif;
