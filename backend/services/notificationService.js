@@ -114,6 +114,8 @@ if (user.email) {
   buttonUrl: "https://briconnectapp.com"
 });
 
+await sendEmail(user.email, title, html);
+
   }
 
   return notif;
