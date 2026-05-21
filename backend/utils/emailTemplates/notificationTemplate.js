@@ -31,7 +31,7 @@ box-shadow:0 4px 20px rgba(0,0,0,0.06);
 <td align="center">
 
 <img
-src="https://briconnect.fr/logo.png"
+src="https://briconnectapp.com/static/media/briconnect3.fdbfd923e5d7e75d91e2.png"
 width="120"
 style="margin-bottom:30px;"
 />
