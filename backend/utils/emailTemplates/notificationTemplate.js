@@ -2,7 +2,7 @@ const notificationTemplate = ({
   title,
   message,
   buttonText = "Ouvrir l'application",
-  buttonUrl = "https://briconnect.fr",
+  buttonUrl = "bricoconnect://",
 }) => {
   return `
 <!DOCTYPE html>
