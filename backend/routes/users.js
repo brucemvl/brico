@@ -387,19 +387,6 @@ else {
     user.updateAverageRating();
     await user.save();
 
-    // 🔹 Marquer que le client ou le pro a noté
-    if (req.user.role === "client") {
-      request.reviewByClient = true;
-    }
-
-    if (req.user.role === "pro") {
-      request.reviewByPro = true;
-    }
-
-    // 🔹 Si les deux ont noté → mission terminée
-    if (request.reviewByClient && request.reviewByPro) {
-      request.status = "completed";
-    }
 
     // 🔹 Mettre à jour la dernière interaction conversation
     const conversation = await Conversation.findOne({ request: requestId });

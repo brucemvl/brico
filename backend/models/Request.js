@@ -54,6 +54,11 @@ views: {
   type: Number,
   default: 0
 },
+
+viewedBy: [{
+  type: mongoose.Schema.Types.ObjectId,
+  ref: "User"
+}],
   status: {
     type: String,
     enum: ["open", "in_progress", "completed"],

@@ -199,11 +199,21 @@ router.get("/:id", auth, async (req, res) => {
 if (!request) return res.status(404).json({ error: "Demande introuvable" });
 
 // ✅ incrément propre (pas client)
-if (req.user.id.toString() !== request.client.toString()) {
+const isPro = req.user.role === "pro";
+
+const alreadyViewed =
+  request.viewedBy?.some(
+    id => id.toString() === req.user.id.toString()
+  ) || false;
+
+if (isPro && !alreadyViewed) {
   request = await Request.findByIdAndUpdate(
     req.params.id,
-    { $inc: { views: 1 } },
-    { new: true } // 🔥 récupère la valeur mise à jour
+    {
+      $inc: { views: 1 },
+      $addToSet: { viewedBy: req.user.id }
+    },
+    { new: true }
   )
     .populate("client", "name profileImage")
     .populate("assignedPros.pro", "name profileImage");

@@ -327,11 +327,19 @@ const openReviewModal = async () => {
     });
 
     await apiFetch(`/users/${conversation.pro._id}/review`, {
-      method: "POST",
-      body: formData,
-    });
+  method: "POST",
+  body: formData,
+});
 
-    setReviewModal(false);
+await apiFetch(`/requests/${request._id}/review-complete`, {
+  method: "POST",
+  body: JSON.stringify({
+    proId: conversation.pro._id,
+  }),
+});
+
+setReviewModal(false);
+
     setReviewImages([]);
 
     Alert.alert("Merci !", "Votre avis a été enregistré");

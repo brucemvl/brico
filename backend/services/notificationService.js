@@ -111,7 +111,7 @@ if (user.email) {
   title,
   message: emailText,
   buttonText: "Voir la notification",
-  buttonUrl: "https://briconnectapp.com"
+  buttonUrl: "https://briconnectapp.com/Openapp"
 });
 
 await sendEmail(user.email, title, html);
