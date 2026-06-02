@@ -204,7 +204,7 @@ useEffect(() => {
     if (userId) loadUser();
   }, [userId]);
 
-  if (!user) return <Text>Chargement...</Text>;
+  if (!user) return <View style={{flex: 1, justifyContent: "center", alignItems: "center"}}><Text style={{fontFamily: "Londrinak"}}>Chargement...</Text></View>;
 
   const parsedEquipment =
   typeof user.equipment === "string"

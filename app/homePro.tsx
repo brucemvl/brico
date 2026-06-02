@@ -241,9 +241,13 @@ useEffect(() => {
   }
 };
 
-const finish = requests.filter((element)=> 
-  element.status === "completed"
-)
+const finish = requests.filter(r =>
+  r.assignedPros?.some(
+    ap =>
+      ap.pro === profile?._id &&
+      ap.status === "completed"
+  )
+);
 console.log(finish.length)
 
   useFocusEffect(

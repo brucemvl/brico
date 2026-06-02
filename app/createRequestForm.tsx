@@ -339,9 +339,12 @@ const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
     marginBottom: 15,
-    height: 30,
+    height: 36,
     borderRadius: 8,
-    backgroundColor: "#fcfcfc"
+    backgroundColor: "#fcfcfc",
+    lineHeight: 18,
+    padding: 2,
+    fontFamily: "Mont"
   },
   overlay: {
   position: "absolute",

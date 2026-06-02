@@ -428,6 +428,7 @@ const shareApp = async () => {
           onPress={() => router.push('/createRequestForm')}
           onPressIn={onPressIn}
           onPressOut={onPressOut}
+          style={{margin: 5}}
 
         >
           <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
