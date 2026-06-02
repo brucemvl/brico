@@ -90,6 +90,7 @@ const [cities, setCities] = useState<City[]>([]);
       setEmail(data.email || "");
       setPhone(data.phone || "");
       setLocation(data.location || "");
+setLocationQuery(data.location || "");
       setDescription(data.description || "");
       setProfileImage(data.profileImage || null);
 

@@ -124,6 +124,7 @@ const [cities, setCities] = useState<City[]>([]);
       setPhone(data.phone || "");
       setSiret(data.siret || "");
       setLocation(data.location || "");
+      setLocationQuery(data.location || "");
       setDescription(data.description || "");
 setEquipment(Array.isArray(data.equipment) ? data.equipment : []);
 setSkills(Array.isArray(data.skills) ? data.skills : []);

@@ -337,14 +337,14 @@ const styles = StyleSheet.create({
     marginBottom: 6
   },
   input: {
-    borderWidth: 1,
+    backgroundColor: 'white',
+    paddingHorizontal: 15,
+    paddingVertical: 12,
+    borderRadius: 10,
     marginBottom: 15,
-    height: 36,
-    borderRadius: 8,
-    backgroundColor: "#fcfcfc",
-    lineHeight: 18,
-    padding: 2,
-    fontFamily: "Mont"
+    fontSize: 16,
+    fontFamily: "Mont",
+    borderWidth: 1
   },
   overlay: {
   position: "absolute",
