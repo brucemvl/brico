@@ -54,7 +54,7 @@ app.get('/download', (req, res) => {
   // 📱 Android
   if (/android/i.test(userAgent)) {
     return res.redirect(
-      'https://play.google.com/store/apps/details?id=com.onzesur10.app'
+      'https://briconnectapp.com/newsletter'
     );
   }
 
@@ -66,7 +66,7 @@ app.get('/download', (req, res) => {
   }
 
   // 💻 Fallback (PC, autres)
-  return res.redirect('https://apps.apple.com/fr/app/briconnect/id6761682000');
+  return res.redirect('https://briconnectapp.com');
 });
 
 // Port
