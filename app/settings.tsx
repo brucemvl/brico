@@ -104,7 +104,7 @@ const updateNotifications = async (newPrefs: NotificationPrefs) => {
     try {
       setLoading(true);
 
-      await apiFetch("/users/me/email", {
+      await apiFetch("/users/change-email", {
         method: "PUT",
         body: JSON.stringify({ email })
       });
