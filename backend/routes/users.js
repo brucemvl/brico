@@ -525,6 +525,10 @@ router.delete("/delete-account", auth, async (req, res) => {
       }
     }
 
+    await Request.deleteMany({
+  client: user._id
+});
+
     await user.deleteOne();
 
     res.json({ message: "Compte supprimé" });
