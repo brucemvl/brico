@@ -54,7 +54,7 @@ app.get('/download', (req, res) => {
   // 📱 Android
   if (/android/i.test(userAgent)) {
     return res.redirect(
-      'https://briconnectapp.com/newsletter'
+      'https://play.google.com/store/apps/details?id=com.bmdev14.bricoconnect'
     );
   }
 
