@@ -516,7 +516,7 @@ const shareApp = async () => {
                   >
                     <View style={styles.card}>
                       <View style={{ flexDirection: "row", justifyContent: "space-between", backgroundColor: "#1a5b4f", paddingBlock: 6, paddingInline: 6, alignItems: "center" }}>
-                        <Text style={styles.cardTitle}>{item.title}</Text>
+                        <Text style={styles.cardTitle}>{item.title.slice(0,1).toUpperCase() + item.title.slice(1, item.title.length)}</Text>
                         <View style={{alignItems: "flex-end"}}>
                         <Text style={{ fontFamily: "Montt", fontSize: 10, color: "#ffffff" }}>
                           {formatRelativeDate(item.createdAt)}

@@ -128,7 +128,7 @@ export default function RequestDetailClient() {
       <ImageBackground source={fond} style={{flex: 1}}>
               <Animated.View style={{ opacity: headerOpacity, flexDirection: "row", alignItems: "center", position: "relative", top: 30, paddingBottom: 15 }}>
                 <Image source={logo} style={{ height: 60, width: 60 }} />
-                <Text style={{ fontFamily: "Montt", fontSize: 16}}>{request.title}</Text>
+                <Text style={{ fontFamily: "Montt", fontSize: 16}}>{request.title.slice(0,1).toUpperCase() + request.title.slice(1, request.title.length)}</Text>
               
 </Animated.View>
     <BackButton />
@@ -160,7 +160,7 @@ export default function RequestDetailClient() {
   accessibilityLabel={`Demande ${request.title}, catégorie ${request.category}, budget ${request.budget} euros, à ${request.location}`}
   >
                       <View style={{gap: 5, width: "75%"}}>
-                              <Text style={styles.title}>{request.title}</Text>
+                              <Text style={styles.title}>{request.title.slice(0,1).toUpperCase() + request.title.slice(1, request.title.length)}</Text>
                     <Text style={{fontFamily: "Montt", color: "#fff"}}>Catégorie: {request.category}</Text>
                     <Text style={{fontFamily: "Montt", color: "#fff"}}>Lieu: {request.location}</Text>
                     <Text style={{fontFamily: "Montt", color: "#fff"}}>Budget: {request.budget}€</Text>

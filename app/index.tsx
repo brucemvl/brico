@@ -178,15 +178,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   content: {
-    width: width * 0.95,
     alignItems: 'center',
   },
-  title: {
-    fontSize: 38,
-    fontWeight: 'bold',
-    color: 'white',
-    marginBottom: 10,
-  },
+  
   subtitle: {
     color: 'rgba(255,255,255,0.8)',
     textAlign: 'center',
