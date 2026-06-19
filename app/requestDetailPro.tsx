@@ -375,7 +375,7 @@ export default function RequestDetailPro() {
       >
         <Animated.View style={{ opacity: headerOpacity, flexDirection: "row", alignItems: "center", position: "relative", top: 30, paddingBottom: 15 }}>
           <Image source={logo} style={{ height: 60, width: 60 }} />
-          <Text style={{ fontFamily: "Montt", fontSize: 16 }}>{request.title}</Text></Animated.View>
+          <Text style={{ fontFamily: "Montt", fontSize: 16 }}>{request.title.slice(0,1).toUpperCase() + request.title.slice(1, request.title.length)}</Text></Animated.View>
         <BackButton />
         <Animated.ScrollView
           contentContainerStyle={styles.container}
@@ -400,7 +400,7 @@ export default function RequestDetailPro() {
           >
             <LinearGradient colors={["#30a590", "#1a5b4f"]} style={{ padding: 15, borderRadius: 20, width: "100%", flexDirection: "row", justifyContent: "space-between" }}>
               <View style={{ gap: 5, width: "75%" }}>
-                <Text style={styles.title}>{request.title}</Text>
+                <Text style={styles.title}>{request.title.slice(0,1).toUpperCase() + request.title.slice(1, request.title.length)}</Text>
                 <Text style={{ fontFamily: "Montt", color: "#fff" }}>Catégorie: {request.category}</Text>
                 <Text style={{ fontFamily: "Montt", color: "#fff" }}>Lieu: {request.location}</Text>
                 <Text style={{ fontFamily: "Montt", color: "#fff" }}>Budget: {request.budget}€</Text>
