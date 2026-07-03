@@ -22,7 +22,7 @@ import { useApi } from "../services/api";
 
 const { width } = Dimensions.get("window");
 
-const categories = ["Plomberie", "Electricité", "Peinture", "Agencement", "Carrelage", "Divers"];
+const categories = ["Plomberie", "Electricité", "Peinture", "Agencement", "Carrelage", "Divers", "Jardinage"];
 
 const equipmentOptions = [
   "Caisse à outils",

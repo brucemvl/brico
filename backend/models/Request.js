@@ -44,7 +44,7 @@ const requestSchema = new mongoose.Schema({
   description: String,
   category: {
     type: String,
-    enum: ["Peinture", "Plomberie", "Agencement", "Electricité", "Carrelage", "Divers"],
+    enum: ["Peinture", "Plomberie", "Agencement", "Electricité", "Carrelage", "Divers", "Jardinage"],
     required: true
   },
   location: { type: String, required: true },

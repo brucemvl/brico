@@ -226,6 +226,7 @@ const [cities, setCities] = useState<City[]>([]);
             <Picker.Item label="Electricité" value="Electricité" />
             <Picker.Item label="Carrelage" value="Carrelage" />
             <Picker.Item label="Divers" value="Divers" />
+            <Picker.Item label="Jardinage" value="Jardinage" />
           </Picker>
 
           <Text style={styles.title}>Ville*</Text>

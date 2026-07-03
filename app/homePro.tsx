@@ -56,7 +56,7 @@ createdAt?: string;
 views?: number;
 };
 
-const categories = ["Plomberie", "Peinture", "Agencement", "Electricité", "Carrelage", "Divers"];
+const categories = ["Plomberie", "Peinture", "Agencement", "Electricité", "Carrelage", "Divers", "Jardinage"];
 
 const defaultAvatar = "https://res.cloudinary.com/dwjssp2pd/image/upload/v1773074497/default_pro.jpg";
 
@@ -82,7 +82,7 @@ const [pickerOpen, setPickerOpen] = useState(false);
 
   const [requests, setRequests] = useState<RequestType[]>([]);
   const [skills, setSkills] = useState<string[]>([]);
-  const [activeFilter, setActiveFilter] = useState<"skills" | "all" | string>("skills");
+  const [activeFilter, setActiveFilter] = useState<"skills" | "all" | string>("all");
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -550,16 +550,6 @@ accessible
       {/* 🔹 Boutons filtres */}
       {requestView === "requests" &&
       <View style={styles.filtersContainer} accessible accessibilityRole="tablist">
-        <TouchableOpacity
-          style={[styles.filterButton, activeFilter === "skills" && styles.activeFilter]}
-          onPress={() => setActiveFilter("skills")}
-          accessible
-    accessibilityRole="button"
-    accessibilityLabel="Filtrer selon mes compétences"
-    accessibilityState={{ selected: activeFilter === "skills" }}
-        >
-          <Text style={[styles.filterText, activeFilter === "skills" && {fontFamily: "Montt", color: "#fff"}]}>Mes compétences</Text>
-        </TouchableOpacity>
 
         <TouchableOpacity
           style={[styles.filterButton, activeFilter === "all" && styles.activeFilter]}
@@ -571,6 +561,20 @@ accessible
         >
           <Text style={[styles.filterText, activeFilter === "all" && {fontFamily: "Montt", color: "#fff"}]}>Toutes</Text>
         </TouchableOpacity>
+
+
+        <TouchableOpacity
+          style={[styles.filterButton, activeFilter === "skills" && styles.activeFilter]}
+          onPress={() => setActiveFilter("skills")}
+          accessible
+    accessibilityRole="button"
+    accessibilityLabel="Filtrer selon mes compétences"
+    accessibilityState={{ selected: activeFilter === "skills" }}
+        >
+          <Text style={[styles.filterText, activeFilter === "skills" && {fontFamily: "Montt", color: "#fff"}]}>Mes compétences</Text>
+        </TouchableOpacity>
+
+        
 
         {categories.map(cat => (
           <TouchableOpacity
@@ -605,15 +609,15 @@ accessible
 
             return (
               <TouchableOpacity key={item._id} 
-              onPress={() => openRequest(item)} style={{ width: "95%" }}
+              onPress={() => openRequest(item)} style={{ width: "96%" }}
               accessible
   accessibilityRole="button"
 accessibilityLabel={`Mission ${item.title}, catégorie ${item.category}, à ${item.location}, budget ${item.budget} euros${isAssignedToMe ? ", accord conclu" : ""}${isMatchingSkill ? ", correspond à vos compétences" : ""}`} 
  accessibilityHint="Ouvrir le détail de la mission" >
                 <View style={styles.card}>
                   <View style={{ flexDirection: "row", justifyContent: "space-between", backgroundColor: "#1a5b4f", padding: 6 }}>
-                    <Text style={styles.cardTitle}>{item.title}</Text>
-                    <View>
+                    <Text style={styles.cardTitle}>{item.title.slice(0,1).toUpperCase() + item.title.slice(1, item.title.length)}</Text>
+                    <View style={{ width: "23%"}}>
                     <Text style={{ fontFamily: "Montt", fontSize: 11, color: "#ffffff", textAlign: "right" }}>
   {formatRelativeDate(item.createdAt)}
 </Text>
@@ -624,9 +628,9 @@ accessibilityLabel={`Mission ${item.title}, catégorie ${item.category}, à ${it
                   </View>
 <View style={styles.cardContainer}>
 <View style={{gap: 4}}>
-                  <Text style={{fontFamily: "Londrina", fontSize: 16, color: "#000000"}}>Catégorie : {item.category}</Text>
-                  <Text style={{fontFamily: "Londrina", fontSize: 16, color: "#000000"}}>Lieu : {item.location}</Text>
-                  <Text style={{fontFamily: "Londrina", fontSize: 16, color: "#000000"}}>Budget : {item.budget}€</Text>
+                  <Text style={{fontFamily: "Montt", color: "#000000"}}>Catégorie : {item.category}</Text>
+                  <Text style={{fontFamily: "Montt", color: "#000000"}}>Lieu : {item.location}</Text>
+                  <Text style={{fontFamily: "Montt", color: "#000000"}}>Budget : {item.budget}€</Text>
                  </View>
                  {item.images && item.images.length > 0 && (
   <View style={styles.thumbRow}>
@@ -711,8 +715,8 @@ header: {
 
   requestsContainer: { width: "100%", paddingHorizontal: 20, alignItems: "center" },
   card: { borderWidth: 5, borderColor: "#1a5b4f", borderRadius: 16, marginBottom: 12, width: "100%", backgroundColor: "#f3f3f3" },
-  cardTitle: { color: "#ffffff", fontSize: 15, marginBottom: 5, fontFamily: "Montt", width: "80%" },
-  cardContainer: {padding: 10,  flexDirection: "row", justifyContent: "space-between", alignItems: "center"},
+  cardTitle: { color: "#ffffff", fontSize: 19, marginBottom: 5, fontFamily: "Londrinak", width: "76%" },
+  cardContainer: {padding: 12,  flexDirection: "row", justifyContent: "space-between", alignItems: "center"},
   skillBadge: { margin: 5, backgroundColor: "#e2db1c", padding: 8, borderRadius: 8 },
   badgeText: { fontSize: 12, color: "#1a5b4f", fontFamily: "Mont" },
   acceptedBadge: { margin: 5, backgroundColor: "#ffeeba", padding: 8, borderRadius: 8, alignItems: "center" },

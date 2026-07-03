@@ -331,7 +331,9 @@ const shareApp = async () => {
     <ImageBackground source={fond} style={{ flex: 1 }}>
       <Animated.View style={{ opacity: headerOpacity, flexDirection: "row", alignItems: "center", position: "relative", top: 30, paddingBottom: 15 }}>
         <Image source={logo} style={{ height: 60, width: 60 }} />
-        <Text style={{ fontFamily: "Montt", fontSize: 16 }}>Accueil</Text></Animated.View>
+        <Text style={{ fontFamily: "Montt", fontSize: 16 }}>Accueil</Text>
+        </Animated.View>
+
               <Animated.View
           style={{
             position: "absolute",
@@ -504,10 +506,10 @@ const shareApp = async () => {
 
                 <View
                   key={item._id}
-                  style={{ flexDirection: "row", alignItems: "center", gap: 10, width: 350, justifyContent: "center" }}
+                  style={{ flexDirection: "row", alignItems: "center", gap: 10, width: 360, justifyContent: "center" }}
                 >
                   <TouchableOpacity
-                    style={{ width: 300 }}
+                    style={{ width: 315 }}
                     onPress={() => router.push(`/requestDetailClient?id=${item._id}`)}
                     accessible
                     accessibilityRole="button"
@@ -515,7 +517,7 @@ const shareApp = async () => {
                     accessibilityHint="Ouvrir les détails de la demande"
                   >
                     <View style={styles.card}>
-                      <View style={{ flexDirection: "row", justifyContent: "space-between", backgroundColor: "#1a5b4f", paddingBlock: 6, paddingInline: 6, alignItems: "center" }}>
+                      <View style={{ flexDirection: "row", justifyContent: "space-between", backgroundColor: "#1a5b4f", padding: 6, alignItems: "center" }}>
                         <Text style={styles.cardTitle}>{item.title.slice(0,1).toUpperCase() + item.title.slice(1, item.title.length)}</Text>
                         <View style={{alignItems: "flex-end"}}>
                         <Text style={{ fontFamily: "Montt", fontSize: 10, color: "#ffffff" }}>
@@ -529,8 +531,8 @@ const shareApp = async () => {
                       <View style={styles.cardContainer}>
                         <View style={{ gap: 4 }}>
 
-                          <Text style={{ fontFamily: "Londrina", fontSize: 16, color: "#000000" }}>Catégorie : {item.category}</Text>
-                          <Text style={{ fontFamily: "Londrina", fontSize: 16, color: "#000000" }}>Budget : {item.budget}€</Text>
+                          <Text style={{ fontFamily: "Montt", color: "#000000" }}>Catégorie : {item.category}</Text>
+                          <Text style={{ fontFamily: "Montt", color: "#000000" }}>Budget : {item.budget}€</Text>
                           <Text
                             style={{ fontFamily: "Kanito", color: item.status === "open" ? "green" : item.status === "in_progress" ? "#bdc008" : "red" }}
                             accessible
@@ -590,12 +592,12 @@ const shareApp = async () => {
 }
 
 const styles = StyleSheet.create({
-  container: { justifyContent: 'center', alignItems: 'center', paddingTop: 60, paddingBottom: 160 },
+  container: { justifyContent: 'center', alignItems: 'center', paddingTop: 60, paddingBottom: 160, gap: 10 },
   avatar: { height: 90, width: 90, borderRadius: 45, borderWidth: 2, borderColor: "#fcfcfc" },
   profileButton: { padding: 5, borderRadius: 50, backgroundColor: "#999999", position: "absolute", bottom: 5, right: 8, borderColor: "#f5f5f5", borderWidth: 1 },
   title: { fontSize: 24, fontFamily: 'Montt', marginBottom: 20, textAlign: 'center' },
   card: { borderWidth: 5, borderColor: "#1a5b4f", borderRadius: 16, marginBottom: 12, backgroundColor: "#f3f3f3" },
-  cardTitle: { color: "#ffffff", fontSize: 14, marginBottom: 5, fontFamily: "Montt", width: "75%" },
+  cardTitle: { color: "#ffffff", fontSize: 19, marginBottom: 5, fontFamily: "Londrinak", width: "75%" },
   redDot: {
     width: 12,
     height: 12,
@@ -672,7 +674,7 @@ const styles = StyleSheet.create({
     right: 8,
   },
   requestsContainer: { width: "100%", paddingHorizontal: 20, alignItems: "center" },
-  cardContainer: { padding: 10, flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  cardContainer: { padding: 12, flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
 
 
 });
