@@ -398,7 +398,7 @@ export default function RequestDetailPro() {
 
             }}
           >
-            <LinearGradient colors={["#30a590", "#1a5b4f"]} style={{ padding: 15, borderRadius: 20, width: "100%", flexDirection: "row", justifyContent: "space-between" }}>
+            <LinearGradient colors={["#30a590", "#1a5b4f"]} locations={[0, 0.6]} style={{ padding: 15, borderRadius: 20, width: "100%", flexDirection: "column", justifyContent: "space-between" }}>
               <View style={{ gap: 5, width: "75%" }}>
                 <Text style={styles.title}>{request.title.slice(0,1).toUpperCase() + request.title.slice(1, request.title.length)}</Text>
                 <Text style={{ fontFamily: "Montt", color: "#fff" }}>Catégorie: {request.category}</Text>
@@ -697,7 +697,7 @@ const styles = StyleSheet.create({
     paddingInline: 10,
     paddingBottom: 140, alignItems: "center"
   },
-  title: { fontSize: 22, fontFamily: "Londrinak", marginBottom: 10 },
+  title: { fontSize: 22, fontFamily: "Londrinak", marginBottom: 8, color: "#fff", textShadowColor: "#000", textShadowRadius: 2, textShadowOffset: {width: 2, height: 2}, padding: 2, letterSpacing: 0.5 },
   chatTitle: { marginTop: 20, marginBottom: 10, fontFamily: "Montt", textAlign: "center", fontSize: 20, color: "#1a5b4f" },
   dealBox: { borderRadius: 8, marginVertical: 10, alignItems: "center" },
   dealAction: { color: "#fff", fontFamily: "Mont" },

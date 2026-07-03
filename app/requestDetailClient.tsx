@@ -257,7 +257,7 @@ const styles = StyleSheet.create({
 paddingBottom: 140,
  alignItems: "center"
  },
-  title: { fontSize: 22, fontFamily: "Londrinak", marginBottom: 10 },
+  title: { fontSize: 22, fontFamily: "Londrinak", marginBottom: 8, color: "#fff", textShadowColor: "#000", textShadowRadius: 2, textShadowOffset: {width: 2, height: 2}, padding: 2 },
   avatar: { width: 40, height: 40, borderRadius: 20 },
   conversationCard: { flexDirection: "row", alignItems: "center", gap: 10, padding: 12, borderWidth: 4, borderColor: "#1a5b4f", borderRadius: 20, marginTop: 10, backgroundColor: "#F3F3F3", width: "90%" },
   unreadBadge: { backgroundColor: "red", borderRadius: 10, width: 20, height: 20, justifyContent: "center", alignItems: "center", marginLeft: 8 },

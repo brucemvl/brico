@@ -628,9 +628,9 @@ accessibilityLabel={`Mission ${item.title}, catégorie ${item.category}, à ${it
                   </View>
 <View style={styles.cardContainer}>
 <View style={{gap: 4}}>
-                  <Text style={{fontFamily: "Montt", color: "#000000"}}>Catégorie : {item.category}</Text>
-                  <Text style={{fontFamily: "Montt", color: "#000000"}}>Lieu : {item.location}</Text>
-                  <Text style={{fontFamily: "Montt", color: "#000000"}}>Budget : {item.budget}€</Text>
+                  <Text style={{fontFamily: "Montt", color: "#000000", fontSize: 13.5}}>Catégorie : {item.category}</Text>
+                  <Text style={{fontFamily: "Montt", color: "#000000", fontSize: 13.5}}>Lieu : {item.location}</Text>
+                  <Text style={{fontFamily: "Montt", color: "#000000", fontSize: 13.5}}>Budget : {item.budget}€</Text>
                  </View>
                  {item.images && item.images.length > 0 && (
   <View style={styles.thumbRow}>
@@ -717,7 +717,7 @@ header: {
   card: { borderWidth: 5, borderColor: "#1a5b4f", borderRadius: 16, marginBottom: 12, width: "100%", backgroundColor: "#f3f3f3" },
   cardTitle: { color: "#ffffff", fontSize: 19, marginBottom: 5, fontFamily: "Londrinak", width: "76%" },
   cardContainer: {padding: 12,  flexDirection: "row", justifyContent: "space-between", alignItems: "center"},
-  skillBadge: { margin: 5, backgroundColor: "#e2db1c", padding: 8, borderRadius: 8 },
+  skillBadge: { margin: 5, backgroundColor: "#e2db1c", padding: 8, borderRadius: 8, alignItems: "center" },
   badgeText: { fontSize: 12, color: "#1a5b4f", fontFamily: "Mont" },
   acceptedBadge: { margin: 5, backgroundColor: "#ffeeba", padding: 8, borderRadius: 8, alignItems: "center" },
 
