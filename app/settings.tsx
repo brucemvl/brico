@@ -300,7 +300,7 @@ const styles = StyleSheet.create({
   label: {
     color: "white",
     marginBottom: 8,
-    fontFamily: "Mont"
+    fontFamily: "Montt"
   },
   input: {
     backgroundColor: "white",
