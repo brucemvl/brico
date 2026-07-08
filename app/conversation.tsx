@@ -36,7 +36,14 @@ type UserType = {
     url: string;
   };
 };
-type MessageType = { from: UserType; content: string; createdAt: string; readBy: string[] };
+
+type MessageType = { from: UserType;
+   content: string;
+    createdAt: string;
+     readBy: string[];
+     sending?: boolean;
+  tempId?: string; };
+
 type ConversationType = {
   _id: string;
   request: string;
@@ -205,25 +212,80 @@ const reviewScale = useRef(new Animated.Value(1)).current;
 
   // Envoyer message
   const sendMessage = async () => {
-    if (!message.trim() || !conversation?._id) return;
+  if (!message.trim() || !conversation?._id) return;
 
-    try {
-      const res = await apiFetch(`/conversations/${conversation._id}/message`, {
-        method: "POST",
-        body: JSON.stringify({ content: message })
-      });
+  const text = message;
 
-      setConversation(prev => prev ? { ...prev, messages: res.messages } : prev);
-      setMessage("");
+  setMessage("");
 
-      setTimeout(() => {
-        scrollRef.current?.scrollToEnd({ animated: true });
-      }, 200);
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : "Erreur inconnue";
-      Alert.alert("Erreur", msg);
-    }
+  const optimisticMessage: MessageType = {
+    tempId: Date.now().toString(),
+    from: {
+      _id: currentUserId,
+      name: "Moi",
+    },
+    content: text,
+    createdAt: new Date().toISOString(),
+    readBy: [currentUserId],
+    sending: true,
   };
+
+  // Affichage immédiat
+  setConversation(prev => {
+    if (!prev) return prev;
+
+    return {
+      ...prev,
+      messages: [...prev.messages, optimisticMessage],
+    };
+  });
+
+  requestAnimationFrame(() => {
+    scrollRef.current?.scrollToEnd({ animated: true });
+  });
+
+  try {
+    const res = await apiFetch(`/conversations/${conversation._id}/message`, {
+      method: "POST",
+      body: JSON.stringify({
+        content: text,
+      }),
+    });
+
+    setConversation(prev =>
+      prev
+        ? {
+            ...prev,
+            messages: res.messages,
+          }
+        : prev
+    );
+
+    requestAnimationFrame(() => {
+      scrollRef.current?.scrollToEnd({ animated: true });
+    });
+
+  } catch (err) {
+
+    // retire le faux message
+
+    setConversation(prev => {
+      if (!prev) return prev;
+
+      return {
+        ...prev,
+        messages: prev.messages.filter(
+          m => m.tempId !== optimisticMessage.tempId
+        ),
+      };
+    });
+
+    Alert.alert(
+      "Erreur",
+      err instanceof Error ? err.message : "Erreur inconnue"
+    );
+  }
+};
 
   // Voir profil pro
   const openProfile = () => {
@@ -611,14 +673,24 @@ const isRead = msg.readBy?.includes(otherUserId || "");
         isMe ? styles.myRow : styles.otherRow
       ]}
     >
-      {!isMe && (
-        <Image
-          source={{
-            uri: msg.from.profileImage?.url
-          }}
-          style={styles.avatar}
-        />
-      )}
+      {isMe && (
+  msg.sending ? (
+    <Text
+      style={[
+        styles.readStatus,
+        {
+          color: "#999",
+        },
+      ]}
+    >
+      ⏳ Envoi...
+    </Text>
+  ) : (
+    <Text style={styles.readStatus}>
+      {isRead ? "✓✓ lu" : "✓"}
+    </Text>
+  )
+)}
 
       <View
         style={[

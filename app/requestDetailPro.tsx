@@ -30,6 +30,8 @@ type MessageType = {
   content: string;
   createdAt: string;
   readBy: string[];
+  sending?: boolean;
+  tempId?: string;
 };
 
 type ConversationType = {
@@ -236,30 +238,95 @@ export default function RequestDetailPro() {
   };
 
   const sendMessage = async () => {
-    if (!message.trim()) return;
+  if (!message.trim()) return;
 
-    try {
-      const res = await apiFetch(`/requests/${requestId}/message`, {
-        method: "POST",
-        body: JSON.stringify({ content: message }),
-      });
+  const text = message;
 
-      setRequest(prev =>
-        prev
-          ? {
+  // vide immédiatement l'input
+  setMessage("");
+
+  // message temporaire
+  const optimisticMessage: MessageType = {
+    tempId: Date.now().toString(),
+    from: {
+      _id: currentUserId,
+      name: "Moi",
+    },
+    content: text,
+    createdAt: new Date().toISOString(),
+    readBy: [currentUserId],
+    sending: true,
+  };
+
+  // affichage immédiat
+  setRequest(prev => {
+    if (!prev) return prev;
+
+    return {
+      ...prev,
+      conversation: {
+        ...(prev.conversation ?? {
+          _id: "",
+          messages: [],
+        }),
+        messages: [
+          ...(prev.conversation?.messages ?? []),
+          optimisticMessage,
+        ],
+      },
+    };
+  });
+
+  requestAnimationFrame(() => {
+    scrollRef.current?.scrollToEnd({ animated: true });
+  });
+
+  try {
+    const res = await apiFetch(`/requests/${requestId}/message`, {
+      method: "POST",
+      body: JSON.stringify({
+        content: text,
+      }),
+    });
+
+    // remplace par les vrais messages du serveur
+    setRequest(prev =>
+      prev
+        ? {
             ...prev,
             conversation: res,
           }
-          : prev
-      );
+        : prev
+    );
 
-      setMessage("");
+    requestAnimationFrame(() => {
       scrollRef.current?.scrollToEnd({ animated: true });
-    } catch (e: any) {
-      console.error(e);
-      Alert.alert("Erreur", e.message);
-    }
-  };
+    });
+
+  } catch (e: any) {
+
+    // supprimer le faux message si erreur
+
+    setRequest(prev => {
+      if (!prev) return prev;
+
+      return {
+        ...prev,
+        conversation: {
+          ...prev.conversation!,
+          messages:
+            prev.conversation?.messages.filter(
+              m => m.tempId !== optimisticMessage.tempId
+            ) ?? [],
+        },
+      };
+    });
+
+    Alert.alert("Erreur", e.message);
+  }
+};
+
+
 
   const submitReview = async () => {
     if (!request) return;
@@ -637,9 +704,32 @@ export default function RequestDetailPro() {
                     {!isMe && <Text style={styles.author}>{msg.from.name}</Text>}
                     <Text style={{ fontFamily: "Mont", letterSpacing: -0.6 }}>{msg.content}</Text>
                     <View style={styles.messageMeta}>
-                      <Text style={styles.time}>{msgTime}</Text>
-                      {isMe && <Text style={[styles.readStatus, msg.readBy.length >= 2 && { color: "#0b87da" }]}>{status}</Text>}
-                    </View>
+    <Text style={styles.time}>{msgTime}</Text>
+
+    {msg.sending ? (
+        <Text
+            style={{
+                marginLeft: 6,
+                color: "#999",
+                fontSize: 10,
+                fontFamily: "Londrina",
+            }}
+        >
+            ⏳ Envoi...
+        </Text>
+    ) : (
+        isMe && (
+            <Text
+                style={[
+                    styles.readStatus,
+                    msg.readBy.length >= 2 && { color: "#0b87da" },
+                ]}
+            >
+                {status}
+            </Text>
+        )
+    )}
+</View>
                   </View>
                 </View>
               );
