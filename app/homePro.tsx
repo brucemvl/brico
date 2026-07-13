@@ -85,6 +85,7 @@ const [pickerOpen, setPickerOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState<"skills" | "all" | string>("all");
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  
 
   const shareApp = async () => {
     try {
@@ -606,70 +607,185 @@ accessible
             const isAssignedToMe = item.assignedPros?.some(
   ap => ap.pro === profile?._id && ap.status === "active"
 );
-
+const images = item.images ?? [];
             return (
-              <TouchableOpacity key={item._id} 
-              onPress={() => openRequest(item)} style={{ width: "96%" }}
-              accessible
-  accessibilityRole="button"
-accessibilityLabel={`Mission ${item.title}, catégorie ${item.category}, à ${item.location}, budget ${item.budget} euros${isAssignedToMe ? ", accord conclu" : ""}${isMatchingSkill ? ", correspond à vos compétences" : ""}`} 
- accessibilityHint="Ouvrir le détail de la mission" >
-                <View style={styles.card}>
-                  <View style={{ flexDirection: "row", justifyContent: "space-between", backgroundColor: "#1a5b4f", padding: 6 }}>
-                    <Text style={styles.cardTitle}>{item.title.slice(0,1).toUpperCase() + item.title.slice(1, item.title.length)}</Text>
-                    <View style={{ width: "23%"}}>
-                    <Text style={{ fontFamily: "Montt", fontSize: 11, color: "#ffffff", textAlign: "right" }}>
-  {formatRelativeDate(item.createdAt)}
-</Text>
-<Text style={{ fontFamily: "Mont", fontSize: 12, color: "#ffffff", textAlign: "right" }}>
-  👀 {item?.views ?? 0} {item?.views === 1 ? "vue" : "vues"}
-</Text>
-</View>
-                  </View>
-<View style={styles.cardContainer}>
-<View style={{gap: 4}}>
-                  <Text style={{fontFamily: "Montt", color: "#000000", fontSize: 13.5}}>Catégorie : {item.category}</Text>
-                  <Text style={{fontFamily: "Montt", color: "#000000", fontSize: 13.5}}>Lieu : {item.location}</Text>
-                  <Text style={{fontFamily: "Montt", color: "#000000", fontSize: 13.5}}>Budget : {item.budget <= 0 ? "??" : item.budget + "€"}</Text>
-                 </View>
-                 {item.images && item.images.length > 0 && (
-  <View style={styles.thumbRow}>
-    {item.images.slice(0, 4).map((img, index) => (
-      <Image
-        key={`${item._id}-img-${index}`}
-        source={{ uri: img?.url }}
-        style={styles.thumb}
-      />
-    ))}
+              <TouchableOpacity
+    key={item._id}
+    onPress={() => openRequest(item)}
+    activeOpacity={0.92}
+    style={styles.card}
+>
 
-    
-  </View>
-)}
-</View>
-{item.hasUnread && (
-  <Animated.Image
-    source={getUnreadIcon(item.unreadType)}
-    style={[
-      styles.unreadIcon,
-      { opacity: badgeBlink }
-    ]}
-  />
-)}
-                  
+    {/* HEADER */}
 
-                  {isAssignedToMe && (
+    <LinearGradient
+        colors={["#30a590", "#1a5b4f"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.cardHeader}
+    >
+
+        <View style={{ flex: 1 }}>
+
+            <Text
+                style={styles.cardTitle}
+                numberOfLines={2}
+            >
+                {item.title.slice(0,1).toUpperCase()+item.title.slice(1)}
+            </Text>
+
+            <Text style={styles.cardDate}>
+                {formatRelativeDate(item.createdAt)}
+            </Text>
+
+        </View>
+
+        <View style={styles.viewsBadge}>
+            <Text style={styles.viewsText}>
+                👀 {item.views ?? 0}
+            </Text>
+        </View>
+
+    </LinearGradient>
+
+    {/* BODY */}
+
+    <View style={styles.cardBody}>
+
+        <View style={styles.badgesRow}>
+
+            <View style={styles.badge}>
+                <Text style={styles.badgeText}>
+                    🔧 {item.category}
+                </Text>
+            </View>
+
+            <View style={styles.badge}>
+                <Text style={styles.badgeText}>
+                    📍 {item.location}
+                </Text>
+            </View>
+
+            <View style={styles.badge}>
+                <Text style={styles.badgeText}>
+                    💰 {item.budget <= 0 ? "À définir" : item.budget + " €"}
+                </Text>
+            </View>
+
+        </View>
+
+        {images.length > 0 && (
+    <View style={styles.thumbRow}>
+        {images.slice(0,4).map((img,index)=>(
+            <Image
+                key={index}
+                source={{ uri: img.url }}
+                style={styles.thumb}
+            />
+        ))}
+    </View>
+)}
+
+        {(isAssignedToMe || isMatchingSkill) && (
+
+            <View style={styles.infoBadges}>
+
+                {isAssignedToMe && (
+
                     <View style={styles.acceptedBadge}>
-                      <Text style={{ fontSize: 12, fontFamily: "Mont" }}>🤝 Accord conclu</Text>
+                        <Text style={styles.acceptedText}>
+                            🤝 Accord conclu
+                        </Text>
                     </View>
-                  )}
 
-                  {isMatchingSkill && (
+                )}
+
+                {isMatchingSkill && (
+
                     <View style={styles.skillBadge}>
-                      <Text style={styles.badgeText}>Correspond à vos compétences</Text>
+                        <Text style={styles.skillText}>
+                            ✔ Correspond à vos compétences
+                        </Text>
                     </View>
-                  )}
+
+                )}
+
+            </View>
+
+        )}
+
+        <View style={styles.footer}>
+
+            <View>
+
+                <View
+                    style={[
+                        styles.statusBadge,
+                        {
+                            backgroundColor:
+                                item.status==="open"
+                                    ? "#dff8e8"
+                                    : item.status==="in_progress"
+                                    ? "#fff4d6"
+                                    : "#dcecff"
+                        }
+                    ]}
+                >
+
+                    <Text
+                        style={{
+                            color:
+                                item.status==="open"
+                                    ? "#1d8d4a"
+                                    : item.status==="in_progress"
+                                    ? "#c08b00"
+                                    : "#2d72d9",
+                            fontFamily:"Montt"
+                        }}
+                    >
+                        {item.status==="open"
+                            ? "🟢 Ouvert"
+                            : item.status==="in_progress"
+                            ? "🟡 En cours"
+                            : "🔵 Terminé"}
+                    </Text>
+
                 </View>
-              </TouchableOpacity>
+
+            </View>
+
+            <View style={{flexDirection:"row",alignItems:"center"}}>
+
+                {item.hasUnread && (
+
+                    <Animated.Image
+                        source={getUnreadIcon(item.unreadType)}
+                        style={[
+                            styles.unreadIcon,
+                            {
+                                opacity:badgeBlink,
+                                marginRight:12
+                            }
+                        ]}
+                    />
+
+                )}
+
+                <View style={styles.arrowButton}>
+
+                    <Text style={styles.arrow}>
+                        →
+                    </Text>
+
+                </View>
+
+            </View>
+
+        </View>
+
+    </View>
+
+</TouchableOpacity>
             );
           })
         )}
@@ -714,11 +830,120 @@ header: {
   activeFilter: { backgroundColor: "#1a5b4f" },
 
   requestsContainer: { width: "100%", paddingHorizontal: 16, alignItems: "center" },
-  card: { borderWidth: 5, borderColor: "#1a5b4f", borderRadius: 16, marginBottom: 12, width: "100%", backgroundColor: "#f3f3f3" },
   cardTitle: { color: "#ffffff", fontSize: 19, marginBottom: 5, fontFamily: "Londrinak", width: "76%" },
-  cardContainer: {padding: 12,  flexDirection: "row", justifyContent: "space-between", alignItems: "center"},
+card:{
+    width:"100%",
+    backgroundColor:"#fff",
+    borderRadius:22,
+    overflow:"hidden",
+    marginBottom:18,
+ shadowColor:"#000",
+    shadowOpacity:0.92,
+    shadowRadius:5,
+    shadowOffset:{
+        width:5,
+        height:5
+    },
+    elevation:6,
+    borderWidth: 1,
+  borderColor: "#1a5b4f"
+},
+
+cardHeader:{
+    flexDirection:"row",
+    justifyContent:"space-between",
+    alignItems:"center",
+    padding:18,
+},
+
+cardBody:{
+    padding:18,
+},
+
+cardDate:{
+    color:"rgba(255,255,255,0.8)",
+    fontFamily:"Mont",
+    marginTop:5,
+},
+
+viewsBadge:{
+    backgroundColor:"rgba(255,255,255,0.18)",
+    paddingHorizontal:12,
+    paddingVertical:7,
+    borderRadius:18,
+},
+
+viewsText:{
+    color:"#fff",
+    fontFamily:"Montt",
+},
+
+badgesRow:{
+    flexDirection:"row",
+    flexWrap:"wrap",
+    gap:10,
+},
+
+badge:{
+    backgroundColor:"#eef7f4",
+    borderRadius:18,
+    paddingHorizontal:14,
+    paddingVertical:8,
+},
+
+badgeText:{
+    color:"#1a5b4f",
+    fontFamily:"Montt",
+},
+
+infoBadges:{
+    marginTop:16,
+    gap:8,
+},
+
+footer:{
+    marginTop:18,
+    borderTopWidth:1,
+    borderTopColor:"#ececec",
+    paddingTop:16,
+
+    flexDirection:"row",
+    justifyContent:"space-between",
+    alignItems:"center",
+},
+
+statusBadge:{
+    paddingHorizontal:14,
+    paddingVertical:8,
+    borderRadius:18,
+},
+
+arrowButton:{
+    width:38,
+    height:38,
+    borderRadius:19,
+    backgroundColor:"#1a5b4f",
+
+    justifyContent:"center",
+    alignItems:"center",
+},
+
+arrow:{
+    color:"#fff",
+    fontSize:18,
+    fontFamily:"Montt",
+},
+
+acceptedText:{
+    fontFamily:"Montt",
+    color:"#7a5a00",
+},
+
+skillText:{
+    fontFamily:"Montt",
+    color:"#1a5b4f",
+},
   skillBadge: { margin: 5, backgroundColor: "#e2db1c", padding: 8, borderRadius: 8, alignItems: "center" },
-  badgeText: { fontSize: 12, color: "#1a5b4f", fontFamily: "Mont" },
   acceptedBadge: { margin: 5, backgroundColor: "#ffeeba", padding: 8, borderRadius: 8, alignItems: "center" },
 
   messageBadge: { width: 16, height: 16, borderRadius: 8, backgroundColor: "red", alignSelf: "flex-end", marginInline: 12 },
@@ -785,10 +1010,8 @@ pickerOptionTextActive: {
 thumbRow: {
   flexDirection: "row",
   flexWrap: "wrap",
-  alignItems: "center",
-  justifyContent: "center",
   gap: 4,
-  width: "34%",
+  marginBlock: 5
 },
 
 thumb: {
