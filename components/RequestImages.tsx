@@ -114,7 +114,7 @@ setRequest((prev: any) =>
   };
 
   return (
-    <View style={{ marginVertical: 20, flex: 1, gap: 20, backgroundColor: "#1a5b4f", padding: 20, borderRadius: 20, alignItems: "center" }}>
+    <View style={{ marginVertical: 20, flex: 1, gap: 20, backgroundColor: "#1a5b4f", padding: 16, borderRadius: 20, alignItems: "center" }}>
 
       {uploading && (
         <View style={{ marginVertical: 10 }}>
@@ -143,9 +143,29 @@ setRequest((prev: any) =>
         )}
       />
 
-      <TouchableOpacity onPress={addImages} style={styles.uploadButton} accessible accessibilityRole="button" accessibilityLabel="ajouter des images à la demande">
-        <Text style={{color: "#1a5b4f", fontFamily: "Mont"}}>+ Ajouter des images</Text>
-      </TouchableOpacity>
+      <TouchableOpacity
+  activeOpacity={0.9}
+  onPress={addImages}
+  accessible
+  accessibilityRole="button"
+  accessibilityLabel="Ajouter des photos"
+>
+  <View style={styles.uploadButton}>
+    <View style={styles.plusCircle}>
+      <Text style={styles.plus}>+</Text>
+    </View>
+
+    <View style={{ flex: 1 }}>
+      <Text style={styles.uploadTitle}>
+        Ajouter des photos
+      </Text>
+
+      <Text style={styles.uploadSubtitle}>
+        Aidez les artisans à mieux comprendre votre projet
+      </Text>
+    </View>
+  </View>
+</TouchableOpacity>
 
       {/* Modal preview */}
       <Modal visible={previewVisible} transparent animationType="fade">
@@ -170,7 +190,56 @@ setRequest((prev: any) =>
 const styles = StyleSheet.create({
   title: { fontSize: 22, fontWeight: "bold", marginBottom: 10 },
   image: { width: 150, height: 150, borderRadius: 8, resizeMode: "cover" },
-  uploadButton: { backgroundColor: "#d4d4d4", padding: 10, borderRadius: 16, alignItems: "center", width: 260 },
+uploadButton: {
+  width: "100%",
+  backgroundColor: "#ffffff",
+  borderRadius: 22,
+  padding: 14,
+
+  flexDirection: "row",
+  alignItems: "center",
+
+  shadowColor: "#000",
+  shadowOpacity: 0.12,
+  shadowRadius: 8,
+  shadowOffset: {
+    width: 0,
+    height: 4,
+  },
+  elevation: 5,
+},
+
+plusCircle: {
+  width: 48,
+  height: 48,
+  borderRadius: 24,
+  backgroundColor: "#1a5b4f",
+
+  justifyContent: "center",
+  alignItems: "center",
+
+  marginRight: 10,
+},
+
+plus: {
+  color: "white",
+  fontSize: 30,
+  fontFamily: "Montt",
+  marginTop: -2,
+},
+
+uploadTitle: {
+  fontFamily: "Montt",
+  fontSize: 17,
+  color: "#1a5b4f",
+},
+
+uploadSubtitle: {
+  marginTop: 3,
+  fontFamily: "Mont",
+  fontSize: 13,
+  color: "#777",
+},
   deleteButton: { position: "absolute", top: 5, right: 5, backgroundColor: "white", padding: 4, borderRadius: 10 },
   modalBackground: { flex: 1, backgroundColor: "rgba(0,0,0,0.9)", justifyContent: "center", alignItems: "center" },
   previewImage: { width: "90%", height: "80%", resizeMode: "contain", borderRadius: 12 },

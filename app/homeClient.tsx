@@ -4,7 +4,7 @@ import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, Animated, Image, ImageBackground, Share, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import { ActivityIndicator, Alert, Animated, Image, ImageBackground, Share, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import logo from "../assets/briconnect33.png";
 import fond from "../assets/convert_1.png";
 import msg from "../assets/icons/enveloppe.png";
@@ -86,7 +86,7 @@ const shareApp = async () => {
   const onPressIn = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     Animated.spring(scaleAnim, {
-      toValue: 1.3,
+      toValue: 0.96,
       useNativeDriver: true,
       friction: 4,
       tension: 100,
@@ -422,23 +422,92 @@ const shareApp = async () => {
           </LinearGradient>
 
         </Animated.View>
-        <TouchableWithoutFeedback
-          accessible
-          accessibilityRole="button"
-          accessibilityLabel="Nouvelle demande"
-          accessibilityHint="Poster une noueelle demande"
-          onPress={() => router.push('/createRequestForm')}
-          onPressIn={onPressIn}
-          onPressOut={onPressOut}
-          style={{margin: 5}}
+        <TouchableOpacity
+  activeOpacity={0.9}
+  onPress={() => router.push("/createRequestForm")}
+  onPressIn={onPressIn}
+  onPressOut={onPressOut}
+  style={{ marginBottom: 25 }}
+  accessible
+  accessibilityRole="button"
+  accessibilityLabel="Créer une nouvelle demande"
+>
+  <Animated.View
+    style={{
+      transform: [{ scale: scaleAnim }],
+    }}
+  >
+    <LinearGradient
+      colors={["#38b79f", "#1a5b4f"]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={{
+        width: 320,
+        paddingVertical: 18,
+        paddingHorizontal: 24,
+        borderRadius: 22,
 
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+
+        shadowColor: "#1a5b4f",
+        shadowOpacity: 0.35,
+        shadowRadius: 10,
+        shadowOffset: {
+          width: 0,
+          height: 6,
+        },
+        elevation: 8,
+      }}
+    >
+      <View
+        style={{
+          width: 34,
+          height: 34,
+          borderRadius: 17,
+          backgroundColor: "rgba(255,255,255,0.18)",
+          justifyContent: "center",
+          alignItems: "center",
+          marginRight: 14,
+        }}
+      >
+        <Text
+          style={{
+            color: "#fff",
+            fontSize: 24,
+            fontFamily: "Montt",
+          }}
         >
-          <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
-            <LinearGradient colors={["#30a590", "#1a5b4f"]} style={{ padding: 12, marginBottom: 20, backgroundColor: "#1a5b4f", borderRadius: 14 }}>
-              <Text style={{ color: "white", fontSize: 12, fontFamily: "Kanitt" }}>+ DEMANDE</Text>
-            </LinearGradient>
-          </Animated.View>
-        </TouchableWithoutFeedback>
+          +
+        </Text>
+      </View>
+
+      <View>
+        <Text
+          style={{
+            color: "#fff",
+            fontFamily: "Montt",
+            fontSize: 17,
+          }}
+        >
+          Nouvelle demande
+        </Text>
+
+        <Text
+          style={{
+            color: "rgba(255,255,255,0.85)",
+            fontFamily: "Mont",
+            fontSize: 12,
+            marginTop: 2,
+          }}
+        >
+          Décrivez votre besoin en quelques clics
+        </Text>
+      </View>
+    </LinearGradient>
+  </Animated.View>
+</TouchableOpacity>
         <View style={styles.pickerWrapper}>
           <TouchableOpacity
             style={styles.pickerButton}
