@@ -470,7 +470,7 @@ export default function RequestDetailPro() {
                 <Text style={styles.title}>{request.title.slice(0,1).toUpperCase() + request.title.slice(1, request.title.length)}</Text>
                 <Text style={{ fontFamily: "Montt", color: "#fff" }}>Catégorie: {request.category}</Text>
                 <Text style={{ fontFamily: "Montt", color: "#fff" }}>Lieu: {request.location}</Text>
-                <Text style={{ fontFamily: "Montt", color: "#fff" }}>Budget: {request.budget}€</Text>
+                <Text style={{ fontFamily: "Montt", color: "#fff" }}>Budget: {request.budget <= 0 ? "??" : request.budget + "€"}</Text>
               </View>
               <View style={{ alignSelf: "flex-end", flexDirection: "row-reverse", gap: 4, alignItems: "center", width: "25%" }}>
                 <Image source={{ uri: request?.client?.profileImage?.url }} style={{ height: 40, width: 35, borderRadius: 10, borderWidth: 1, borderColor: "#fff" }} />

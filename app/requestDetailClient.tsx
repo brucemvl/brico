@@ -163,7 +163,7 @@ export default function RequestDetailClient() {
                               <Text style={styles.title}>{request.title.slice(0,1).toUpperCase() + request.title.slice(1, request.title.length)}</Text>
                     <Text style={{fontFamily: "Montt", color: "#fff"}}>Catégorie: {request.category}</Text>
                     <Text style={{fontFamily: "Montt", color: "#fff"}}>Lieu: {request.location}</Text>
-                    <Text style={{fontFamily: "Montt", color: "#fff"}}>Budget: {request.budget}€</Text>
+                    <Text style={{fontFamily: "Montt", color: "#fff"}}>Budget: {request.budget <= 0 ? "??" : request.budget + "€"}</Text>
                                         <Text style={{fontFamily: "Mont", color: "#fff"}}>{request?.views ?? 0} {request?.views === 1 ? "vue" : "vues"}</Text>
 
                     </View>
