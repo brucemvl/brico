@@ -578,7 +578,15 @@ const shareApp = async () => {
                   style={{ flexDirection: "row", alignItems: "center", gap: 10, width: 360, justifyContent: "center" }}
                 >
                   <TouchableOpacity
-                    style={{ width: 315 }}
+                    style={{ width: 315, shadowColor: "#000",
+  shadowOpacity: 0.82,
+  shadowRadius: 8,
+  shadowOffset: {
+    width: 0,
+    height: 4,
+  },
+
+  elevation: 6, }}
                     onPress={() => router.push(`/requestDetailClient?id=${item._id}`)}
                     accessible
                     accessibilityRole="button"
@@ -586,44 +594,100 @@ const shareApp = async () => {
                     accessibilityHint="Ouvrir les détails de la demande"
                   >
                     <View style={styles.card}>
-                      <View style={{ flexDirection: "row", justifyContent: "space-between", backgroundColor: "#1a5b4f", padding: 6, alignItems: "center" }}>
-                        <Text style={styles.cardTitle}>{item.title.slice(0,1).toUpperCase() + item.title.slice(1, item.title.length)}</Text>
-                        <View style={{alignItems: "flex-end"}}>
-                        <Text style={{ fontFamily: "Montt", fontSize: 10, color: "#ffffff" }}>
-                          {formatRelativeDate(item.createdAt)}
-                        </Text>
-                        <Text style={{ fontFamily: "Mont", fontSize: 12, color: "#ffffff" }}>
-                          👀 {item?.views ?? 0} {item?.views === 1 ? "vue" : "vues"}
-                        </Text>
-                        </View>
-                      </View>
+                      <View style={styles.cardHeader}>
+
+    <View style={{width: "75%"}}>
+
+        <Text style={styles.cardTitle}>
+            {item.title.slice(0,1).toUpperCase() + item.title.slice(1, item.title.length)}
+        </Text>
+
+        <Text style={styles.cardDate}>
+            {formatRelativeDate(item.createdAt)}
+        </Text>
+
+    </View>
+
+    <View style={styles.viewsBadge}>
+        <Text style={styles.viewsText}>
+            👀 {item?.views ?? 0} {item?.views === 1 ? "vue" : "vues"}
+        </Text>
+    </View>
+
+</View>
                       <View style={styles.cardContainer}>
-                        <View style={{ gap: 4 }}>
+                        <View style={styles.badges}>
 
-                          <Text style={{ fontFamily: "Montt", color: "#000000" }}>Catégorie : {item.category}</Text>
-                          <Text style={{ fontFamily: "Montt", color: "#000000" }}>Budget : {item.budget}€</Text>
-                          <Text
-                            style={{ fontFamily: "Kanito", color: item.status === "open" ? "green" : item.status === "in_progress" ? "#bdc008" : "red" }}
-                            accessible
-                            accessibilityLabel={`Statut : ${item.status === "open"
-                                ? "Ouvert"
-                                : item.status === "in_progress"
-                                  ? "En cours"
-                                  : "Terminé"
-                              }`}>Statut: {item.status === "open" ? "Ouvert" : item.status === "in_progress" ? "En cours" : "Terminé"}</Text>
-                        </View>
+    <View style={styles.badge}>
+        <Text style={{fontFamily: "Mont"}}>🔧 {item.category}</Text>
+    </View>
+
+    <View style={styles.badge}>
+        <Text style={{fontFamily: "Mont"}}>💰 {item.budget} €</Text>
+    </View>
+
+</View>
 
 
-                        {unreadType && (
-                          <Animated.Image
-                            accessible={false}
-                            source={getUnreadIcon(item.unreadType)}
-                            style={[
-                              styles.unreadIcon,
-                              { opacity: badgeBlink }
-                            ]}
-                          />
-                        )}
+                      <View style={styles.cardFooter}>
+
+    <View
+      style={[
+        styles.statusBadge,
+        {
+          backgroundColor:
+            item.status === "open"
+              ? "#dff7e8"
+              : item.status === "in_progress"
+              ? "#fff3d7"
+              : "#dcecff",
+        },
+      ]}
+    >
+      <Text
+        style={{
+          fontFamily: "Montt",
+          color:
+            item.status === "open"
+              ? "#1b8d4b"
+              : item.status === "in_progress"
+              ? "#c28a00"
+              : "#2d72d9",
+        }}
+      >
+        {item.status === "open"
+          ? "Ouvert"
+          : item.status === "in_progress"
+          ? "En cours"
+          : "Terminé"}
+      </Text>
+    </View>
+
+    <View style={{ flexDirection: "row", alignItems: "center" }}>
+
+      {unreadType && (
+        <Animated.Image
+          source={getUnreadIcon(item.unreadType)}
+          style={[
+            styles.unreadIcon,
+            {
+              position: "relative",
+              top: 0,
+              right: 0,
+              marginRight: 10,
+              opacity: badgeBlink,
+            },
+          ]}
+        />
+      )}
+
+      <Text style={styles.openArrow}>
+        →
+      </Text>
+
+    </View>
+
+  </View>
                       </View>
                     </View>
                   </TouchableOpacity>
@@ -665,8 +729,17 @@ const styles = StyleSheet.create({
   avatar: { height: 90, width: 90, borderRadius: 45, borderWidth: 2, borderColor: "#fcfcfc" },
   profileButton: { padding: 5, borderRadius: 50, backgroundColor: "#999999", position: "absolute", bottom: 5, right: 8, borderColor: "#f5f5f5", borderWidth: 1 },
   title: { fontSize: 24, fontFamily: 'Montt', marginBottom: 20, textAlign: 'center' },
-  card: { borderWidth: 5, borderColor: "#1a5b4f", borderRadius: 16, marginBottom: 12, backgroundColor: "#f3f3f3" },
-  cardTitle: { color: "#ffffff", fontSize: 19, marginBottom: 5, fontFamily: "Londrinak", width: "75%" },
+card: {
+  backgroundColor: "#fff",
+  borderRadius: 22,
+  overflow: "hidden",
+
+  
+  marginBottom: 18,
+  borderWidth: 1,
+  borderColor: "#1a5b4f"
+},
+  cardTitle: { color: "#ffffff", fontSize: 19, marginBottom: 5, fontFamily: "Londrinak" },
   redDot: {
     width: 12,
     height: 12,
@@ -743,7 +816,68 @@ const styles = StyleSheet.create({
     right: 8,
   },
   requestsContainer: { width: "100%", paddingHorizontal: 20, alignItems: "center" },
-  cardContainer: { padding: 12, flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  cardContainer: { padding: 12, flexDirection: "column", justifyContent: "space-between" },
+cardHeader: {
+    flexDirection:"row",
+    justifyContent:"space-between",
+    alignItems:"center",
 
+    padding:18,
 
+    backgroundColor:"#1a5b4f",
+},
+
+cardDate:{
+    color:"#d9efe9",
+    fontFamily:"Mont",
+    marginTop:4,
+    fontSize:12,
+},
+
+viewsBadge:{
+    backgroundColor:"rgba(255,255,255,0.15)",
+    padding: 6,
+    borderRadius:20,
+},
+
+viewsText:{
+    color:"white",
+    fontFamily:"Mont",
+    fontSize: 12
+},
+badges:{
+    flexDirection:"row",
+    flexWrap:"wrap",
+    gap:10,
+    paddingBottom: 14
+},
+
+badge:{
+    backgroundColor:"#eef7f4",
+    paddingHorizontal:14,
+    paddingVertical:8,
+    borderRadius:18,
+},
+cardFooter: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center",
+
+  borderTopWidth: 1,
+  borderTopColor: "#ededed",
+
+  paddingTop: 14,
+},
+
+statusBadge: {
+  paddingHorizontal: 14,
+  paddingVertical: 8,
+  borderRadius: 18,
+},
+
+openArrow: {
+  fontSize: 22,
+  color: "#1a5b4f",
+  fontFamily: "Montt",
+},
 });
