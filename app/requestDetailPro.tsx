@@ -451,6 +451,8 @@ export default function RequestDetailPro() {
             { useNativeDriver: false }
           )}
           scrollEventThrottle={6}
+          keyboardShouldPersistTaps="handled"
+    automaticallyAdjustKeyboardInsets={true}
 
         >
           <Animated.View
@@ -500,29 +502,44 @@ export default function RequestDetailPro() {
             </LinearGradient>
           </Animated.View>
           {request.description &&
-<View style={styles.sectionCard}>
-              <Text style={styles.sectionTitle}>Description</Text>
-                <Text style={styles.sectionSubtitle}>{request.description}</Text>
+<View style={styles.sectionDescription}>
+    <Text style={styles.sectionTitle}>Description</Text>
 
+    <Text style={styles.sectionSubtitle}>
+        Détails fournis par le client
+    </Text>
 
-              {/* 🔹 Images du client */}
-              {request.images && request.images.length > 0 && (
-                <ScrollView horizontal style={{ marginVertical: 10, padding: 10, borderRadius: 20, width: "100%", backgroundColor: "#1a5b4f" }} contentContainerStyle={{ justifyContent: "center" }} accessible accessibilityLabel="Images de la demande">
-                  {request.images.map((img, idx) => (
-                    <TouchableOpacity
-                      key={idx}
-                      onPress={() => openPreview(img.url)} style={{ marginRight: 10 }}
-                      accessible
-                      accessibilityRole="button"
-                      accessibilityLabel={`Image ${idx + 1} de la demande`}
-                      accessibilityHint="Ouvrir l'image en grand" >
-                      <Image source={{ uri: img.url }} style={{ width: 130, height: 130, borderRadius: 8 }} />
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
-              )}
+    <Text style={styles.descriptionText}>
+        {request.description}
+    </Text>
 
-            </View>}
+    {request.images && request.images.length > 0 && (
+        <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{
+                paddingTop: 18,
+                gap: 12,
+            }}
+        >
+            {request.images.map((img, idx) => (
+                <TouchableOpacity
+                    key={idx}
+                    onPress={() => openPreview(img.url)}
+                >
+                    <Image
+                        source={{ uri: img.url }}
+                        style={{
+                            width: 140,
+                            height: 140,
+                            borderRadius: 16,
+                        }}
+                    />
+                </TouchableOpacity>
+            ))}
+        </ScrollView>
+    )}
+</View>}
           {proProposed && !dealAccepted && <Text style={styles.dealStatus} accessibilityLiveRegion="polite">Vous avez proposé un accord — en attente du client ⏳</Text>}
           {dealAccepted && <Text style={[styles.dealStatus, { color: "green" }]} accessibilityLiveRegion="polite">🤝 Accord validé</Text>}
 
@@ -752,26 +769,28 @@ export default function RequestDetailPro() {
             })}
           </LinearGradient>
 
-          <View style={styles.inputRow}>
-            <TextInput
-              value={message}
-              onChangeText={setMessage}
-              placeholder="Votre message..."
-              style={styles.inputMsg}
-              accessible
-              accessibilityLabel="Écrire un message"
-              accessibilityHint="Saisir votre message"
-            />
-            <TouchableOpacity
-              onPress={sendMessage}
-              style={styles.sendButton}
-              accessible
-              accessibilityRole="button"
-              accessibilityLabel="Envoyer le message"
-              accessibilityHint="Envoyer le message dans la conversation" >
-              <Text style={{ color: "#fff", fontFamily: "Mont", fontSize: 12 }}>Envoyer</Text>
-            </TouchableOpacity>
-          </View>
+          <View style={styles.inputContainer}>
+  <TextInput
+    value={message}
+    onChangeText={setMessage}
+    placeholder="Bonjour..."
+    placeholderTextColor="#9A9A9A"
+    style={styles.inputMsg}
+    multiline
+    maxLength={1000}
+  />
+
+  <TouchableOpacity
+  onPress={sendMessage}
+  disabled={!message.trim()}
+  style={[
+    styles.sendButton,
+    !message.trim() && { backgroundColor: "#B8C2C0" },
+  ]}
+>
+  <Text style={styles.sendIcon}>➜</Text>
+</TouchableOpacity>
+</View>
         </Animated.ScrollView>
 
         {/* Modal preview image */}
@@ -815,16 +834,56 @@ const styles = StyleSheet.create({
   otherMessageRow: { justifyContent: "flex-start" },
   avatar: { width: 36, height: 36, borderRadius: 18, marginRight: 8 },
   messageBubble: { padding: 10, borderRadius: 12, maxWidth: width * 0.7 },
-  myMessage: { backgroundColor: "#DCF8C6", alignSelf: "flex-end" },
-  otherMessage: { backgroundColor: "#eee" },
+  myMessage: { backgroundColor: "#DCF8C6", alignSelf: "flex-end", borderRadius:24, borderBottomRightRadius:6, padding: 14 },
+  otherMessage: { backgroundColor: "#eee", borderRadius:24, borderBottomLeftRadius:6, padding: 14 },
   author: { fontFamily: "Londrinak", marginBottom: 2 },
   messageMeta: { flexDirection: "row", justifyContent: "space-between", marginTop: 5 },
   time: { fontSize: 10, color: "#555", fontFamily: "Londrina" },
   readStatus: { fontSize: 10, color: "#777", marginLeft: 5, fontFamily: "Londrina" },
-  inputRow: { flexDirection: "row", alignItems: "center", marginTop: 10, width: "100%" },
-  input: { borderWidth: 1, borderColor: "#ccc", borderRadius: 8, padding: 10 },
-  inputMsg: { borderWidth: 1, borderColor: "#ccc", borderRadius: 8, padding: 10, width: "78%", fontFamily: "Mont", backgroundColor: "#ffffff" },
-  sendButton: { padding: 10, backgroundColor: "#007AFF", borderRadius: 8, marginLeft: "2%", width: "20%", alignItems: "center", justifyContent: "center" },
+inputContainer: {
+  flexDirection: "row",
+  alignItems: "flex-end",
+  backgroundColor: "#fff",
+  borderRadius: 30,
+  padding: 6,
+  marginTop: 18,
+
+  shadowColor: "#000",
+  shadowOpacity: 0.08,
+  shadowRadius: 10,
+  shadowOffset: {
+    width: 0,
+    height: 4,
+  },
+
+  elevation: 5,
+},
+
+inputMsg: {
+  flex: 1,
+  fontFamily: "Mont",
+  fontSize: 15,
+  color: "#333",
+  paddingHorizontal: 16,
+  paddingVertical: 12,
+  maxHeight: 120,
+},
+
+sendButton: {
+  width: 48,
+  height: 48,
+  borderRadius: 24,
+  backgroundColor: "#4b66e1",
+  justifyContent: "center",
+  alignItems: "center",
+},
+
+sendIcon: {
+  color: "#fff",
+  fontSize: 22,
+  fontFamily: "Montt",
+  marginLeft: 2, // centre visuellement le ➜
+},  input: { borderWidth: 1, borderColor: "#ccc", borderRadius: 8, padding: 10 },
   reviewButton: { backgroundColor: "#007AFF", padding: 12, borderRadius: 8, alignItems: "center", marginTop: 10, width: "80%" },
   modalOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "center", alignItems: "center" },
   modal: { backgroundColor: "white", padding: 20, borderRadius: 10, width: "85%", gap: 10 },
@@ -929,7 +988,7 @@ sectionCard:{
 },
 sectionTitle: {
   fontSize: 22,
-  fontFamily: "Londrinak",
+  fontFamily: "Montt",
   color: "#1a5b4f",
   marginBottom: 4,
   letterSpacing: 0.4,
@@ -941,5 +1000,31 @@ sectionSubtitle: {
   color: "#6d6d6d",
   marginBottom: 14,
   lineHeight: 20,
+},
+sectionDescription: {
+  width: "100%",
+  backgroundColor: "#fff",
+  borderRadius: 22,
+  padding: 20,
+  marginTop: 18,
+  marginBottom: 18,
+
+  shadowColor: "#000",
+  shadowOpacity: 0.18,
+  shadowRadius: 12,
+  shadowOffset: {
+    width: 0,
+    height: 6,
+  },
+
+  elevation: 5,
+},
+
+descriptionText: {
+  fontFamily: "Londrina",
+  fontSize: 16,
+  color: "#444",
+  lineHeight: 26,
+  textAlign: "justify",
 },
 });
