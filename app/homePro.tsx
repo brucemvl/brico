@@ -608,6 +608,7 @@ accessible
   ap => ap.pro === profile?._id && ap.status === "active"
 );
 const images = item.images ?? [];
+
             return (
               <TouchableOpacity
     key={item._id}
@@ -642,7 +643,7 @@ const images = item.images ?? [];
 
         <View style={styles.viewsBadge}>
             <Text style={styles.viewsText}>
-                👀 {item.views ?? 0}
+                👀 {item?.views ?? 0} {item?.views === 1 ? "vue" : "vues"}
             </Text>
         </View>
 
@@ -830,23 +831,15 @@ header: {
   activeFilter: { backgroundColor: "#1a5b4f" },
 
   requestsContainer: { width: "100%", paddingHorizontal: 16, alignItems: "center" },
-  cardTitle: { color: "#ffffff", fontSize: 19, marginBottom: 5, fontFamily: "Londrinak", width: "76%" },
 card:{
     width:"100%",
-    backgroundColor:"#fff",
     borderRadius:22,
     overflow:"hidden",
     marginBottom:18,
- shadowColor:"#000",
-    shadowOpacity:0.92,
-    shadowRadius:5,
-    shadowOffset:{
-        width:5,
-        height:5
-    },
-    elevation:6,
+    backgroundColor: "#ffffff",
+ 
     borderWidth: 1,
-  borderColor: "#1a5b4f"
+  borderColor: "#1a5b4f",
 },
 
 cardHeader:{
@@ -855,6 +848,8 @@ cardHeader:{
     alignItems:"center",
     padding:18,
 },
+  cardTitle: { color: "#ffffff", fontSize: 19, marginBottom: 5, fontFamily: "Londrinak", width: "76%" },
+
 
 cardBody:{
     padding:18,
@@ -868,14 +863,15 @@ cardDate:{
 
 viewsBadge:{
     backgroundColor:"rgba(255,255,255,0.18)",
-    paddingHorizontal:12,
-    paddingVertical:7,
+    padding: 8,
     borderRadius:18,
+    
 },
 
 viewsText:{
     color:"#fff",
     fontFamily:"Montt",
+    fontSize: 13
 },
 
 badgesRow:{
@@ -885,15 +881,24 @@ badgesRow:{
 },
 
 badge:{
-    backgroundColor:"#eef7f4",
+    backgroundColor:"#e5f3ee",
     borderRadius:18,
-    paddingHorizontal:14,
+    paddingHorizontal:10,
     paddingVertical:8,
+    shadowColor:"#000",
+    shadowOpacity:0.92,
+    shadowRadius:3,
+    shadowOffset:{
+        width:0,
+        height:0
+    },
+    elevation:6,
 },
 
 badgeText:{
     color:"#1a5b4f",
     fontFamily:"Montt",
+    fontSize: 13
 },
 
 infoBadges:{
@@ -916,6 +921,7 @@ statusBadge:{
     paddingHorizontal:14,
     paddingVertical:8,
     borderRadius:18,
+   
 },
 
 arrowButton:{
@@ -926,6 +932,7 @@ arrowButton:{
 
     justifyContent:"center",
     alignItems:"center",
+    
 },
 
 arrow:{

@@ -455,38 +455,54 @@ export default function RequestDetailPro() {
         >
           <Animated.View
             style={{
-              alignItems: "center",
               marginBlock: 10,
-              justifyContent: "center",
               width: "100%",
               opacity: fadeOut,
               transform: [{ translateY }, { scale }],
-              flexDirection: "row",
+              borderRadius:26,
+    overflow:"hidden"
 
             }}
           >
-            <LinearGradient colors={["#30a590", "#1a5b4f"]} locations={[0, 0.6]} style={{ padding: 15, borderRadius: 20, width: "100%", flexDirection: "column", justifyContent: "space-between" }}>
-              <View style={{ gap: 5, width: "75%" }}>
-                <Text style={styles.title}>{request.title.slice(0,1).toUpperCase() + request.title.slice(1, request.title.length)}</Text>
-                <Text style={{ fontFamily: "Montt", color: "#fff" }}>Catégorie: {request.category}</Text>
-                <Text style={{ fontFamily: "Montt", color: "#fff" }}>Lieu: {request.location}</Text>
-                <Text style={{ fontFamily: "Montt", color: "#fff" }}>Budget: {request.budget <= 0 ? "??" : request.budget + "€"}</Text>
-              </View>
-              <View style={{ alignSelf: "flex-end", flexDirection: "row-reverse", gap: 4, alignItems: "center", width: "25%" }}>
-                <Image source={{ uri: request?.client?.profileImage?.url }} style={{ height: 40, width: 35, borderRadius: 10, borderWidth: 1, borderColor: "#fff" }} />
-                <View style={{ alignItems: "flex-end" }}>
-                  <Text style={{ fontSize: 15, color: "#fff", fontFamily: "Londrina" }}>{request?.client?.name}</Text>
-                  <Text style={{ fontSize: 13, color: "#fff", fontFamily: "Londrina" }}>{formatRelativeDate(request?.createdAt)}</Text>
+            <LinearGradient colors={["#30a590", "#1a5b4f"]} locations={[0, 0.6]} style={{ padding: 20 }}>
+              <View style={styles.heroTop}>
+              <View style={{flex: 1}}>
+                <Text style={styles.heroTitle}>{request.title.slice(0,1).toUpperCase() + request.title.slice(1, request.title.length)}</Text>
+                <Text style={styles.heroSubtitle}>
+                    {formatRelativeDate(request.createdAt)}
+                </Text>
                 </View>
-              </View>
+                <Image
+                source={{uri: request?.client?.profileImage?.url}}
+                style={styles.heroAvatar}
+            />
+                </View>
+                <View style={styles.heroBadges}>
+                <View style={styles.heroBadge}>
+                                <Text style={styles.heroBadgeText}>
+                                    🔧 {request.category}
+                                </Text>
+                            </View>
+                
+                            <View style={styles.heroBadge}>
+                                <Text style={styles.heroBadgeText}>
+                                    📍 {request.location}
+                                </Text>
+                            </View>
+                
+                            <View style={styles.heroBadge}>
+                                <Text style={styles.heroBadgeText}>
+                                    💰 {request.budget <= 0 ? "À définir" : request.budget + " €"}
+                                </Text>
+                            </View>
+                            </View>
+              
             </LinearGradient>
           </Animated.View>
           {request.description &&
-            <View style={{ alignItems: "center", gap: 10, flex: 1, borderBottomWidth: 1, borderBottomColor: "#7a7a7a", paddingBottom: 10, width: "100%" }}>
-              <Text style={{ fontFamily: "Montt", fontSize: 20, marginTop: 10, textAlign: "center", color: "#1a5b4f" }}>Description</Text>
-              <View style={{ width: "100%", paddingInline: 12, alignItems: "center" }}>
-                <Text style={{ fontFamily: "Londrina", fontSize: 16, color: "#000000", textAlign: "center" }}>{request.description}</Text>
-              </View>
+<View style={styles.sectionCard}>
+              <Text style={styles.sectionTitle}>Description</Text>
+                <Text style={styles.sectionSubtitle}>{request.description}</Text>
 
 
               {/* 🔹 Images du client */}
@@ -815,4 +831,115 @@ const styles = StyleSheet.create({
   modalTitle: { fontSize: 18, fontFamily: "Montt", marginBottom: 15, textAlign: "center" },
   stars: { flexDirection: "row", justifyContent: "center", marginBottom: 20 },
   sendReview: { backgroundColor: "#007AFF", padding: 12, borderRadius: 8, alignItems: "center" },
+  badge:{
+    backgroundColor:"#e5f3ee",
+    borderRadius:18,
+    paddingHorizontal:10,
+    paddingVertical:8,
+    shadowColor:"#000",
+    shadowOpacity:0.92,
+    shadowRadius:3,
+    shadowOffset:{
+        width:0,
+        height:0
+    },
+    elevation:6,
+    
+},
+
+badgeText:{
+    color:"#1a5b4f",
+    fontFamily:"Montt",
+    fontSize: 13
+},
+badgesRow:{
+    gap:10,
+alignItems: "baseline"},
+heroTop: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "flex-start",
+},
+
+heroLeft: {
+  flex: 1,
+  paddingRight: 12,
+},
+
+heroRight: {
+  alignItems: "center",
+  justifyContent: "center",
+},
+
+heroTitle: {
+  fontSize: 24,
+  color: "#fff",
+  fontFamily: "Londrinak",
+  textShadowColor: "rgb(0, 0, 0)",
+  textShadowOffset: { width: 0, height: 2 },
+  textShadowRadius: 6,
+  padding: 2
+},
+
+heroSubtitle: {
+  color: "rgba(255,255,255,0.92)",
+  fontFamily: "Mont",
+  marginTop: 2,
+  paddingInlineStart: 2
+},
+
+heroAvatar: {
+  width: 60,
+  height: 60,
+  borderRadius: 30,
+  borderWidth: 2,
+  borderColor: "#fff",
+  backgroundColor: "#ddd",
+},
+heroBadges: {
+  flexDirection: "row",
+  flexWrap: "wrap",
+  gap: 8,
+  marginTop: 18,
+},
+
+heroBadge: {
+  backgroundColor: "rgba(255, 255, 255, 0.28)",
+  paddingHorizontal: 12,
+  paddingVertical: 8,
+  borderRadius: 20,
+},
+
+heroBadgeText: {
+  color: "#fff",
+  fontFamily: "Montt",
+  fontSize: 13,
+},
+sectionCard:{
+    backgroundColor:"#fff",
+    borderRadius:22,
+    padding:18,
+    marginBottom:18,
+
+    shadowColor:"#000",
+    shadowOpacity:.08,
+    shadowRadius:10,
+    elevation:4,
+    width: "100%"
+},
+sectionTitle: {
+  fontSize: 22,
+  fontFamily: "Londrinak",
+  color: "#1a5b4f",
+  marginBottom: 4,
+  letterSpacing: 0.4,
+},
+
+sectionSubtitle: {
+  fontSize: 14,
+  fontFamily: "Mont",
+  color: "#6d6d6d",
+  marginBottom: 14,
+  lineHeight: 20,
+},
 });
