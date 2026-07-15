@@ -114,7 +114,7 @@ setRequest((prev: any) =>
   };
 
   return (
-    <View style={{ marginVertical: 20, flex: 1, gap: 20, backgroundColor: "#1a5b4f", padding: 16, borderRadius: 20, alignItems: "center" }}>
+    <View style={{ marginVertical: 20, flex: 1, gap: 20, backgroundColor: "#1a5b4f", padding: 16, borderRadius: 26, alignItems: "center" }}>
 
       {uploading && (
         <View style={{ marginVertical: 10 }}>

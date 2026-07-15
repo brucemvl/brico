@@ -155,24 +155,46 @@ export default function RequestDetailClient() {
             >
             <LinearGradient 
             colors={[ "#30a590", "#1a5b4f" ]} 
-            style={{padding: 20, borderRadius: 20, width: "100%", flexDirection: "row", justifyContent: "space-between"}}
+            style={{padding: 20, borderRadius: 26, width: "100%", flexDirection: "column", justifyContent: "space-between"}}
             accessible
   accessibilityLabel={`Demande ${request.title}, catégorie ${request.category}, budget ${request.budget} euros, à ${request.location}`}
   >
-                      <View style={{gap: 5, width: "75%"}}>
+    <View style={styles.heroTop}>
+                      <View style={{flex: 1}}>
                               <Text style={styles.title}>{request.title.slice(0,1).toUpperCase() + request.title.slice(1, request.title.length)}</Text>
-                    <Text style={{fontFamily: "Montt", color: "#fff"}}>Catégorie: {request.category}</Text>
-                    <Text style={{fontFamily: "Montt", color: "#fff"}}>Lieu: {request.location}</Text>
-                    <Text style={{fontFamily: "Montt", color: "#fff"}}>Budget: {request.budget <= 0 ? "??" : request.budget + "€"}</Text>
+                              <Text style={styles.heroSubtitle}>
+                                                  {formatDate(request?.createdAt)}
+                                              </Text>
+                                              </View>
+                                              <Image
+                                                              source={{uri: request?.client?.profileImage?.url}}
+                                                              style={styles.heroAvatar}
+                                                          />
+                                                          </View>
+                    <View style={styles.heroBadges}>
+                                    <View style={styles.heroBadge}>
+                                                    <Text style={styles.heroBadgeText}>
+                                                        🔧 {request.category}
+                                                    </Text>
+                                                </View>
+                                    
+                                                <View style={styles.heroBadge}>
+                                                    <Text style={styles.heroBadgeText}>
+                                                        📍 {request.location}
+                                                    </Text>
+                                                </View>
+                                    
+                                                <View style={styles.heroBadge}>
+                                                    <Text style={styles.heroBadgeText}>
+                                                        💰 {request.budget <= 0 ? "À définir" : request.budget + " €"}
+                                                    </Text>
+                                                </View>
+                                                </View>
+
                                         <Text style={{fontFamily: "Mont", color: "#fff"}}>{request?.views ?? 0} {request?.views === 1 ? "vue" : "vues"}</Text>
 
-                    </View>
-                    <View style={{flexDirection: "row-reverse", alignItems: "flex-end", gap: 5}}>
-                      {request?.client?.profileImage?.url && (
-                    <Image source={{uri: request?.client?.profileImage?.url}} style={{height: 30, width: 30, borderRadius: 10, borderWidth: 1, borderColor: "#fff"}} />
-                      )}
-                    <Text style={{fontSize: 11, color: "#fff", fontFamily: "Montt"}}>{formatDate(request?.createdAt)}</Text>
-                    </View>
+                    
+                    
                     </LinearGradient>
                     </Animated.View>
 
@@ -258,8 +280,49 @@ paddingBottom: 140,
  alignItems: "center"
  },
   title: { fontSize: 22, fontFamily: "Londrinak", marginBottom: 8, color: "#fff", textShadowColor: "#000", textShadowRadius: 2, textShadowOffset: {width: 2, height: 2}, padding: 2 },
-  avatar: { width: 40, height: 40, borderRadius: 20 },
-  conversationCard: { flexDirection: "row", alignItems: "center", gap: 10, padding: 12, borderWidth: 4, borderColor: "#1a5b4f", borderRadius: 20, marginTop: 10, backgroundColor: "#F3F3F3", width: "90%" },
+  heroAvatar: {  width: 60,
+  height: 60,
+  borderRadius: 30,
+  borderWidth: 2,
+  borderColor: "#fff",
+  backgroundColor: "#ddd",
+ },
+ avatar: {
+ width: 50,
+  height: 50,
+  borderRadius: 25,
+ },
+  conversationCard: { flexDirection: "row", alignItems: "center", gap: 10, padding: 12, borderWidth: 2, borderColor: "#1a5b4f", borderRadius: 35, marginTop: 10, backgroundColor: "#F3F3F3", width: "85%" },
   unreadBadge: { backgroundColor: "red", borderRadius: 10, width: 20, height: 20, justifyContent: "center", alignItems: "center", marginLeft: 8 },
   unreadText: { color: "white", fontSize: 12, fontFamily: "Montt" },
+  heroSubtitle: {
+  color: "rgba(255,255,255,0.92)",
+  fontFamily: "Mont",
+  marginTop: 2,
+  paddingInlineStart: 2
+},
+heroBadges: {
+  flexDirection: "row",
+  flexWrap: "wrap",
+  gap: 8,
+  marginBlock: 18,
+},
+
+heroBadge: {
+  backgroundColor: "rgba(255, 255, 255, 0.28)",
+  paddingHorizontal: 12,
+  paddingVertical: 8,
+  borderRadius: 20,
+},
+
+heroBadgeText: {
+  color: "#fff",
+  fontFamily: "Montt",
+  fontSize: 13,
+},
+heroTop: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "flex-start",
+},
 });

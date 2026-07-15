@@ -878,6 +878,7 @@ badgesRow:{
     flexDirection:"row",
     flexWrap:"wrap",
     gap:10,
+
 },
 
 badge:{
@@ -1018,7 +1019,7 @@ thumbRow: {
   flexDirection: "row",
   flexWrap: "wrap",
   gap: 4,
-  marginBlock: 5
+  marginTop: 15
 },
 
 thumb: {

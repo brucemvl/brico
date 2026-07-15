@@ -406,7 +406,7 @@ const shareApp = async () => {
             accessibilityLabel={`Profil de ${profile?.name}, localisation ${profile?.location}, note ${formatRating(profile?.averageRating)}`}>
             <Text style={{ fontFamily: "Montt", fontSize: 16, color: "white", letterSpacing: 0.3 }}>{profile?.name}</Text>
             {profile?.location &&
-              <Text style={{ fontFamily: "Montt", fontSize: 14, color: "white", letterSpacing: 0.3 }}>{profile?.location}</Text>
+              <Text style={{ fontFamily: "Montt", fontSize: 13, color: "white", letterSpacing: 0.3 }}>{profile?.location}</Text>
             }
             {/* ⭐ Rating pro */}
             {typeof profile?.averageRating === "number" && (

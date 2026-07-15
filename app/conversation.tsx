@@ -643,7 +643,7 @@ export default function Conversation() {
 
               >
                 <Animated.View style={{ transform: [{ scale: scaleAnim }], alignItems: "center", justifyContent: "center" }}>
-                  <LinearGradient colors={["#30a590", "#1a5b4f"]} style={{ padding: 8, marginBottom: 20, backgroundColor: "#1a5b4f", borderRadius: 14 }}>
+                  <LinearGradient colors={["#30a590", "#1a5b4f"]} style={{ padding: 12, marginBottom: 20, backgroundColor: "#1a5b4f", borderRadius: 18 }}>
                     <Text style={styles.buttonText}>Voir profil</Text>
                   </LinearGradient>
                 </Animated.View>
@@ -724,16 +724,16 @@ export default function Conversation() {
 
           {/* INPUT */}
           <View style={styles.inputContainer}>
-            <TextInput
-              value={message}
-              onChangeText={setMessage}
-              placeholder="Votre message..."
-              style={styles.input}
-            />
-            <TouchableOpacity onPress={sendMessage} style={styles.button}>
-              <Text style={{ fontFamily: "Kanit", color: "#fff" }}>Envoyer</Text>
-            </TouchableOpacity>
-          </View>
+
+<TextInput
+style={styles.inputMsg}
+/>
+
+<TouchableOpacity style={styles.sendButton}>
+    <Text style={styles.sendArrow}>➜</Text>
+</TouchableOpacity>
+
+</View>
         </ScrollView>
       </KeyboardAvoidingView>
 
@@ -750,11 +750,68 @@ const styles = StyleSheet.create({
   contactBox: { padding: 10, backgroundColor: "#dfdfdf", margin: 6, borderRadius: 8, flexDirection: "row", alignItems: "center", gap: 16 },
   contactText: { fontSize: 16, marginBottom: 5, fontFamily: "Kanito", color: "#007AFF" },
   messages: { padding: 15 },
-  messageBubble: { paddingInline: 10, paddingBlock: 4, borderRadius: 10, maxWidth: "80%" },
-  myMessage: { alignSelf: "flex-end", backgroundColor: "#DCF8C6" },
-  otherMessage: { alignSelf: "flex-start", backgroundColor: "#eee" },
+messageBubble:{
+    maxWidth:"80%",
+    elevation:3,
+    shadowColor:"#000",
+    shadowOpacity:0.08,
+    shadowRadius:5,
+    shadowOffset:{width:0,height:2},
+},
+  myMessage: {
+  backgroundColor: "#DCF8C6",
+  borderTopRightRadius: 22,
+  borderTopLeftRadius: 22,
+  borderBottomLeftRadius: 22,
+  borderBottomRightRadius: 8,
+  padding: 14
+},
+  otherMessage: {
+  backgroundColor: "#eee",
+  borderTopLeftRadius: 22,
+  borderTopRightRadius: 22,
+  borderBottomLeftRadius: 8,
+  borderBottomRightRadius: 22,
+  padding: 14,
+},
   author: { fontFamily: "Londrinak", marginBottom: 3 },
-  inputContainer: { flexDirection: "row", padding: 10 },
+inputContainer:{
+    flexDirection:"row",
+    backgroundColor:"#fff",
+    borderRadius:30,
+    padding:6,
+    alignItems:"center",
+    elevation:6,
+    shadowColor:"#000",
+    shadowOpacity:0.08,
+    shadowRadius:6,
+    shadowOffset:{width:0,height:3},
+    marginTop:12,
+    marginBottom:10,
+},
+
+inputMsg:{
+    flex:1,
+    paddingHorizontal:18,
+    paddingVertical:12,
+    fontFamily:"Mont",
+    fontSize:15,
+},
+
+sendButton:{
+    width:48,
+    height:48,
+    borderRadius:24,
+    backgroundColor:"#1a5b4f",
+    justifyContent:"center",
+    alignItems:"center",
+},
+
+sendArrow:{
+    color:"#fff",
+    fontSize:22,
+    fontWeight:"bold",
+},
   input: { flex: 1, borderWidth: 1, borderColor: "#ccc", backgroundColor: "#fff", fontFamily: "Mont", borderRadius: 8, marginRight: 10, padding: 8 },
   inputModal: {
     borderColor: "#ccc", backgroundColor: "#fff", fontFamily: "Mont", padding: 8, borderWidth: 1, borderRadius: 8, width: "100%"
@@ -800,7 +857,8 @@ const styles = StyleSheet.create({
 
   readStatus: {
     fontSize: 10,
-    color: "#007AFF"
+    color: "#007AFF",
+    fontFamily: "Londrina"
   },
   modalOverlay: {
     flex: 1,
