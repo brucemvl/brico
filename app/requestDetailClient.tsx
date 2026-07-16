@@ -1,4 +1,5 @@
 import BackButton from "@/components/BackButton";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -37,6 +38,7 @@ type ConversationType = {
   _id: string;
   pro: UserType;
   messages: MessageType[];
+  pinnedBy?: string[];
 };
 
 type ImageType = {
@@ -120,6 +122,47 @@ export default function RequestDetailClient() {
     }, [id])
   );
 
+
+  const togglePin = async (conv: ConversationType) => {
+  const isPinned = userId
+    ? conv.pinnedBy?.includes(userId)
+    : false;
+
+  try {
+    await apiFetch(`/conversations/${conv._id}/pin`, {
+      method: isPinned ? "DELETE" : "POST",
+    });
+
+    setRequest(prev => {
+      if (!prev || !userId) return prev;
+
+      return {
+        ...prev,
+        conversations: prev.conversations.map(c => {
+          if (c._id !== conv._id) return c;
+
+          return {
+            ...c,
+            pinnedBy: isPinned
+              ? (c.pinnedBy ?? []).filter(id => id !== userId)
+              : [...(c.pinnedBy ?? []), userId],
+          };
+        }),
+      };
+    });
+  } catch (e) {
+    console.log(e);
+  }
+};
+
+
+  const sortedConversations = [...(request?.conversations ?? [])].sort((a, b) => {
+  const aPinned = userId ? (a.pinnedBy?.includes(userId) ?? false) : false;
+  const bPinned = userId ? (b.pinnedBy?.includes(userId) ?? false) : false;
+
+  if (aPinned === bPinned) return 0;
+  return aPinned ? -1 : 1;
+});
 
   if (loading) return <Text>Chargement...</Text>;
   if (!request) return <Text>Demande introuvable</Text>;
@@ -208,7 +251,9 @@ export default function RequestDetailClient() {
   accessibilityLabel="Liste des conversations avec les professionnels" >
     Conversations avec les pros
     </Text>
-      {request.conversations?.map((conv) => {
+      {
+      sortedConversations?.map((conv) => {
+const isPinned = userId ? conv.pinnedBy?.includes(userId) : false;
         const unread = userId
   ? conv.messages?.filter(
       (m) =>
@@ -259,12 +304,31 @@ export default function RequestDetailClient() {
               {conv.messages?.length > 0 && <Text numberOfLines={1} style={{fontFamily: "Kanit"}} accessible
   accessibilityLabel={`Dernier message : ${conv.messages?.at(-1)?.content || "Aucun message"}`}>{conv.messages[conv.messages.length - 1].content}</Text>}
             </View>
-            {unread > 0 && (
-              <View style={styles.unreadBadge} accessible
-  accessibilityLabel={`${unread} messages non lus`}>
-                <Text style={styles.unreadText}>{unread}</Text>
-              </View>
-            )}
+           
+            <View style={{ alignItems: "center", gap: 8 }}>
+    <TouchableOpacity
+        onPress={() => togglePin(conv)}
+        hitSlop={10}
+    >
+        <MaterialCommunityIcons
+            name={
+                isPinned
+                    ? "pin"
+                    : "pin-outline"
+            }
+            size={22}
+            color={isPinned ? "#f5a623" : "#999"}
+        />
+    </TouchableOpacity>
+
+    {unread > 0 && (
+        <View style={styles.unreadBadge} accessible accessibilityLabel={`${unread} messages non lus`}>
+            <Text style={styles.unreadText}>
+                {unread}
+            </Text>
+        </View>
+    )}
+</View>
           </TouchableOpacity>
         );
       })}

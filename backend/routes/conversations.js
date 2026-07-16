@@ -409,4 +409,59 @@ router.get("/:id/contact", auth, async (req, res) => {
     res.status(500).json({ error: "Erreur serveur" });
   }
 });
+
+//EPINGLER
+router.post("/:id/pin", auth, async (req, res) => {
+  try {
+    const conversation = await Conversation.findById(req.params.id);
+
+    if (!conversation) {
+      return res.status(404).json({ message: "Conversation introuvable" });
+    }
+
+    const userId = req.user.id;
+
+    if (!conversation.pinnedBy.some(id => id.toString() === userId)) {
+      conversation.pinnedBy.push(userId);
+      await conversation.save();
+    }
+
+    res.json({
+      success: true,
+      pinned: true,
+      pinnedBy: conversation.pinnedBy,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+});
+
+//DESEPINGLER
+router.delete("/:id/pin", auth, async (req, res) => {
+  try {
+    const conversation = await Conversation.findById(req.params.id);
+
+    if (!conversation) {
+      return res.status(404).json({ message: "Conversation introuvable" });
+    }
+
+    const userId = req.user.id;
+
+    conversation.pinnedBy = conversation.pinnedBy.filter(
+      id => id.toString() !== userId
+    );
+
+    await conversation.save();
+
+    res.json({
+      success: true,
+      pinned: false,
+      pinnedBy: conversation.pinnedBy,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+});
 module.exports = router;

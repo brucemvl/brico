@@ -547,7 +547,7 @@ export default function RequestDetailPro() {
           {dealAccepted && contact && (
             <View style={styles.contactBox}>
               <Text style={{ textAlign: "center", fontFamily: "Montt", marginBottom: 10, color: "#1a5b4f" }}>Coordonnées</Text>
-                              <View style={{ alignItems: "center", marginBottom: 10 }} accessible accessibilityLabel={`Client ${request?.client?.name}`}>
+                              <View style={{ alignItems: "center", marginBottom: 10}} accessible accessibilityLabel={`Client ${request?.client?.name}`}>
 
                                                <Image source={{ uri: request?.client?.profileImage?.url }} style={{ height: 60, width: 60, borderRadius: 30 }} />
 
@@ -562,7 +562,7 @@ export default function RequestDetailPro() {
                       accessibilityRole="button"
                       accessibilityLabel={`Appeler ${request?.client?.name}`}
                       accessibilityHint={`Lancer un appel au ${contact.phone}`}
-                      style={{backgroundColor: "#c9f3d2", paddingBlock: 6, paddingInline: 10}} >
+                      style={{backgroundColor: "#eeeeee", paddingBlock: 6, paddingInline: 12}} >
                       <Text style={styles.contactText}>📞 {contact.phone}</Text>
                     </TouchableOpacity>
                   )}

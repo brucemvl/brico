@@ -69,7 +69,14 @@ lastProUpdateAt: {
 lastReadByClient: {
   type: Date,
   default: null,
-}
+},
+
+pinnedBy: [
+  {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+  },
+],
 
 }, { timestamps: true });
 
