@@ -546,10 +546,12 @@ export default function RequestDetailPro() {
           {/* Coordonnées après accord */}
           {dealAccepted && contact && (
             <View style={styles.contactBox}>
-              <Text style={{ textAlign: "center", fontFamily: "Montt", marginBottom: 10 }}>Coordonnées</Text>
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 20 }}>
-                <View style={{ alignItems: "center" }} accessible accessibilityLabel={`Client ${request?.client?.name}`}>
-                  <Image source={{ uri: request?.client?.profileImage?.url }} style={{ height: 30, width: 30, borderRadius: 15 }} />
+              <Text style={{ textAlign: "center", fontFamily: "Montt", marginBottom: 10, color: "#1a5b4f" }}>Coordonnées</Text>
+                              <View style={{ alignItems: "center", marginBottom: 10 }} accessible accessibilityLabel={`Client ${request?.client?.name}`}>
+
+                                               <Image source={{ uri: request?.client?.profileImage?.url }} style={{ height: 60, width: 60, borderRadius: 30 }} />
+
+
                   <Text style={{ fontFamily: "Londrina" }}>{request?.client?.name}</Text>
                 </View>
                 <View>
@@ -559,7 +561,8 @@ export default function RequestDetailPro() {
                       accessible
                       accessibilityRole="button"
                       accessibilityLabel={`Appeler ${request?.client?.name}`}
-                      accessibilityHint={`Lancer un appel au ${contact.phone}`} >
+                      accessibilityHint={`Lancer un appel au ${contact.phone}`}
+                      style={{backgroundColor: "#c9f3d2", paddingBlock: 6, paddingInline: 10}} >
                       <Text style={styles.contactText}>📞 {contact.phone}</Text>
                     </TouchableOpacity>
                   )}
@@ -569,12 +572,12 @@ export default function RequestDetailPro() {
                       accessible
                       accessibilityRole="button"
                       accessibilityLabel={`Envoyer un email à ${request?.client?.name}`}
-                      accessibilityHint={`Envoyer un email à ${contact.email}`} >
+                      accessibilityHint={`Envoyer un email à ${contact.email}`}
+                      style={{backgroundColor: "#eeeeee", paddingBlock: 6, paddingInline: 12, borderRadius: 20}} >
                       <Text style={styles.contactText}>✉️ {contact.email}</Text>
                     </TouchableOpacity>
                   )}
                 </View>
-              </View>
             </View>
           )}
 
@@ -827,7 +830,16 @@ const styles = StyleSheet.create({
   dealBox: { borderRadius: 8, marginVertical: 10, alignItems: "center" },
   dealAction: { color: "#fff", fontFamily: "Mont" },
   dealStatus: { color: "#555", fontFamily: "Kanito" },
-  contactBox: { padding: 10, backgroundColor: "#e5e5e5", borderRadius: 8, marginVertical: 10, width: "100%" },
+  contactBox: { padding: 16, backgroundColor: "#ffffff", borderRadius: 30, marginVertical: 10, width: "100%", shadowColor: "#000",
+  shadowOpacity: 0.18,
+  shadowRadius: 10,
+  shadowOffset: {
+    width: 0,
+    height: 4,
+  },
+
+  elevation: 5,
+alignItems: "center" },
   contactText: { fontSize: 16, marginBottom: 5, color: "#007AFF", fontFamily: "Kanito" },
   messageRow: { flexDirection: "row", marginBottom: 8, alignItems: "flex-end", width: "100%" },
   myMessageRow: { justifyContent: "flex-end" },
@@ -849,7 +861,7 @@ inputContainer: {
   marginTop: 18,
 
   shadowColor: "#000",
-  shadowOpacity: 0.08,
+  shadowOpacity: 0.18,
   shadowRadius: 10,
   shadowOffset: {
     width: 0,

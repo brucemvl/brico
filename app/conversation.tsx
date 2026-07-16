@@ -743,7 +743,7 @@ style={styles.inputMsg}
 
 const styles = StyleSheet.create({
   actions: { flexDirection: "row", justifyContent: "space-around", padding: 10 },
-  button: { backgroundColor: "#007AFF", padding: 10, borderRadius: 14 },
+  button: { backgroundColor: "#007AFF", padding: 14, borderRadius: 18 },
   buttonText: { color: "white", fontFamily: "Mont", fontSize: 13 },
   dealStatus: { textAlign: "center", color: "#1a5b4f", marginBottom: 5, fontFamily: "Mont" },
   dealAccepted: { textAlign: "center", color: "green", fontFamily: "Kanito", marginBottom: 5 },
