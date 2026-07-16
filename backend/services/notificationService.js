@@ -82,6 +82,10 @@ if (type === "message") {
   emailText = `${senderName} vous a envoyé un message sur l'application.`;
 }
 
+if (type === "request") {
+  emailText = `Une nouvelle demande correspondant a vos competences vient d'etre postée`;
+}
+
 if (type === "deal") {
   emailText = `Vous avez reçu une nouvelle proposition.`;
 }
