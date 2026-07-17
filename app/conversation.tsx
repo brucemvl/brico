@@ -447,8 +447,7 @@ export default function Conversation() {
     ) ?? null;
 
   const clientHasReviewed = currentAssignment?.reviewByClient ?? false;
-  const proHasReviewed = currentAssignment?.reviewByPro ?? false;
-  const missionCompleted = clientHasReviewed && proHasReviewed;
+const missionCompleted = clientHasReviewed;
 
   const clientProposed =
     !!conversation.dealProposedByClient && !conversation.dealAcceptedByClient;
@@ -522,11 +521,7 @@ export default function Conversation() {
             </View>
           )}
 
-          {dealAccepted && !missionCompleted && clientHasReviewed && (
-            <Text style={{ textAlign: "center", margin: 10, color: "#555", fontFamily: "Kanito" }}>
-              ✅ Avis envoyé ! En attente que le pro note.
-            </Text>
-          )}
+          
 
           {canReview && !missionCompleted && (
             <TouchableOpacity
@@ -534,7 +529,7 @@ export default function Conversation() {
               onPress={openReviewModal}
             >
               <Text style={{ color: "#fff", fontFamily: "Mont" }}>
-                {clientHasReviewed ? "Modifier votre avis ✏️" : "Laisser un avis ⭐"}
+                {clientHasReviewed ? "Modifier votre avis ✏️" : "Terminer la mission ⭐"}
               </Text>
 
             </TouchableOpacity>

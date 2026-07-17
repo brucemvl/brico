@@ -1,6 +1,7 @@
 import BackButton from "@/components/BackButton";
 import { Picker } from "@react-native-picker/picker";
 import * as ImagePicker from "expo-image-picker";
+import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
@@ -193,98 +194,128 @@ const [cities, setCities] = useState<City[]>([]);
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         keyboardVerticalOffset={10}
       >
+        
         <ScrollView style={{ padding: 20, paddingTop: 120 }}>
-          <Text style={styles.title} accessible accessibilityRole="header">Titre*</Text>
+          <LinearGradient
+  colors={["#30a590", "#1a5b4f"]}
+  style={styles.heroCard}
+>
+  <Text style={styles.heroTitle}>
+    Nouvelle demande
+  </Text>
+
+  <Text style={styles.heroSubtitle}>
+    Décrivez votre besoin pour recevoir des propositions de professionnels.
+  </Text>
+</LinearGradient>
+
+<View style={styles.formCard}>
+          <Text style={styles.title} accessible accessibilityRole="header">📝 Titre*</Text>
           <TextInput
             value={title}
             onChangeText={setTitle}
             style={styles.input} accessible
             accessibilityLabel="Titre de la demande"
-            accessibilityHint="Entrer le titre de votre demande" />
+            accessibilityHint="Entrer le titre de votre demande"
+            placeholder="Ex : Réparer une fuite de lavabo" />
 
-          <Text style={styles.title}>Description</Text>
+
+          <Text style={styles.title}>📄 Description</Text>
           <TextInput
             value={description}
             onChangeText={setDescription}
-            multiline style={styles.input}
+            multiline
+            placeholder="Expliquez précisément votre besoin..."
+  textAlignVertical="top"
+  style={styles.descriptionInput}
             accessible
             accessibilityLabel="Description"
             accessibilityHint="Décrire votre besoin" />
 
-          <Text style={styles.title}>Catégorie*</Text>
+
+          <Text style={styles.title}>🛠 Catégorie*</Text>
+          <View style={styles.pickerContainer}>
           <Picker
             selectedValue={category}
             onValueChange={setCategory}
-            style={{ backgroundColor: "#fcfcfc", borderWidth: 1, marginBottom: 20, borderRadius: 16 }}
+style={styles.picker}
             accessible
             accessibilityLabel="Catégorie"
             accessibilityHint="Choisir une catégorie de travaux"
           >
-            <Picker.Item label="Plomberie" value="Plomberie"/>
-            <Picker.Item label="Peinture" value="Peinture" />
-            <Picker.Item label="Agencement" value="Agencement" />
-            <Picker.Item label="Electricité" value="Electricité" />
-            <Picker.Item label="Carrelage" value="Carrelage" />
-            <Picker.Item label="Divers" value="Divers" />
-            <Picker.Item label="Jardinage" value="Jardinage" />
+            <Picker.Item label="🔧 Plomberie" value="Plomberie" />
+        <Picker.Item label="🎨 Peinture" value="Peinture" />
+        <Picker.Item label="🏠 Agencement" value="Agencement" />
+        <Picker.Item label="⚡ Électricité" value="Electricité" />
+        <Picker.Item label="🧱 Carrelage" value="Carrelage" />
+        <Picker.Item label="🌳 Jardinage" value="Jardinage" />
+        <Picker.Item label="📦 Divers" value="Divers" />
           </Picker>
 
-          <Text style={styles.title}>Ville*</Text>
-
-          
-          <TextInput
-              value={locationQuery}
-              onChangeText={searchCities}
-              placeholder="Tapez une ville..."
-              style={{
-                width: "100%",
-                fontFamily: "Londrina",
-                backgroundColor: "#fff",
-                padding: 10,
-                borderRadius: 8,
-                borderWidth: 1
-              }}
-              accessible
-              accessibilityLabel="Rechercher une ville"
-              accessibilityHint="Tapez pour afficher les suggestions"
-              autoCorrect={false}
-              autoCapitalize="words"
-            />
-          <Text style={[styles.title, { marginTop: 15 }]}>Budget</Text>
+</View>
+          <Text style={[styles.title, { marginTop: 15 }]}>💰 Budget</Text>
           <TextInput
             value={budget}
+            placeholder="Ex : 150 €"
             onChangeText={setBudget}
             keyboardType="numeric" style={styles.input}
             accessible
             accessibilityLabel="Budget"
             accessibilityHint="Entrer votre budget estimé" />
 
+          <Text style={styles.title}>📍 Ville*</Text>
+
+          
+          <TextInput
+              value={locationQuery}
+              onChangeText={searchCities}
+              placeholder="Tapez une ville..."
+              style={styles.input}
+              accessible
+              accessibilityLabel="Rechercher une ville"
+              accessibilityHint="Tapez pour afficher les suggestions"
+              autoCorrect={false}
+              autoCapitalize="words"
+            />
+          
+
           <TouchableOpacity
             onPress={pickImages}
-            style={{ backgroundColor: "#c8c8c8", padding: 10, marginBottom: 20, borderRadius: 8, alignItems: "center", justifyContent: "center" }}
+            style={styles.imageButton}
             accessible
             accessibilityRole="button"
             accessibilityLabel="Ajouter des images"
             accessibilityHint="Sélectionner des photos pour illustrer votre demande"
           >
-            <Text style={{ fontFamily: "Montt" }}>+ Ajouter des images</Text>
+            <Text style={styles.imageButtonText}>
+  📷 Ajouter des photos
+</Text>
           </TouchableOpacity>
 
-          <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
+          <View style={styles.imagePreviewContainer}>
             {images.map((img, index) => (
-              <Image key={index} accessible={false} source={{ uri: img.uri }} style={{ width: 80, height: 80, margin: 5 }} />
+              <Image key={index} accessible={false} source={{ uri: img.uri }} style={styles.previewImage} />
             ))}
           </View>
 
           {loading ? <ActivityIndicator size="large" /> :
             <TouchableOpacity
               onPress={handleSubmit}
-              style={{ alignSelf: "center", marginTop: 10, backgroundColor: "#007AFF", padding: 12, borderRadius: 20, marginBottom: 20 }}
-              accessible
+style={styles.submitButton}              accessible
               accessibilityRole="button"
               accessibilityLabel="Créer la demande"
               accessibilityHint="Publier votre demande de service" >
-              <Text style={{ fontFamily: "Kanitt", color: "white" }}>Créer la demande</Text></TouchableOpacity>}
+              <LinearGradient
+        colors={["#30a590","#1a5b4f"]}
+        style={styles.submitGradient}
+    >
+        <Text style={styles.submitText}>
+            Publier ma demande
+        </Text>
+    </LinearGradient>
+    </TouchableOpacity>}
+</View>
+          
         </ScrollView>
       </KeyboardAvoidingView>
 {showCityOverlay && cities.length > 0 && (
@@ -335,18 +366,40 @@ const styles = StyleSheet.create({
   title: {
     fontFamily: "Montt",
     fontSize: 16,
-    marginBottom: 6
+    marginBlock: 6,
+    color:"#1a5b4f",
   },
   input: {
-    backgroundColor: 'white',
-    paddingHorizontal: 15,
-    paddingVertical: 12,
-    borderRadius: 10,
-    marginBottom: 15,
-    fontSize: 16,
-    fontFamily: "Mont",
-    borderWidth: 1
+    backgroundColor:"#eff1f6",
+
+  borderRadius:18,
+
+  paddingHorizontal:18,
+  paddingVertical:14,
+
+  fontFamily:"Mont",
+
+  borderWidth:1,
+  borderColor:"#ECECEC",
+
+  marginBottom:12
   },
+  descriptionInput:{
+  backgroundColor:"#F7F8FA",
+
+  minHeight:140,
+
+  borderRadius:20,
+
+  padding:16,
+
+  fontFamily:"Mont",
+
+  borderWidth:1,
+  borderColor:"#ECECEC",
+
+  marginBottom:15
+},
   overlay: {
   position: "absolute",
   top: 0,
@@ -360,11 +413,21 @@ const styles = StyleSheet.create({
 },
 
 overlayBox: {
-  width: "90%",
-  maxHeight: "70%",
-  backgroundColor: "white",
-  borderRadius: 15,
-  padding: 15,
+  width:"92%",
+
+  maxHeight:"65%",
+
+  backgroundColor:"#fff",
+
+  borderRadius:28,
+
+  padding:20,
+
+  shadowColor:"#000",
+  shadowOpacity:0.15,
+  shadowRadius:20,
+
+  elevation:10
 },
 
 overlayTitle: {
@@ -382,4 +445,112 @@ cityItem: {
 cityText: {
   fontFamily: "Londrina",
 },
+heroCard:{
+  width:"100%",
+  borderRadius:28,
+  padding:24,
+  marginBottom:25,
+
+  shadowColor:"#000",
+  shadowOpacity:0.15,
+  shadowRadius:15,
+  shadowOffset:{width:0,height:8},
+
+  elevation:8,
+},
+
+heroTitle:{
+  color:"#fff",
+  fontSize:28,
+  fontFamily:"Londrinak"
+},
+
+heroSubtitle:{
+  color:"rgba(255,255,255,0.9)",
+  fontFamily:"Mont",
+  marginTop:8,
+  lineHeight:20
+},
+formCard:{
+  backgroundColor:"#fff",
+
+  borderRadius:30,
+  gap: 10,
+
+  padding:20,
+
+  shadowColor:"#000",
+  shadowOpacity:0.08,
+  shadowRadius:15,
+  shadowOffset:{
+    width:0,
+    height:6
+  },
+
+  elevation:5
+},
+pickerContainer:{
+    backgroundColor:"#F7F8FA",
+    borderRadius:18,
+    borderWidth:1,
+    borderColor:"#ECECEC",
+    overflow:"hidden",
+},
+
+picker:{
+    fontFamily:"Mont",
+},
+imageButton:{
+  height:60,
+
+  borderRadius:18,
+
+  borderWidth:2,
+  borderStyle:"dashed",
+
+  borderColor:"#30a590",
+
+  justifyContent:"center",
+  alignItems:"center",
+
+  marginTop:8,
+  marginBottom:20,
+
+  backgroundColor:"rgba(48,165,144,0.06)"
+},
+
+imageButtonText:{
+  fontFamily:"Montt",
+  color:"#1a5b4f"
+},
+imagePreviewContainer:{
+    flexDirection:"row",
+    flexWrap:"wrap",
+    gap:12,
+    marginBottom:20
+},
+
+previewImage:{
+    width:90,
+    height:90,
+    borderRadius:18,
+},
+submitButton:{
+    marginTop:15,
+    width: "80%",
+    alignSelf: "center"
+},
+
+submitGradient:{
+    height:60,
+    borderRadius:30,
+    justifyContent:"center",
+    alignItems:"center",
+},
+
+submitText:{
+    color:"#fff",
+    fontFamily:"Montt",
+    fontSize:16
+}
 })

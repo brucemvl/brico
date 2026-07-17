@@ -750,33 +750,32 @@ router.post("/:id/review-complete", auth, async (req, res) => {
       return res.status(404).json({ error: "Aucune relation trouvée avec ce pro" });
     }
 
-    if (req.user.role === "client") {
-      if (request.client.toString() !== req.user.id.toString()) {
-        return res.status(403).json({ error: "Non autorisé" });
-      }
-      assignment.reviewByClient = true;
-    }
+    if (req.user.role !== "client") {
+  return res.status(403).json({
+    error: "Seul le client peut clôturer une mission",
+  });
+}
 
-    if (req.user.role === "pro") {
-      if (req.user.id.toString() !== proId.toString()) {
-        return res.status(403).json({ error: "Non autorisé" });
-      }
-      assignment.reviewByPro = true;
-    }
+if (request.client.toString() !== req.user.id.toString()) {
+  return res.status(403).json({
+    error: "Non autorisé",
+  });
+}
 
-    if (assignment.reviewByClient && assignment.reviewByPro) {
-      request.status = "completed";
+assignment.reviewByClient = true;
 
-      request.assignedPros.forEach(ap => {
-        if (ap.pro.toString() === proId.toString()) {
-          ap.status = "completed";
-          ap.completedAt = new Date();
-        } else if (ap.status === "active") {
-          ap.status = "cancelled";
-          ap.cancelledAt = new Date();
-        }
-      });
-    }
+// ✅ clôture immédiate
+request.status = "completed";
+
+request.assignedPros.forEach(ap => {
+  if (ap.pro.toString() === proId.toString()) {
+    ap.status = "completed";
+    ap.completedAt = new Date();
+  } else if (ap.status === "active") {
+    ap.status = "cancelled";
+    ap.cancelledAt = new Date();
+  }
+});
 
     await request.save();
 

@@ -278,6 +278,7 @@ router.post("/:id/propose-deal", auth, async (req, res) => {
 
       conversation.lastInteractionAt = new Date();
 conversation.lastInteractionBy = req.user.id;
+conversation.lastProUpdateAt = new Date(); // <-- AJOUTER
 
 
       await conversation.save();

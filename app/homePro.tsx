@@ -938,7 +938,7 @@ arrowButton:{
 
 arrow:{
     color:"#fff",
-    fontSize:18,
+    fontSize:22,
     fontFamily:"Montt",
 },
 

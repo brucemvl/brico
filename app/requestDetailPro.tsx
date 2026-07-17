@@ -328,30 +328,7 @@ export default function RequestDetailPro() {
 
 
 
-  const submitReview = async () => {
-    if (!request) return;
-    try {
-      await apiFetch(`/users/${request.client._id}/review`, {
-        method: "POST",
-        body: JSON.stringify({ score: rating, comment, requestId: request._id }),
-      });
-
-      await apiFetch(`/requests/${request._id}/review-complete`, {
-        method: "POST",
-        body: JSON.stringify({ proId: currentUserId }),
-      });
-
-      // 🔹 Rafraîchir request et recalculer assignment
-      const updatedRequest = await apiFetch(`/requests/${request._id}`);
-      setRequest(updatedRequest);
-
-      setReviewModal(false);
-      Alert.alert("Merci !", "Votre avis a été enregistré");
-    } catch (err) {
-      console.log(err);
-      Alert.alert("Erreur", "Impossible d'envoyer l'avis");
-    }
-  };
+ 
 
   const openPreview = (url: string) => {
     setPreviewImage(url);
@@ -416,8 +393,7 @@ export default function RequestDetailPro() {
     return {
       proHasReviewed: proReviewed,
       clientHasReviewed: clientReviewed,
-      missionCompleted: proReviewed && clientReviewed,
-      canReview: accepted && !!assign && !proReviewed,
+      missionCompleted: clientReviewed,
     };
   }, [request, currentUserId]);
 
@@ -637,84 +613,13 @@ export default function RequestDetailPro() {
             </Text>
           )}
 
-          {dealAccepted && canReview && (
-            <TouchableOpacity
-              style={styles.reviewButton}
-              onPress={() => setReviewModal(true)}
-              accessible
-              accessibilityRole="button"
-              accessibilityLabel="Donner un avis"
-              accessibilityHint="Ouvrir la fenêtre pour noter le client"
-            >
-              <Animated.Text
-                style={{
-                  color: "#fefefe",
-                  fontFamily: "Mont",
-                  transform: [{ scale: reviewScale }],
-                }}
-              >
-                Donner un avis ⭐
-              </Animated.Text>
-            </TouchableOpacity>
-          )}
+          
 
           {dealAccepted && missionCompleted && (
             <Text style={{ textAlign: "center", margin: 10, color: "green", fontFamily: "Kanitt" }} accessibilityLiveRegion="polite">
               🎉 Mission terminée !
             </Text>
           )}
-
-          {/* Modal review */}
-          <Modal visible={reviewModal} transparent animationType="slide" accessible>
-            <View style={styles.modalOverlay}>
-              <View
-                style={styles.modal}
-                accessible
-                accessibilityViewIsModal={true}
-                accessibilityLabel="Évaluation de la mission" >
-                <Text style={styles.modalTitle} accessibilityRole="header">Comment s'est deroulée la mission ?</Text>
-                <View style={styles.stars}>
-                  {[1, 2, 3, 4, 5].map((s) => (
-                    <TouchableOpacity
-                      key={s}
-                      onPress={() => setRating(s)}
-                      accessible
-                      accessibilityRole="button"
-                      accessibilityLabel={`${s} étoile${s > 1 ? "s" : ""}`}
-                      accessibilityState={{ selected: rating === s }} >
-                      <Text style={{ fontSize: 30 }}>{s <= rating ? "⭐" : "☆"}</Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-                <TextInput
-                  placeholder="Commentaire (optionnel)"
-                  value={comment}
-                  onChangeText={setComment}
-                  style={styles.input}
-                  accessible
-                  accessibilityLabel="Ajouter un commentaire"
-                  accessibilityHint="Écrire un commentaire sur la mission"
-                />
-                <TouchableOpacity
-                  style={styles.sendReview}
-                  onPress={submitReview}
-                  accessible
-                  accessibilityRole="button"
-                  accessibilityLabel="Envoyer l'avis"
-                  accessibilityHint="Soumettre la note et le commentaire" >
-                  <Text style={{ color: "#fff", fontFamily: "Mont" }}>Envoyer l'avis</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={() => setReviewModal(false)}
-                  accessible
-                  accessibilityRole="button"
-                  accessibilityLabel="Fermer"
-                  accessibilityHint="Fermer la fenêtre d'évaluation" >
-                  <Text style={{ textAlign: "center", marginTop: 10, fontFamily: "Mont" }}>Fermer</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </Modal>
 
           {/* Messages */}
           <Text style={styles.chatTitle} accessibilityRole="header">Conversation avec {request.client.name}</Text>

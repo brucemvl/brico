@@ -139,8 +139,16 @@ setPortfolio((prev) => [...prev, ...result.assets]);
 };
 
   const skipStep = () => {
-    nextStep();
-  };
+  if (steps[step] === "location") {
+    Alert.alert(
+      "Ville obligatoire",
+      "Vous devez sélectionner votre ville pour continuer."
+    );
+    return;
+  }
+
+  nextStep();
+};
 
   const searchCities = async (text) => {
   setLocationQuery(text);
@@ -243,9 +251,11 @@ router.replace("/homePro");
 
   return (
     <View style={styles.container}>
-  <TouchableOpacity onPress={skipStep} style={{marginBottom: 50, alignSelf: "flex-end"}}>
-    <Text style={styles.skip}>Ignorer  {">>"}</Text>
+  {steps[step] !== "location" && (
+  <TouchableOpacity onPress={skipStep}>
+    <Text style={styles.skip}>Ignorer {">>"}</Text>
   </TouchableOpacity>
+)}
 
       {/* 🔥 Progress bar */}
       <View style={styles.progressBar}>
@@ -313,14 +323,18 @@ router.replace("/homePro");
                 />
 
           <TouchableOpacity
-            style={styles.button}
-            onPress={async () => {
-              await saveStep({ location });
-              nextStep();
-            }}
-          >
-            <Text style={styles.buttonText}>Continuer</Text>
-          </TouchableOpacity>
+  style={[
+    styles.button,
+    !location && { opacity: 0.5 }
+  ]}
+  disabled={!location}
+  onPress={async () => {
+    await saveStep({ location });
+    nextStep();
+  }}
+>
+  <Text style={styles.buttonText}>Continuer</Text>
+</TouchableOpacity>
 
           
         </View>
