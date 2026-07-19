@@ -25,6 +25,7 @@ type RequestType = {
   _id: string;
   category: string;
   budget: number,
+  location: string,
   status: "open" | "in_progress" | "completed";
   client: string;
   title: string;
@@ -318,7 +319,7 @@ const shareApp = async () => {
 
   if (loading) {
     return (
-      <View style={styles.container}>
+      <View style={[styles.container, {marginTop: 100, gap: 30}]}>
         <ActivityIndicator color={"#1a5b4f"} />
         <Text style={{fontFamily: "Londrinak", color: "#1a5b4f"}}>Chargement des demandes...</Text>
       </View>
@@ -619,11 +620,15 @@ const shareApp = async () => {
                         <View style={styles.badges}>
 
     <View style={styles.badge}>
-        <Text style={{fontFamily: "Mont"}}>🔧 {item.category}</Text>
+        <Text style={{fontFamily: "Montt"}}>🔧 {item.category}</Text>
     </View>
 
     <View style={styles.badge}>
-        <Text style={{fontFamily: "Mont"}}>💰 {item.budget} €</Text>
+        <Text style={{fontFamily: "Montt"}}>💰 {item.budget} €</Text>
+    </View>
+
+    <View style={styles.badge}>
+        <Text style={{fontFamily: "Montt"}}>📍 {item.location}</Text>
     </View>
 
 </View>
@@ -829,7 +834,7 @@ cardHeader: {
 
 cardDate:{
     color:"#d9efe9",
-    fontFamily:"Mont",
+    fontFamily:"Montmed",
     marginTop:4,
     fontSize:12,
 },

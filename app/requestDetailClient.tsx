@@ -234,7 +234,7 @@ export default function RequestDetailClient() {
                                                 </View>
                                                 </View>
 
-                                        <Text style={{fontFamily: "Mont", color: "#fff"}}>{request?.views ?? 0} {request?.views === 1 ? "vue" : "vues"}</Text>
+                                        <Text style={{fontFamily: "Mont", color: "#fff", alignSelf: "flex-end"}}>{request?.views ?? 0} {request?.views === 1 ? "vue" : "vues"}</Text>
 
                     
                     
@@ -246,7 +246,7 @@ export default function RequestDetailClient() {
 
       {/* 🔹 Conversations */}
       <Text 
-      style={{ marginTop: 20, fontFamily: "Montt" }} accessible
+      style={{ marginTop: 20, fontFamily: "Montt", fontSize: 15 }} accessible
   accessibilityRole="header"
   accessibilityLabel="Liste des conversations avec les professionnels" >
     Conversations avec les pros

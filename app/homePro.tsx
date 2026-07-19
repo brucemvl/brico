@@ -614,13 +614,20 @@ const images = item.images ?? [];
     key={item._id}
     onPress={() => openRequest(item)}
     activeOpacity={0.92}
-    style={styles.card}
+    style={{ shadowColor: "#000",
+  shadowOpacity: 0.82,
+  shadowRadius: 8,
+  shadowOffset: {
+    width: 0,
+    height: 4,
+  },}}
 >
+                    <View style={styles.card}>
 
     {/* HEADER */}
 
     <LinearGradient
-        colors={["#30a590", "#1a5b4f"]}
+        colors={["#288d7a", "#1a5b4f"]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.cardHeader}
@@ -785,6 +792,7 @@ const images = item.images ?? [];
         </View>
 
     </View>
+    </View>
 
 </TouchableOpacity>
             );
@@ -857,8 +865,10 @@ cardBody:{
 
 cardDate:{
     color:"rgba(255,255,255,0.8)",
-    fontFamily:"Mont",
+    fontFamily:"Montmed",
     marginTop:5,
+        fontSize:12,
+
 },
 
 viewsBadge:{
@@ -870,7 +880,7 @@ viewsBadge:{
 
 viewsText:{
     color:"#fff",
-    fontFamily:"Montt",
+    fontFamily:"Mont",
     fontSize: 13
 },
 

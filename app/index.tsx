@@ -27,6 +27,7 @@ export default function Welcome() {
       "Londrina": require("../assets/fonts/Londrina/LondrinaSolid-Regular.ttf"), 
       "Londrinak": require("../assets/fonts/Londrina/LondrinaSolid-Black.ttf"), 
       "Mont": require("../assets/fonts/Montserrat/Montserrat-Regular.ttf"), 
+      "Montmed": require("../assets/fonts/Montserrat/Montserrat-Medium.ttf"), 
       "Montt": require("../assets/fonts/Montserrat/Montserrat-Bold.ttf"), 
       "Kanit": require("../assets/fonts/Kanit/Kanit-Regular.ttf"), 
       "Kanitt": require("../assets/fonts/Kanit/Kanit-Bold.ttf"), 

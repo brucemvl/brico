@@ -1,5 +1,4 @@
 import BackButton from "@/components/BackButton";
-import { Picker } from "@react-native-picker/picker";
 import * as ImagePicker from "expo-image-picker";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
@@ -20,6 +19,7 @@ import {
   TouchableWithoutFeedback,
   View
 } from "react-native";
+import { Dropdown } from "react-native-element-dropdown";
 import fond from "../assets/convert_1.png";
 import { useApi } from "../services/api";
 
@@ -52,7 +52,6 @@ const [cities, setCities] = useState<City[]>([]);
   const pickImages = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images, // uniquement images
-      allowsEditing: true,  // permet de recadrer
       quality: 0.8,         // compression
       base64: false,         // inutile si tu uploades le fichier
       exif: false,
@@ -64,6 +63,15 @@ const [cities, setCities] = useState<City[]>([]);
     }
   };
 
+  const data = [
+  { label: "🔧 Plomberie", value: "Plomberie" },
+  { label: "🎨 Peinture", value: "Peinture" },
+  { label: "⚡ Électricité", value: "Electricité" },
+  { label: "🧱 Carrelage", value: "Carrelage" },
+  { label: "🏠 Agencement", value: "Agencement" },
+  { label: "🌳 Jardinage", value: "Jardinage" },
+  { label: "📦 Divers", value: "Divers" },
+];
 
   const IDF_DEPARTMENTS = ["75", "92", "93", "94", "77", "78", "91", "95"];
 
@@ -235,22 +243,15 @@ const [cities, setCities] = useState<City[]>([]);
 
           <Text style={styles.title}>🛠 Catégorie*</Text>
           <View style={styles.pickerContainer}>
-          <Picker
-            selectedValue={category}
-            onValueChange={setCategory}
-style={styles.picker}
-            accessible
-            accessibilityLabel="Catégorie"
-            accessibilityHint="Choisir une catégorie de travaux"
-          >
-            <Picker.Item label="🔧 Plomberie" value="Plomberie" />
-        <Picker.Item label="🎨 Peinture" value="Peinture" />
-        <Picker.Item label="🏠 Agencement" value="Agencement" />
-        <Picker.Item label="⚡ Électricité" value="Electricité" />
-        <Picker.Item label="🧱 Carrelage" value="Carrelage" />
-        <Picker.Item label="🌳 Jardinage" value="Jardinage" />
-        <Picker.Item label="📦 Divers" value="Divers" />
-          </Picker>
+          <Dropdown
+  data={data}
+  labelField="label"
+  valueField="value"
+  value={category}
+  placeholder="Choisir une catégorie"
+  onChange={item => setCategory(item.value)}
+  fontFamily="Mont"
+/>
 
 </View>
           <Text style={[styles.title, { marginTop: 15 }]}>💰 Budget</Text>
@@ -437,14 +438,15 @@ overlayTitle: {
 },
 
 cityItem: {
-  padding: 12,
-  borderBottomWidth: 1,
-  borderBottomColor: "#eee",
+  paddingVertical:15,
+    borderBottomWidth:1,
+    borderBottomColor:"#F2F2F2",
 },
 
 cityText: {
-  fontFamily: "Londrina",
-},
+fontFamily:"Mont",
+    fontSize:15,
+  },
 heroCard:{
   width:"100%",
   borderRadius:28,
@@ -476,7 +478,7 @@ formCard:{
 
   borderRadius:30,
   gap: 10,
-
+marginBottom: 100,
   padding:20,
 
   shadowColor:"#000",
@@ -490,11 +492,12 @@ formCard:{
   elevation:5
 },
 pickerContainer:{
-    backgroundColor:"#F7F8FA",
+    backgroundColor:"#eff1f6",
     borderRadius:18,
     borderWidth:1,
     borderColor:"#ECECEC",
     overflow:"hidden",
+    padding: 10
 },
 
 picker:{
@@ -514,7 +517,7 @@ imageButton:{
   alignItems:"center",
 
   marginTop:8,
-  marginBottom:20,
+  marginBottom:10,
 
   backgroundColor:"rgba(48,165,144,0.06)"
 },
@@ -536,7 +539,6 @@ previewImage:{
     borderRadius:18,
 },
 submitButton:{
-    marginTop:15,
     width: "80%",
     alignSelf: "center"
 },

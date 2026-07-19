@@ -722,9 +722,11 @@ const missionCompleted = clientHasReviewed;
 
 <TextInput
 style={styles.inputMsg}
+value={message}
+    onChangeText={setMessage}
 />
 
-<TouchableOpacity style={styles.sendButton}>
+<TouchableOpacity style={styles.sendButton} onPress={sendMessage}>
     <Text style={styles.sendArrow}>➜</Text>
 </TouchableOpacity>
 
