@@ -367,7 +367,7 @@ const styles = StyleSheet.create({
   title: {
     fontFamily: "Montt",
     fontSize: 16,
-    marginBlock: 6,
+    marginTop: 6,
     color:"#1a5b4f",
   },
   input: {
@@ -383,7 +383,7 @@ const styles = StyleSheet.create({
   borderWidth:1,
   borderColor:"#ECECEC",
 
-  marginBottom:12
+  marginBottom:15
   },
   descriptionInput:{
   backgroundColor:"#F7F8FA",
