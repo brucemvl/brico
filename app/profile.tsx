@@ -522,18 +522,20 @@ paddingBottom: 60  },
   },
 
   skill: {
-    backgroundColor: "#1a5b4f",
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 8,
-    marginRight: 8,
-    marginBottom: 8
+    backgroundColor:"#1a5b4f",
+
+paddingHorizontal:14,
+paddingVertical:10,
+
+borderRadius:30,
+
+margin:3
   },
 
   skillText: {
     fontSize: 13,
     fontFamily: "Mont",
-    color: "#fff"
+    color:"#d2f0ea",
   },
 
   portfolio: {
@@ -609,10 +611,11 @@ reviewPhoto: {
 },
 map:{
 height:200,
-borderRadius:10,
+borderRadius:20,
 marginTop:10,
-borderWidth: 2,
-borderColor: "#1a5b4f"
+borderWidth: 1,
+borderColor: "#1a5b4f",
+overflow: "hidden"
 },
 
 locationText:{
