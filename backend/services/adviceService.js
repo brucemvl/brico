@@ -21,10 +21,7 @@ function buildAdvices(requests, user) {
     for (const request of requests) {
 
         // Photo
-        if (
-            request.status === "open" &&
-            (!request.images || request.images.length === 0)
-        ) {
+        if(request.analysis.noPhoto){
             advices.push({
                 type: "photo",
                 priority: 90,
@@ -100,15 +97,12 @@ function buildAdvices(requests, user) {
         }
 
         // Offre reçue
-        if (
-            request.status === "open" &&
-            request.offers?.length > 0
-        ) {
+        if (request.stats.unreadMessages > 0) {
             advices.push({
                 type: "offer",
                 priority: 95,
                 icon: "💬",
-                title: "Vous avez une offre",
+                title: "Vous avez un message",
                 description:
                     "Un artisan attend votre réponse."
             });

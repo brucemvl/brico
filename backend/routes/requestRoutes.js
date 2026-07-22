@@ -73,10 +73,91 @@ router.get("/client", auth, async (req, res) => {
         }
       }
 
+      const convs = conversations.filter(
+  c => c.request.toString() === r._id.toString()
+);
+
+const messageCount = convs.reduce(
+  (total, conv) => total + (conv.messages?.length || 0),
+  0
+);
+
+const unreadMessages = convs.reduce(
+  (total, conv) =>
+    total +
+    (conv.messages || []).filter(
+      msg =>
+        msg.from.toString() !== req.user.id.toString() &&
+        !msg.readBy.includes(req.user.id)
+    ).length,
+  0
+);
+
+const pendingOffers = convs.filter(
+  c =>
+    c.dealProposedByPro &&
+    !c.dealAcceptedByClient
+).length;
+
+const lastInteraction =
+  convs.length > 0
+    ? convs
+        .map(c => c.updatedAt)
+        .sort(
+  (a, b) => new Date(b).getTime() - new Date(a).getTime()
+)[0]
+    : null;
+
+    const analysis = {
+  noPhoto: r.images.length === 0,
+
+  shortDescription:
+    !r.description || r.description.trim().length < 40,
+
+  noBudget:
+    !r.budget || Number(r.budget) <= 0,
+
+  manyViewsNoMessages:
+    r.views >= 8 && messageCount === 0,
+
+  hasPendingOffer:
+    pendingOffers > 0,
+
+  oldOpenRequest:
+    r.status === "open" &&
+    (Date.now() - new Date(r.createdAt)) >
+      1000 * 60 * 60 * 24 * 10,
+
+  firstCompletedRequest:
+    r.status === "completed" &&
+    !r.ratingGiven
+};
+
+const stats = {
+
+  conversations: convs.length,
+
+  messages: messageCount,
+
+  unreadMessages,
+
+  pendingOffers,
+
+  lastInteraction
+
+};
+
+const hasUnread = !!unreadType;
+
       return {
         ...r.toObject(),
-        hasUnread: !!unreadType,
-        unreadType
+        hasUnread,
+
+    unreadType,
+
+    stats,
+
+    analysis
       };
     });
 
