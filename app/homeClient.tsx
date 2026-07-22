@@ -57,6 +57,9 @@ export default function HomeClient() {
   const [requestView, setRequestView] = useState<"requests" | "completed">("requests");
   const [pickerOpen, setPickerOpen] = useState(false);
 
+    const [advice, setAdvice] = useState<any>(null);
+
+
   const fetchNotifications = useCallback(async () => {
     try {
       const res = await apiFetch("/notifications"); // ✅ PAS unread-count
@@ -238,18 +241,26 @@ const shareApp = async () => {
     notifications.filter(n => !n.isRead)
   );
 
+  
   // 🔹 Fonction pour récupérer les demandes
   const fetchRequests = useCallback(async () => {
+
     setLoading(true);
+
     try {
-      const data = await apiFetch("/requests/client");
-      setRequests(data);
-    } catch (err) {
-      console.error("Erreur fetchRequests:", err);
+
+        const data = await apiFetch("/requests/client");
+
+        setRequests(data.requests);
+        setAdvice(data.advice);
+
     } finally {
-      setLoading(false);
+
+        setLoading(false);
+
     }
-  }, []);
+
+}, []);
 
   // 🔹 Rafraîchit la liste à chaque retour sur cet écran
   useFocusEffect(
@@ -509,6 +520,32 @@ const shareApp = async () => {
     </LinearGradient>
   </Animated.View>
 </TouchableOpacity>
+
+{advice && (
+<LinearGradient
+colors={["#FFF8E7","#FFFDF6"]}
+style={styles.adviceCard}
+>
+
+<Text style={styles.adviceIcon}>
+    {advice.icon}
+</Text>
+
+<View style={{flex:1}}>
+
+<Text style={styles.adviceTitle}>
+    {advice.title}
+</Text>
+
+<Text style={styles.adviceDescription}>
+    {advice.description}
+</Text>
+
+</View>
+
+</LinearGradient>
+)}
+
         <View style={styles.pickerWrapper}>
           <TouchableOpacity
             style={styles.pickerButton}

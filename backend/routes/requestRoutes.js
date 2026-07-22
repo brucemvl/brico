@@ -10,6 +10,7 @@ const streamifier = require("streamifier");
 const sharp = require("sharp");
 const fetch = require("node-fetch");
 const User = require("../models/User");
+const { buildAdvice } = require("../services/adviceService");
 
 
 // 🔒 Fonction de détection avancée
@@ -80,7 +81,12 @@ router.get("/client", auth, async (req, res) => {
       };
     });
 
-    res.json(formatted);
+    const advice = buildAdvice(formatted);
+
+res.json({
+    requests: formatted,
+    advice
+});
   } catch (err) {
     console.error("GET /requests/client error:", err);
     res.status(500).json({ error: "Erreur serveur" });
