@@ -375,21 +375,21 @@ for (const pro of pros) {
 
 //MODIFICAION D'UNE DEMANDE
 router.put("/:id", auth, async (req, res) => {
-
+  try {
     const request = await Request.findById(req.params.id);
 
     if (!request)
-        return res.status(404).json({error:"Introuvable"});
+      return res.status(404).json({ error: "Introuvable" });
 
-    if(request.client.toString() !== req.user.id)
-        return res.status(403).json({error:"Non autorisé"});
+    if (request.client.toString() !== req.user.id)
+      return res.status(403).json({ error: "Non autorisé" });
 
     const {
-        title,
-        description,
-        category,
-        location,
-        budget
+      title,
+      description,
+      category,
+      location,
+      budget,
     } = req.body;
 
     request.title = title;
@@ -402,7 +402,12 @@ router.put("/:id", auth, async (req, res) => {
 
     res.json(request);
 
+  } catch (err) {
+    console.error("PUT /requests/:id", err);
+    res.status(500).json({ error: err.message });
+  }
 });
+
 
 // MODIFICATIONS IMAGES
 router.post("/:id/images", auth, upload.array("images"), async (req, res) => {

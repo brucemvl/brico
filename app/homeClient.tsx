@@ -734,7 +734,7 @@ setAdvices(data.advices);
                 params:{ id:item._id }
             })
         }}
-        style={{ paddingBlock: 8, width: 120, backgroundColor: "#afafaf", alignItems: "center", justifyContent: "center", borderRadius: 20}}
+        style={{ paddingBlock: 8, width: 120, backgroundColor: "#bababa", alignItems: "center", justifyContent: "center", borderRadius: 20}}
     >
         <Image
             source={modifier}
@@ -748,7 +748,10 @@ setAdvices(data.advices);
     <TouchableOpacity
         onPress={() => handleDelete(item._id)}
                 style={{ paddingBlock: 8, width: 120, backgroundColor: "#c72d2d", alignItems: "center", justifyContent: "center", borderRadius: 20}}
-
+accessible
+                      accessibilityRole="button"
+                      accessibilityLabel="Supprimer la demande"
+                      accessibilityHint="Supprimer définitivement cette demande"
     >
         <Image
             source={trash}
@@ -764,17 +767,7 @@ setAdvices(data.advices);
 )}
                     </View>
                   </TouchableOpacity>
-                  {item.status != "completed" &&
-                    <TouchableOpacity
-                      onPress={() => handleDelete(item._id)}
-                      accessible
-                      accessibilityRole="button"
-                      accessibilityLabel="Supprimer la demande"
-                      accessibilityHint="Supprimer définitivement cette demande"
-                      style={{position: "absolute", right: -5}}
-                    >
-                      <Image source={trash} style={{ height: 20, width: 20 }} />
-                    </TouchableOpacity>}
+                  
                 </View>
               )
             }
