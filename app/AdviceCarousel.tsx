@@ -15,7 +15,7 @@ const CARD_WIDTH = width - 50;
 export type Advice = {
   icon: string;
   title: string;
-  text: string;
+  description: string;
 };
 
 type Props = {
@@ -127,7 +127,7 @@ export default function AdviceCarousel({ advices }: Props) {
                 </Text>
 
                 <Text style={styles.text}>
-                  {item.text}
+                  {item.description}
                 </Text>
               </LinearGradient>
             </Animated.View>
@@ -154,6 +154,7 @@ export default function AdviceCarousel({ advices }: Props) {
 const styles = StyleSheet.create({
   container: {
     marginVertical: 18,
+    flex: 1
   },
 
   cardWrapper: {

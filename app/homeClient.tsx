@@ -13,7 +13,7 @@ import notifIcon from "../assets/icons/notif.png";
 import settings from "../assets/icons/settings.png";
 import share from "../assets/icons/share.png";
 import star from "../assets/icons/star.png";
-import trash from "../assets/icons/trash2.png";
+import trash from "../assets/icons/trash3.png";
 import { AuthContext } from '../context/AuthContext';
 import { useApi } from "../services/api";
 import AdviceCarousel from './AdviceCarousel';
@@ -711,6 +711,57 @@ setAdvices(data.advices);
 
   </View>
                       </View>
+                      {item.status !== "completed" && (
+
+<View
+    style={{
+        
+        flexDirection:"row",
+        gap:12,
+        alignItems:"center",
+        justifyContent: "space-evenly",
+        flex: 1,
+        paddingBlock: 8
+    }}
+>
+
+    <TouchableOpacity
+        onPress={() =>{
+          Haptics.selectionAsync();
+          
+            router.push({
+                pathname:"/createRequestForm",
+                params:{ id:item._id }
+            })
+        }}
+        style={{ paddingBlock: 8, width: 120, backgroundColor: "#afafaf", alignItems: "center", justifyContent: "center", borderRadius: 20}}
+    >
+        <Image
+            source={modifier}
+            style={{
+                width:22,
+                height:22
+            }}
+        />
+    </TouchableOpacity>
+
+    <TouchableOpacity
+        onPress={() => handleDelete(item._id)}
+                style={{ paddingBlock: 8, width: 120, backgroundColor: "#c72d2d", alignItems: "center", justifyContent: "center", borderRadius: 20}}
+
+    >
+        <Image
+            source={trash}
+            style={{
+                width:20,
+                height:20
+            }}
+        />
+    </TouchableOpacity>
+
+</View>
+
+)}
                     </View>
                   </TouchableOpacity>
                   {item.status != "completed" &&

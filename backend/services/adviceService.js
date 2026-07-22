@@ -125,7 +125,7 @@ function buildAdvices(requests, user) {
                 icon: "⭐",
                 title: "Laissez un avis",
                 description:
-                    "Votre retour aide les meilleurs artisans à se démarquer."
+                    "Vous pourrez ainsi cloturer la mission et aider les meilleurs artisans à se démarquer."
             });
         }
 
