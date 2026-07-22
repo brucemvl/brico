@@ -1,113 +1,175 @@
 const DAY = 1000 * 60 * 60 * 24;
 
-function buildAdvice(requests) {
+function buildAdvices(requests, user) {
 
-  // 1. Aucun chantier
-  if (requests.length === 0) {
-    return {
-      type: "first_request",
-      icon: "🚀",
-      title: "Première demande",
-      description:
-        "Publiez votre première demande pour recevoir des propositions d'artisans."
-    };
-  }
+    const advices = [];
 
-  // 2. Chantier terminé sans avis
-  const review = requests.find(
-    r => r.status === "completed" && !r.ratingGiven
-  );
+    // Première demande
+    if (requests.length === 0) {
+        advices.push({
+            type: "first_request",
+            priority: 100,
+            icon: "🚀",
+            title: "Publiez votre première demande",
+            description:
+                "Décrivez votre besoin pour recevoir rapidement des propositions d'artisans."
+        });
 
-  if (review) {
-    return {
-      type: "review",
-      icon: "⭐",
-      title: "Laissez un avis",
-      description:
-        "Votre chantier est terminé. Donnez votre avis pour aider la communauté."
-    };
-  }
+        return advices;
+    }
 
-  // 3. Demande sans photo
-  const noPhoto = requests.find(
-    r =>
-      r.status === "open" &&
-      (!r.images || r.images.length === 0)
-  );
+    for (const request of requests) {
 
-  if (noPhoto) {
-    return {
-      type: "photo",
-      icon: "📷",
-      title: "Ajoutez une photo",
-      description:
-        "Les demandes avec photo reçoivent en moyenne deux fois plus de propositions."
-    };
-  }
+        // Photo
+        if (
+            request.status === "open" &&
+            (!request.images || request.images.length === 0)
+        ) {
+            advices.push({
+                type: "photo",
+                priority: 90,
+                icon: "📷",
+                title: "Ajoutez une photo",
+                description:
+                    "Les demandes avec photo reçoivent en moyenne deux fois plus de propositions."
+            });
+        }
 
-  // 4. Sans budget
-  const noBudget = requests.find(
-    r =>
-      r.status === "open" &&
-      (!r.budget || r.budget <= 0)
-  );
+        // Budget
+        if (
+            request.status === "open" &&
+            (!request.budget || request.budget <= 0)
+        ) {
+            advices.push({
+                type: "budget",
+                priority: 85,
+                icon: "💰",
+                title: "Ajoutez un budget",
+                description:
+                    "Les artisans répondent plus rapidement lorsqu'un budget est indiqué."
+            });
+        }
 
-  if (noBudget) {
-    return {
-      type: "budget",
-      icon: "💰",
-      title: "Ajoutez un budget",
-      description:
-        "Les artisans répondent plus rapidement lorsqu'un budget est indiqué."
-    };
-  }
+        // Description
+        if (
+            request.status === "open" &&
+            (!request.description || request.description.trim().length < 30)
+        ) {
+            advices.push({
+                type: "description",
+                priority: 80,
+                icon: "📍",
+                title: "Décrivez davantage votre besoin",
+                description:
+                    "Quelques détails supplémentaires permettent d'obtenir des devis plus précis."
+            });
+        }
 
-  // 5. Demande ancienne
-  const oldRequest = requests.find(r => {
-    if (r.status !== "open") return false;
+        // Beaucoup de vues
+        if (
+            request.status === "open" &&
+            request.views >= 15 &&
+            request.offers.length === 0
+        ) {
+            advices.push({
+                type: "views",
+                priority: 75,
+                icon: "👀",
+                title: "Votre demande intéresse",
+                description:
+                    "Elle a été consultée plusieurs fois. Essayez d'ajouter une photo ou quelques précisions."
+            });
+        }
 
-    const age =
-      (Date.now() - new Date(r.createdAt).getTime()) / DAY;
+        // Vieille annonce
+        const age =
+            (Date.now() - new Date(request.createdAt).getTime()) / DAY;
 
-    return age >= 10;
-  });
+        if (
+            request.status === "open" &&
+            age >= 10
+        ) {
+            advices.push({
+                type: "refresh",
+                priority: 70,
+                icon: "🔄",
+                title: "Remettez votre annonce en avant",
+                description:
+                    "Modifier légèrement votre demande lui redonne de la visibilité."
+            });
+        }
 
-  if (oldRequest) {
-    return {
-      type: "refresh",
-      icon: "🔄",
-      title: "Relancez votre demande",
-      description:
-        "Modifiez votre annonce pour la remettre en avant auprès des artisans."
-    };
-  }
+        // Offre reçue
+        if (
+            request.status === "open" &&
+            request.offers?.length > 0
+        ) {
+            advices.push({
+                type: "offer",
+                priority: 95,
+                icon: "💬",
+                title: "Vous avez une offre",
+                description:
+                    "Un artisan attend votre réponse."
+            });
+        }
 
-  // 6. Pas encore de devis
-  const noOffer = requests.find(
-    r =>
-      r.status === "open" &&
-      (!r.offers || r.offers.length === 0)
-  );
+        // Avis
+        if (
+            request.status === "completed" &&
+            !request.ratingGiven
+        ) {
+            advices.push({
+                type: "review",
+                priority: 99,
+                icon: "⭐",
+                title: "Laissez un avis",
+                description:
+                    "Votre retour aide les meilleurs artisans à se démarquer."
+            });
+        }
 
-  if (noOffer) {
-    return {
-      type: "patience",
-      icon: "⏳",
-      title: "Votre demande est en ligne",
-      description:
-        "Les artisans continuent de découvrir votre annonce."
-    };
-  }
+    }
 
-  return {
-    type: "success",
-    icon: "👏",
-    title: "Tout est parfait",
-    description:
-      "Votre profil et vos demandes sont bien renseignés."
-  };
+    // Premier chantier terminé
+    if (user.completedRequests?.length === 1) {
+        advices.push({
+            type: "first_completed",
+            priority: 60,
+            icon: "🏆",
+            title: "Premier chantier terminé",
+            description:
+                "Félicitations ! Merci de faire confiance à Briconnect."
+        });
+    }
+
+    // Tout est parfait
+    if (advices.length === 0) {
+        advices.push({
+            type: "perfect",
+            priority: 0,
+            icon: "👏",
+            title: "Tout est parfait",
+            description:
+                "Votre profil et vos demandes sont bien renseignés."
+        });
+    }
+
+    // Supprime les doublons
+    const unique = [];
+
+    advices.forEach(a => {
+        if (!unique.find(x => x.type === a.type)) {
+            unique.push(a);
+        }
+    });
+
+    return unique
+        .sort((a, b) => b.priority - a.priority)
+        .slice(0, 3);
+
 }
 
 module.exports = {
-  buildAdvice
+    buildAdvices
 };

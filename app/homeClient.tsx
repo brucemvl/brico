@@ -16,6 +16,7 @@ import star from "../assets/icons/star.png";
 import trash from "../assets/icons/trash2.png";
 import { AuthContext } from '../context/AuthContext';
 import { useApi } from "../services/api";
+import AdviceCarousel from './AdviceCarousel';
 
 
 
@@ -57,7 +58,7 @@ export default function HomeClient() {
   const [requestView, setRequestView] = useState<"requests" | "completed">("requests");
   const [pickerOpen, setPickerOpen] = useState(false);
 
-    const [advice, setAdvice] = useState<any>(null);
+    const [advices, setAdvices] = useState<any>(null);
 
 
   const fetchNotifications = useCallback(async () => {
@@ -252,7 +253,7 @@ const shareApp = async () => {
         const data = await apiFetch("/requests/client");
 
         setRequests(data.requests);
-        setAdvice(data.advice);
+setAdvices(data.advices);
 
     } finally {
 
@@ -521,29 +522,8 @@ const shareApp = async () => {
   </Animated.View>
 </TouchableOpacity>
 
-{advice && (
-<LinearGradient
-colors={["#FFF8E7","#FFFDF6"]}
-style={styles.adviceCard}
->
-
-<Text style={styles.adviceIcon}>
-    {advice.icon}
-</Text>
-
-<View style={{flex:1}}>
-
-<Text style={styles.adviceTitle}>
-    {advice.title}
-</Text>
-
-<Text style={styles.adviceDescription}>
-    {advice.description}
-</Text>
-
-</View>
-
-</LinearGradient>
+{advices.length > 0 && (
+    <AdviceCarousel advices={advices} />
 )}
 
         <View style={styles.pickerWrapper}>
@@ -922,4 +902,38 @@ openArrow: {
   color: "#1a5b4f",
   fontFamily: "Montt",
 },
+adviceCard:{
+    width:"90%",
+    flexDirection:"row",
+    alignItems:"center",
+
+    padding:18,
+
+    borderRadius:22,
+
+    marginBottom:25,
+
+    borderWidth:1,
+    borderColor:"#F2E4B6",
+
+    backgroundColor:"#FFFDF8"
+},
+
+adviceIcon:{
+    fontSize:34,
+    marginRight:15
+},
+
+adviceTitle:{
+    fontFamily:"Montt",
+    fontSize:16,
+    color:"#1a5b4f"
+},
+
+adviceDescription:{
+    marginTop:5,
+    fontFamily:"Mont",
+    color:"#666",
+    lineHeight:20
+}
 });

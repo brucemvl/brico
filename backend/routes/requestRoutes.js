@@ -10,8 +10,7 @@ const streamifier = require("streamifier");
 const sharp = require("sharp");
 const fetch = require("node-fetch");
 const User = require("../models/User");
-const { buildAdvice } = require("../services/adviceService");
-
+const { buildAdvices } = require("../services/adviceService");
 
 // 🔒 Fonction de détection avancée
 const containsContactInfo = (text) => {
@@ -81,11 +80,12 @@ router.get("/client", auth, async (req, res) => {
       };
     });
 
-    const advice = buildAdvice(formatted);
+    const currentUser = await User.findById(req.user.id);
+    const advices = buildAdvices(formatted, currentUser)
 
 res.json({
     requests: formatted,
-    advice
+    advices
 });
   } catch (err) {
     console.error("GET /requests/client error:", err);
