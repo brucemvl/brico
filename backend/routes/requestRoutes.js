@@ -11,7 +11,7 @@ const sharp = require("sharp");
 const fetch = require("node-fetch");
 const User = require("../models/User");
 const { buildAdvices } = require("../services/adviceService");
-const buildCoach = require("../utils/buildCoach");
+const buildCoach = require("../services/buildCoach");
 
 // 🔒 Fonction de détection avancée
 const containsContactInfo = (text) => {
