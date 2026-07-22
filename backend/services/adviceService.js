@@ -33,10 +33,7 @@ function buildAdvices(requests, user) {
         }
 
         // Budget
-        if (
-            request.status === "open" &&
-            (!request.budget || request.budget <= 0)
-        ) {
+        if (request.analysis.noBudget) {
             advices.push({
                 type: "budget",
                 priority: 85,
@@ -48,10 +45,7 @@ function buildAdvices(requests, user) {
         }
 
         // Description
-        if (
-            request.status === "open" &&
-            (!request.description || request.description.trim().length < 30)
-        ) {
+        if (request.analysis.shortDescription) {
             advices.push({
                 type: "description",
                 priority: 80,

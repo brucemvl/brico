@@ -143,7 +143,16 @@ const stats = {
 
   pendingOffers,
 
-  lastInteraction
+  lastInteraction,
+
+  views: r.views,
+
+    photos: r.images.length,
+
+    ageInDays: Math.floor(
+        (Date.now() - new Date(r.createdAt).getTime()) /
+        (1000 * 60 * 60 * 24)
+    )
 
 };
 
@@ -162,11 +171,14 @@ const hasUnread = !!unreadType;
     });
 
     const currentUser = await User.findById(req.user.id);
-    const advices = buildAdvices(formatted, currentUser)
+    const advices = buildAdvices(formatted, currentUser);
+
+const coach = buildCoach(formatted);
 
 res.json({
     requests: formatted,
-    advices
+    advices,
+    coach
 });
   } catch (err) {
     console.error("GET /requests/client error:", err);

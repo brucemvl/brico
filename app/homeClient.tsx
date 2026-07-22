@@ -17,6 +17,7 @@ import trash from "../assets/icons/trash3.png";
 import { AuthContext } from '../context/AuthContext';
 import { useApi } from "../services/api";
 import AdviceCarousel from './AdviceCarousel';
+import CoachCard from './coachCard';
 
 
 
@@ -44,6 +45,21 @@ type ProfileType = {
   averageRating?: number;
 };
 
+ type Coach = {
+    score: number;
+    level: string;
+    title: string;
+    subtitle: string;
+    strengths: string[];
+    improvements: string[];
+
+    action?: {
+        type: string;
+        requestId?: string;
+        label: string;
+    };
+};
+
 const defaultAvatar = "https://res.cloudinary.com/dwjssp2pd/image/upload/v1775330960/default_client.png";
 
 
@@ -59,6 +75,10 @@ export default function HomeClient() {
   const [pickerOpen, setPickerOpen] = useState(false);
 
     const [advices, setAdvices] = useState<any>(null);
+
+    const [coach, setCoach] = useState<Coach | null>(null);
+
+    
 
 
   const fetchNotifications = useCallback(async () => {
@@ -254,6 +274,7 @@ const shareApp = async () => {
 
         setRequests(data.requests);
 setAdvices(data.advices);
+setCoach(data.coach);
 
     } finally {
 
@@ -435,6 +456,53 @@ setAdvices(data.advices);
           </LinearGradient>
 
         </Animated.View>
+
+        {coach && (
+
+    <CoachCard
+
+        coach={coach}
+
+        onAction={() => {
+
+            switch (coach.action?.type) {
+
+                case "create_request":
+
+                    router.push("/createRequestForm");
+
+                    break;
+
+                case "edit_request":
+
+                    router.push({
+                        pathname: "/createRequestForm",
+                        params: {
+                            id: coach.action.requestId
+                        }
+                    });
+
+                    break;
+
+                case "conversation":
+
+                    router.push({
+                        pathname: "/requestDetailClient",
+                        params: {
+                            id: coach.action.requestId
+                        }
+                    });
+
+                    break;
+
+            }
+
+        }}
+
+    />
+
+)}
+
         <TouchableOpacity
   activeOpacity={0.9}
   onPress={() => router.push("/createRequestForm")}
