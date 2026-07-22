@@ -179,7 +179,11 @@ const coach = buildCoach(formatted);
 res.json({
     requests: formatted,
     advices,
-    coach
+    coach,
+    user: {
+        name: currentUser.name,
+        avatar: currentUser.profileImage.url
+    }
 });
   } catch (err) {
     console.error("GET /requests/client error:", err);

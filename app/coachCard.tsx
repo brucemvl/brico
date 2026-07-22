@@ -6,6 +6,7 @@ import {
     TouchableOpacity,
     View
 } from "react-native";
+import ScoreRing from "./scoreRing";
 
 type Coach = {
 
@@ -50,9 +51,9 @@ export default function CoachCard({
 
     const progressColor =
         coach.score >= 90
-            ? "#34C759"
+            ? "#23c34b"
             : coach.score >= 75
-            ? "#30a590"
+            ? "#1aa425"
             : coach.score >= 60
             ? "#FFB800"
             : "#FF6B6B";
@@ -75,28 +76,13 @@ export default function CoachCard({
 
             <View style={styles.scoreRow}>
 
-                <View
-                    style={[
-                        styles.scoreCircle,
-                        {
-                            borderColor:progressColor
-                        }
-                    ]}
-                >
+                <ScoreRing
 
-                    <Text style={styles.score}>
+    score={coach.score}
 
-                        {coach.score}
+    color={progressColor}
 
-                    </Text>
-
-                    <Text style={styles.over100}>
-
-                        /100
-
-                    </Text>
-
-                </View>
+/>
 
                 <View style={{flex:1}}>
 
@@ -203,13 +189,11 @@ const styles = StyleSheet.create({
 
 container:{
 
-    marginHorizontal:20,
-
-    marginTop:20,
+width: "92%",
 
     borderRadius:30,
 
-    padding:22,
+    padding:16,
 
     shadowColor:"#000",
 
@@ -244,29 +228,12 @@ scoreRow:{
 
     alignItems:"center",
 
-    marginBottom:25
+    marginBottom:25,
+    gap: 10
 
 },
 
-scoreCircle:{
 
-    width:95,
-
-    height:95,
-
-    borderRadius:48,
-
-    borderWidth:6,
-
-    justifyContent:"center",
-
-    alignItems:"center",
-
-    backgroundColor:"rgba(255,255,255,0.08)",
-
-    marginRight:18
-
-},
 
 score:{
 

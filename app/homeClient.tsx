@@ -60,6 +60,8 @@ type ProfileType = {
     };
 };
 
+
+
 const defaultAvatar = "https://res.cloudinary.com/dwjssp2pd/image/upload/v1775330960/default_client.png";
 
 
@@ -76,8 +78,9 @@ export default function HomeClient() {
 
     const [advices, setAdvices] = useState<any>(null);
 
-    const [coach, setCoach] = useState<Coach | null>(null);
 
+    const [coach, setCoach] = useState<Coach | null>(null);
+const [firstName, setFirstName] = useState("");
     
 
 
@@ -275,6 +278,7 @@ const shareApp = async () => {
         setRequests(data.requests);
 setAdvices(data.advices);
 setCoach(data.coach);
+setFirstName(data.firstName);
 
     } finally {
 
@@ -462,7 +466,7 @@ setCoach(data.coach);
     <CoachCard
 
         coach={coach}
-
+        firstName={firstName}
         onAction={() => {
 
             switch (coach.action?.type) {
