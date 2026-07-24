@@ -2,7 +2,8 @@ module.exports = function buildCoach(requests) {
 
     let score = 50;
 
-    const items = [];
+    const strengths = [];
+const improvements = [];
 
 let action = null;
 
