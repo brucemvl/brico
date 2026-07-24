@@ -1,12 +1,17 @@
 import { LinearGradient } from "expo-linear-gradient";
+import { useRouter } from 'expo-router';
 import React from "react";
 import {
+    Image,
     StyleSheet,
     Text,
     TouchableOpacity,
     View
 } from "react-native";
+import modifier from "../assets/icons/modifier.png";
 import ScoreRing from "./scoreRing";
+
+
 
 type Coach = {
 
@@ -37,6 +42,8 @@ type Coach = {
 type Props = {
 
     coach:Coach;
+    firstName: string;
+    avatar: string;
 
     onAction?:()=>void;
 
@@ -45,6 +52,8 @@ type Props = {
 export default function CoachCard({
 
     coach,
+    firstName,
+    avatar,
     onAction
 
 }:Props){
@@ -58,6 +67,10 @@ export default function CoachCard({
             ? "#FFB800"
             : "#FF6B6B";
 
+              const router = useRouter();
+              
+            
+
     return(
 
         <LinearGradient
@@ -68,14 +81,28 @@ export default function CoachCard({
 
         >
 
+<View style={{flexDirection: "row", justifyContent: "space-between", alignItems: "center"}}>
             <Text style={styles.header}>
 
-                🤖 Coach Briconnect
+                Bonjour {firstName}
 
             </Text>
+            <Image source={{uri: avatar}} style={{width: 70, height: 70, borderRadius: 35, marginRight: 5}}/>
+            <TouchableOpacity
+                          onPress={() => router.push({ pathname: "/profileClient" })}
+                          style={styles.profileButton}
+                          accessible
+                          accessibilityRole="button"
+                          accessibilityLabel="Modifier profl"
+                          accessibilityHint={`Modifier mon profil`}
+                        >
+                          <Image source={modifier} style={{ width: 20, height: 20 }} />
+                        </TouchableOpacity>
+            </View>
 
             <View style={styles.scoreRow}>
 
+<View style={{alignItems: "center", gap: 5}}>
                 <ScoreRing
 
     score={coach.score}
@@ -83,14 +110,16 @@ export default function CoachCard({
     color={progressColor}
 
 />
-
-                <View style={{flex:1}}>
-
-                    <Text style={styles.level}>
+<Text style={styles.level}>
 
                         {coach.level}
 
                     </Text>
+                    </View>
+
+                <View style={{flex:1}}>
+
+                    
 
                     <Text style={styles.title}>
 
@@ -218,7 +247,8 @@ header:{
 
     fontSize:18,
 
-    marginBottom:22
+    marginBottom:22,
+    width: "70%",
 
 },
 
@@ -355,6 +385,8 @@ buttonText:{
 
     fontSize:15
 
-}
+},
+  profileButton: { padding: 4, borderRadius: 50, backgroundColor: "#999999", position: "absolute", bottom: -4, right: 1, borderColor: "#f5f5f5", borderWidth: 1 },
+
 
 });

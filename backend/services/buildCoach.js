@@ -1,19 +1,21 @@
 module.exports = function buildCoach(requests) {
 
-    let score = 100;
+    let score = 50;
 
     const strengths = [];
     const improvements = [];
 
     let action = null;
 
+   
+
     const openRequests = requests.filter(r => r.status === "open");
 
     if (openRequests.length === 0) {
 
         return {
-            score: 100,
-            level: "Excellent",
+            score: 0,
+            level: "Bienvenue",
 
             title: "Bienvenue 👋",
 
@@ -34,9 +36,9 @@ module.exports = function buildCoach(requests) {
 
     const request = openRequests[0];
 
+
     if (request.analysis.noPhoto) {
 
-        score -= 25;
 
         improvements.push("Ajouter une photo");
 
@@ -48,13 +50,14 @@ module.exports = function buildCoach(requests) {
 
     } else {
 
+            score += 15;
+
         strengths.push("Photo ajoutée");
 
     }
 
     if (request.analysis.shortDescription) {
 
-        score -= 15;
 
         improvements.push("Description détaillée");
 
@@ -66,13 +69,13 @@ module.exports = function buildCoach(requests) {
 
     } else {
 
+        score += 10;
         strengths.push("Description complète");
 
     }
 
     if (request.analysis.noBudget) {
 
-        score -= 20;
 
         improvements.push("Ajouter un budget");
 
@@ -84,6 +87,7 @@ module.exports = function buildCoach(requests) {
 
     } else {
 
+        score += 10;
         strengths.push("Budget renseigné");
 
     }
@@ -97,26 +101,89 @@ module.exports = function buildCoach(requests) {
             requestId: request._id,
             label: "Voir les propositions"
         };
+    score += 5;
 
     }
+    
+
+   if (request.analysis.hasUnreadMessages) {
+
+    improvements.unshift(
+        `${request.analysis.unreadMessages} message(s) attend(ent) votre réponse`
+    );
+
+    action = {
+        type: "conversation",
+        requestId: request._id,
+        label: "Lire les messages"
+    };
+
+} else if (request.stats.messages > 0) {
+
+    score += 5;
+
+    strengths.push("Vous échangez régulièrement avec les artisans");
+
+}
+
+if (request.stats.conversations >= 3) {
+
+    strengths.push(
+        "Plusieurs artisans sont intéressés par votre demande"
+    );
+score += 5;
+}
+
+if (request.stats.views >= 20) {
+
+    strengths.push(
+        "Votre annonce attire beaucoup de professionnels"
+    );
+    score += 5;
+
+}
+
+if (request.stats.photos >= 3) {
+
+    strengths.push(
+        "Vos photos donnent confiance aux artisans"
+    );
+
+
+
+            score += 5;
+}
+
+
+if(request.stats.pendingOffers >= 3){
+
+    strengths.push(
+
+        "Vous pouvez comparer plusieurs artisans."
+
+    );
+
+    
+
+}
 
     if (request.analysis.manyViewsNoMessages) {
 
-        score -= 15;
 
         improvements.push("Rendre votre annonce plus attractive");
+        score -= 15;
 
     }
 
     if (request.analysis.oldOpenRequest) {
 
-        score -= 10;
 
         improvements.push("Actualiser votre annonce");
+        score -= 10;
 
     }
 
-    score = Math.max(score, 10);
+    score = Math.max(0, Math.min(score, 100));
 
     let level;
 
@@ -131,16 +198,28 @@ module.exports = function buildCoach(requests) {
     else
         level = "Faible";
 
+    let title;
+
+if(score >= 90){
+    title = "Votre annonce est excellente 🚀";
+}
+else if(score >= 75){
+    title = "Votre annonce est bien optimisée";
+}
+else if(score >= 60){
+    title = "Encore quelques ajustements";
+}
+else{
+    title = "Votre annonce mérite un petit coup de pouce";
+}
+
     return {
 
         score,
 
         level,
 
-        title:
-            score >= 75
-                ? "Votre annonce est bien optimisée"
-                : "Quelques améliorations sont possibles",
+        title,
 
         subtitle:
             "Optimisez votre annonce pour recevoir davantage de propositions.",

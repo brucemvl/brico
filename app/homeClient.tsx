@@ -16,7 +16,6 @@ import star from "../assets/icons/star.png";
 import trash from "../assets/icons/trash3.png";
 import { AuthContext } from '../context/AuthContext';
 import { useApi } from "../services/api";
-import AdviceCarousel from './AdviceCarousel';
 import CoachCard from './coachCard';
 
 
@@ -81,6 +80,7 @@ export default function HomeClient() {
 
     const [coach, setCoach] = useState<Coach | null>(null);
 const [firstName, setFirstName] = useState("");
+const [avatar, setAvatar] = useState("");
     
 
 
@@ -278,7 +278,8 @@ const shareApp = async () => {
         setRequests(data.requests);
 setAdvices(data.advices);
 setCoach(data.coach);
-setFirstName(data.firstName);
+setFirstName(data.user.name);
+setAvatar(data.user.avatar);
 
     } finally {
 
@@ -413,60 +414,21 @@ setFirstName(data.firstName);
           style={{
             alignItems: "center",
             marginBlock: 20,
-            width: 390,
-            height: 160,
-            paddingInline: 20,
+            width: "100%",
+            paddingInline: 10,
             opacity: fadeOut,
             transform: [{ translateY }, { scale }],
           }}
         >
-          <View style={{ width: "100%", alignItems: "center", position: "absolute", zIndex: 99, bottom: 115 }}>
-            <Image
-              source={{ uri: profile?.profileImage?.url || defaultAvatar }}
-              style={styles.avatar}
-              accessible={false}
-            />
-            <TouchableOpacity
-              onPress={() => router.push({ pathname: "/profileClient" })}
-              style={styles.profileButton}
-              accessible
-              accessibilityRole="button"
-              accessibilityLabel="Modifier profl"
-              accessibilityHint={`Modifier mon profil`}
-            >
-              <Image source={modifier} style={{ width: 20, height: 20 }} />
-            </TouchableOpacity>
-          </View>
-          <LinearGradient
-            colors={["#30a590", "#1a5b4f", "#1a5b4f"]}
-            style={{ width: "100%", alignItems: "center", paddingInline: 20, paddingTop: 54, paddingBottom: 24, borderRadius: 20, gap: 4 }}
-            accessible
-            accessibilityLabel={`Profil de ${profile?.name}, localisation ${profile?.location}, note ${formatRating(profile?.averageRating)}`}>
-            <Text style={{ fontFamily: "Montt", fontSize: 16, color: "white", letterSpacing: 0.3 }}>{profile?.name}</Text>
-            {profile?.location &&
-              <Text style={{ fontFamily: "Montt", fontSize: 13, color: "white", letterSpacing: 0.3 }}>{profile?.location}</Text>
-            }
-            {/* ⭐ Rating pro */}
-            {typeof profile?.averageRating === "number" && (
-              <View style={{ flexDirection: "row" }}>
-                {[1, 2, 3, 4, 5].map(i => (
-                  <Text key={i} style={{ fontSize: 16, color: "white" }}>
-                    {i <= Math.round(profile?.averageRating ?? 0) ? "⭐" : "☆"}
-                  </Text>
-                ))}
-              </View>
-            )}
-            <Text style={{ fontFamily: "Mont", color: "white" }}>({formatRating(profile?.averageRating)})</Text>
-          </LinearGradient>
-
-        </Animated.View>
-
-        {coach && (
+            
+            
+          {coach && (
 
     <CoachCard
 
         coach={coach}
         firstName={firstName}
+        avatar={avatar}
         onAction={() => {
 
             switch (coach.action?.type) {
@@ -506,6 +468,10 @@ setFirstName(data.firstName);
     />
 
 )}
+
+        </Animated.View>
+
+        
 
         <TouchableOpacity
   activeOpacity={0.9}
@@ -593,10 +559,6 @@ setFirstName(data.firstName);
     </LinearGradient>
   </Animated.View>
 </TouchableOpacity>
-
-{advices.length > 0 && (
-    <AdviceCarousel advices={advices} />
-)}
 
         <View style={styles.pickerWrapper}>
           <TouchableOpacity
@@ -863,8 +825,8 @@ accessible
 }
 
 const styles = StyleSheet.create({
-  container: { justifyContent: 'center', alignItems: 'center', paddingTop: 60, paddingBottom: 160, gap: 10 },
-  avatar: { height: 90, width: 90, borderRadius: 45, borderWidth: 2, borderColor: "#fcfcfc" },
+  container: { justifyContent: 'center', alignItems: 'center', paddingTop: 25, paddingBottom: 160, gap: 10 },
+  avatarr: { height: 90, width: 90, borderRadius: 45, borderWidth: 2, borderColor: "#fcfcfc" },
   profileButton: { padding: 5, borderRadius: 50, backgroundColor: "#999999", position: "absolute", bottom: 5, right: 8, borderColor: "#f5f5f5", borderWidth: 1 },
   title: { fontSize: 24, fontFamily: 'Montt', marginBottom: 20, textAlign: 'center' },
 card: {
