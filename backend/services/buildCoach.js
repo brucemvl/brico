@@ -294,8 +294,8 @@ improvements.sort((a, b) => b.priority - a.priority);
     subtitle:
         "Optimisez votre annonce pour recevoir davantage de propositions.",
 
-    strengths: uniqueStrengths,
-    improvements: uniqueImprovements,
+    strengths,
+    improvements,
 
     action
 
