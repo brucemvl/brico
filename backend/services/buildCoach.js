@@ -24,7 +24,19 @@ let action = null;
 
             strengths: [],
 
-            improvements: ["Créer une demande"],
+            improvements: [
+    {
+        priority: 100,
+        icon: "🚀",
+        title: "Créez votre première demande",
+        description:
+            "Publiez votre projet pour recevoir vos premières propositions.",
+        action: {
+            type: "create_request",
+            label: "Créer une demande"
+        }
+    }
+],
 
             action: {
                 type: "create_request",
@@ -271,27 +283,21 @@ else{
     title = "Votre annonce mérite un petit coup de pouce";
 }
 
-const uniqueStrengths = [...new Set(strengths)];
-const uniqueImprovements = [...new Set(improvements)];
 
 improvements.sort((a, b) => b.priority - a.priority);
 
     return {
 
         score,
+    level,
+    title,
+    subtitle:
+        "Optimisez votre annonce pour recevoir davantage de propositions.",
 
-        level,
+    strengths: uniqueStrengths,
+    improvements: uniqueImprovements,
 
-        title,
-
-        subtitle:
-            "Optimisez votre annonce pour recevoir davantage de propositions.",
-
-        uniqueStrengths,
-
-        uniqueImprovements,
-
-        action
+    action
 
     };
 
