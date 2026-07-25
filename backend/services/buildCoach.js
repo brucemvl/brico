@@ -204,7 +204,7 @@ if (openRequests.length === 0) {
 
     action = improvements[improvements.length - 1].action;
 
-} else if (request.stats.messages > 0) {
+} else if (request.stats.messages > 2) {
 
     score += 5;
 
