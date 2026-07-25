@@ -9,9 +9,11 @@ let action = null;
 
    
 
-    const openRequests = requests.filter(r => r.status === "open");
+    const openRequests = requests.filter(
+    r => r.status === "open" || r.status === "in_progress"
+);
 
-    if (openRequests.length === 0) {
+    if (requests.length === 0) {
 
         return {
             score: 0,
@@ -45,6 +47,39 @@ let action = null;
         };
 
     }
+
+    // Client existant : plus aucune demande ouverte
+if (openRequests.length === 0) {
+
+    return {
+        score: 100,
+        level: "Excellent",
+        title: "Bravo 🎉",
+        subtitle: "Vous n'avez actuellement aucune demande en cours.",
+
+        strengths: [
+            {
+                icon: "✅",
+                text: "Toutes vos demandes sont terminées."
+            }
+        ],
+
+        improvements: [
+            {
+                priority: 100,
+                icon: "🏡",
+                title: "Un nouveau projet ?",
+                description:
+                    "Publiez une nouvelle demande lorsque vous en aurez besoin.",
+                action: {
+                    type: "create_request",
+                    label: "Nouvelle demande"
+                }
+            }
+        ]
+    };
+
+}
 
     const request = openRequests[0];
 
