@@ -24,6 +24,7 @@ router.get("/me", auth, async (req, res) => {
 });
 
 router.get("/me/pro-coach", auth, async (req, res) => {
+  console.log("COACH ROUTE");
   try {
 
     const user = await User.findById(req.user.id);
