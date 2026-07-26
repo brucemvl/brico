@@ -46,6 +46,26 @@ router.post("/push-token", auth, async (req, res) => {
   }
 });
 
+
+router.get("/me/pro-coach", auth, async (req, res) => {
+  try {
+
+    const user = await User.findById(req.user.id);
+
+    if (!user || user.role !== "pro") {
+      return res.status(404).json({ error: "Professionnel introuvable" });
+    }
+
+    const coach = buildCoachPro(user);
+
+    res.json(coach);
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // 🔹 PUT /users/profile/pro → mise à jour profil pro
 router.put(
   "/profile/pro",
@@ -328,24 +348,6 @@ router.get("/:id", auth, async (req, res) => {
   }
 });
 
-router.get("/me/pro-coach", auth, async (req, res) => {
-  try {
-
-    const user = await User.findById(req.user.id);
-
-    if (!user || user.role !== "pro") {
-      return res.status(404).json({ error: "Professionnel introuvable" });
-    }
-
-    const coach = buildCoachPro(user);
-
-    res.json(coach);
-
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: err.message });
-  }
-});
 
 //AVIS
 router.post("/:id/review", auth, upload.array("photos", 5), async (req, res) => {

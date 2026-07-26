@@ -19,12 +19,12 @@ import {
 import logo from "../assets/briconnect33.png";
 import fond from "../assets/convert_1.png";
 import msg from "../assets/icons/enveloppe.png";
-import modifier from "../assets/icons/modifier.png";
 import notifIcon from "../assets/icons/notif.png";
 import settings from "../assets/icons/settings.png";
 import share from "../assets/icons/share.png";
 import star from "../assets/icons/star.png";
 import { useApi } from "../services/api";
+import CoachCard from "./coachCard";
 
 
 
@@ -56,6 +56,30 @@ createdAt?: string;
 views?: number;
 };
 
+type Improvement = {
+  priority: number;
+  icon: string;
+  title: string;
+  description: string;
+  action?: {
+    type: string;
+    requestId?: string;
+    label: string;
+  };
+};
+
+type CoachPro = {
+  score: number;
+  level: string;
+  title: string;
+  subtitle: string;
+  strengths: {
+    icon: string;
+    text: string;
+  }[];
+  improvements: Improvement[];
+};
+
 const categories = ["Plomberie", "Peinture", "Agencement", "Electricité", "Carrelage", "Divers", "Jardinage"];
 
 const defaultAvatar = "https://res.cloudinary.com/dwjssp2pd/image/upload/v1773074497/default_pro.jpg";
@@ -72,6 +96,7 @@ export default function HomePro() {
   averageRating?: number;
   proBadge?: boolean
 };
+const [coach, setCoach] = useState<CoachPro | null>(null);
 
 const [requestView, setRequestView] = useState<"requests" | "deals" | "completed">("requests");
 const [pickerOpen, setPickerOpen] = useState(false);
@@ -206,14 +231,14 @@ useEffect(() => {
 
   // 🔹 Charger le profil
   useEffect(() => {
-    const [coach, setCoach] = useState(null);
+    
 
     const loadProfile = async () => {
       try {
         const data = await apiFetch("/users/me");
     setProfile(data);
 
-    const coachData = await apiFetch("/users/coach/pro");
+    const coachData = await apiFetch("/users/me/pro-coach");
     setCoach(coachData);
       } catch (err) {
         console.log("Erreur profil", err);
@@ -444,56 +469,24 @@ const filteredRequests = (() => {
     transform: [{ translateY }, { scale }],
   }}
 >
-    <View style={{width: "100%", alignItems: "center", position: "absolute", zIndex: 99, bottom: 90}}>
-<TouchableOpacity onPress={openProfile}
-accessible
-  accessibilityRole="button"
-  accessibilityLabel="Mon profil"
-  accessibilityHint={`Voir mon profil`} >
-<Image
-  source={{ uri: profile?.profileImage?.url || defaultAvatar }}
-  style={styles.avatar}
-/>
-</TouchableOpacity>
-{profile?.proBadge && <View style={{backgroundColor: "gold",  borderRadius: 10, height: 20, width: 20, alignItems: "center", justifyContent: "center", position: "absolute", right: 145}}><Text style={{fontSize: 10}}>✔️</Text></View> }
-      <TouchableOpacity
-        onPress={() => router.push({ pathname: "/profilePro" })}
-        style={styles.profileButton}
-        accessible
-  accessibilityRole="button"
-  accessibilityLabel="Modifier profl"
-  accessibilityHint={`Modifier mon profil`}
-      >
-        <Image source={modifier} style={{width: 20, height: 20}}/>
-      </TouchableOpacity>
-      </View>
-      <LinearGradient colors={[ "#30a590", "#1a5b4f","#1a5b4f" ]}  style={{width: "100%", alignItems: "center", paddingInline: 6, paddingTop: 56, paddingBottom: 24, borderRadius: 20}}>
-      <View style={{flexDirection: "row", justifyContent: "space-between"}}>
-        <View style={{width: "34%", alignItems: "center", justifyContent: "center", gap: 5}}>
-      <Text style={{fontFamily: "Londrinak", fontSize: 14, color: "white", letterSpacing: 0.3, textAlign: "center" }}>{profile?.name}</Text>
-      {profile?.location && 
-      <Text style={{fontFamily: "Londrina", fontSize: 12, color: "white", letterSpacing: 0.3, textAlign: "center" }}>{profile?.location}</Text>
-      }
-      </View>
-      <View style={{gap: 20, alignItems: "center", borderLeftColor: "#fff", borderLeftWidth: 1, borderRightColor: "#fff", borderRightWidth: 1, width: "32%"}}>
-<Text style={{fontFamily: "Montt", color: "#fff", fontSize: 12}}>Réalisations</Text>
-<Text style={{fontFamily: "Mont", color: "#fff", fontSize: 15}}>{finish.length}</Text>
-      </View>
-      <View style={{width: "34%", alignItems: "center", gap: 20}}>
-      {/* ⭐ Rating pro */}
-{typeof profile?.averageRating === "number" && (
-  <View style={{ flexDirection: "row"}}>
-    {[1,2,3,4,5].map(i => (
-      <Text key={i} style={{ fontSize: 12, color: "white" }}>
-        {i <= Math.round(profile?.averageRating ?? 0) ? "⭐" : "☆"}
-      </Text>
-    ))}
-  </View>
+    {coach && (
+    <CoachCard
+        coach={coach}
+        firstName={profile?.name ?? ""}
+        avatar={profile?.profileImage?.url ?? defaultAvatar}
+        onAction={(action) => {
+            if (!action) return;
+
+            switch (action.type) {
+
+                case "profile":
+                    router.push("/profilePro");
+                    break;
+
+            }
+        }}
+    />
 )}
-    <Text style={{fontFamily: "Mont", color: "white", fontSize: 15}}>({formatRating(profile?.averageRating)})</Text>
-    </View>
-    </View>
-    </LinearGradient>
 
 </Animated.View>
 

@@ -294,7 +294,8 @@ const styles = StyleSheet.create({
             width: 0,
             height: 8
         },
-        elevation: 10
+        elevation: 10,
+        
     },
 
     header: {
