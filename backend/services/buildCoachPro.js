@@ -182,7 +182,7 @@ if (user.proBadge) {
 
 }
 
-if(user.ratings.length >= 5){
+if((user.ratings?.length || 0) >= 5){
 
     score += 10;
 
@@ -300,4 +300,47 @@ else if (stats.completedJobs >= 5) {
     });
 
 }
+
+score = Math.min(100, score);
+
+improvements.sort((a, b) => b.priority - a.priority);
+
+let level;
+
+if (score >= 90)
+    level = "Expert";
+else if (score >= 75)
+    level = "Très bon";
+else if (score >= 60)
+    level = "Bon";
+else if (score >= 40)
+    level = "À améliorer";
+else
+    level = "Débutant";
+
+let title;
+
+if (score >= 90)
+    title = "Votre profil inspire confiance 🚀";
+else if (score >= 75)
+    title = "Votre profil est très attractif";
+else if (score >= 60)
+    title = "Encore quelques améliorations";
+else
+    title = "Complétez votre profil pour attirer plus de clients";
+
+return {
+
+    score,
+    level,
+    title,
+
+    subtitle:
+        "Un profil complet reçoit davantage de demandes.",
+
+    strengths,
+    improvements,
+    action: improvements[0]?.action
+
+};
 }

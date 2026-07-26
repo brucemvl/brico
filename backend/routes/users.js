@@ -24,21 +24,21 @@ router.get("/me", auth, async (req, res) => {
 });
 
 router.get("/me/pro-coach", auth, async (req, res) => {
-  console.log("COACH ROUTE");
   try {
+    console.log("COACH ROUTE");
 
     const user = await User.findById(req.user.id);
 
-    if (!user || user.role !== "pro") {
-      return res.status(404).json({ error: "Professionnel introuvable" });
-    }
+    console.log("USER OK");
 
     const coach = buildCoachPro(user);
+
+    console.log("COACH :", coach);
 
     res.json(coach);
 
   } catch (err) {
-    console.error(err);
+    console.error("ERREUR COACH :", err);
     res.status(500).json({ error: err.message });
   }
 });
