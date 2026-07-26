@@ -206,10 +206,15 @@ useEffect(() => {
 
   // 🔹 Charger le profil
   useEffect(() => {
+    const [coach, setCoach] = useState(null);
+
     const loadProfile = async () => {
       try {
         const data = await apiFetch("/users/me");
-        setProfile(data);
+    setProfile(data);
+
+    const coachData = await apiFetch("/users/coach/pro");
+    setCoach(coachData);
       } catch (err) {
         console.log("Erreur profil", err);
       }

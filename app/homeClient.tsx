@@ -44,19 +44,34 @@ type ProfileType = {
   averageRating?: number;
 };
 
- type Coach = {
+ type CoachAction = {
+    type: string;
+    requestId?: string;
+    label: string;
+};
+
+type Improvement = {
+    priority: number;
+    icon: string;
+    title: string;
+    description: string;
+    action?: CoachAction;
+};
+
+type Coach = {
     score: number;
     level: string;
     title: string;
     subtitle: string;
-    strengths: string[];
-    improvements: string[];
 
-    action?: {
-        type: string;
-        requestId?: string;
-        label: string;
-    };
+    strengths: {
+        icon: string;
+        text: string;
+    }[];
+
+    improvements: Improvement[];
+
+    action?: CoachAction;
 };
 
 
@@ -429,41 +444,28 @@ setAvatar(data.user.avatar);
         coach={coach}
         firstName={firstName}
         avatar={avatar}
-        onAction={() => {
+        onAction={(action) => {
+    switch (action?.type) {
 
-            switch (coach.action?.type) {
+        case "create_request":
+            router.push("/createRequestForm");
+            break;
 
-                case "create_request":
+        case "edit_request":
+            router.push({
+                pathname: "/createRequestForm",
+                params: { id: action.requestId }
+            });
+            break;
 
-                    router.push("/createRequestForm");
-
-                    break;
-
-                case "edit_request":
-
-                    router.push({
-                        pathname: "/createRequestForm",
-                        params: {
-                            id: coach.action.requestId
-                        }
-                    });
-
-                    break;
-
-                case "conversation":
-
-                    router.push({
-                        pathname: "/requestDetailClient",
-                        params: {
-                            id: coach.action.requestId
-                        }
-                    });
-
-                    break;
-
-            }
-
-        }}
+        case "conversation":
+            router.push({
+                pathname: "/conversation",
+                params: { requestId: action.requestId }
+            });
+            break;
+    }
+}}
 
     />
 
