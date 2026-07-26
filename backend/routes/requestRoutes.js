@@ -10,7 +10,6 @@ const streamifier = require("streamifier");
 const sharp = require("sharp");
 const fetch = require("node-fetch");
 const User = require("../models/User");
-const { buildAdvices } = require("../services/adviceService");
 const buildCoach = require("../services/buildCoach");
 
 // 🔒 Fonction de détection avancée
@@ -172,13 +171,11 @@ const hasUnread = !!unreadType;
     });
 
     const currentUser = await User.findById(req.user.id);
-    const advices = buildAdvices(formatted, currentUser);
 
 const coach = buildCoach(formatted);
 
 res.json({
     requests: formatted,
-    advices,
     coach,
     user: {
         name: currentUser.name,
