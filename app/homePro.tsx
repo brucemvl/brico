@@ -24,7 +24,7 @@ import settings from "../assets/icons/settings.png";
 import share from "../assets/icons/share.png";
 import star from "../assets/icons/star.png";
 import { useApi } from "../services/api";
-import CoachCard from "./coachCard";
+import CoachCardPro from "./coachCardPro";
 
 
 
@@ -128,7 +128,7 @@ const [pickerOpen, setPickerOpen] = useState(false);
   const scrollY = new Animated.Value(0);
 
   const headerOpacity = scrollY.interpolate({
-  inputRange: [0, 60],
+  inputRange: [0, 100],
   outputRange: [0, 1],
   extrapolate: "clamp",
 });
@@ -140,19 +140,19 @@ const settingsOpacity = scrollY.interpolate({
 });
 
 const fadeOut = scrollY.interpolate({
-  inputRange: [0, 100],
+  inputRange: [0, 720],
   outputRange: [1, 0],
   extrapolate: "clamp",
 });
 
 const translateY = scrollY.interpolate({
-  inputRange: [0, 100],
+  inputRange: [0, 820],
   outputRange: [0, -40],
   extrapolate: "clamp",
 });
 
 const scale = scrollY.interpolate({
-  inputRange: [0, 100],
+  inputRange: [0, 220],
   outputRange: [1, 0.90],
   extrapolate: "clamp",
 });
@@ -462,7 +462,7 @@ const filteredRequests = (() => {
 <Animated.View
   style={{
     alignItems: "center",
-    marginBlock: 20,
+    marginBottom: 20,
     width: "100%",
     paddingInline: 12,
     opacity: fadeOut,
@@ -470,7 +470,7 @@ const filteredRequests = (() => {
   }}
 >
     {coach && (
-    <CoachCard
+    <CoachCardPro
         coach={coach}
         firstName={profile?.name ?? ""}
         avatar={profile?.profileImage?.url ?? defaultAvatar}
@@ -807,7 +807,7 @@ const images = item.images ?? [];
 }
 
 const styles = StyleSheet.create({
-  container: { paddingTop: 60, alignItems: "center", paddingBottom: 160},
+  container: { paddingTop: 40, alignItems: "center", paddingBottom: 160},
   center: { flex: 1, justifyContent: "center", alignItems: "center" },
   title: { fontSize: 24, fontFamily: "Montt", marginBottom: 15 },
   avatar: { height: 90, width: 90, resizeMode: "cover", borderRadius: 45, borderWidth: 2, borderColor: "#fcfcfc" },

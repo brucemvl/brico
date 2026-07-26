@@ -33,6 +33,29 @@ type City = {
   };
 };
 
+type Improvement = {
+  priority: number;
+  icon: string;
+  title: string;
+  description: string;
+  action?: {
+    type: string;
+    requestId?: string;
+    label: string;
+  };
+};
+
+type CoachPro = {
+  score: number;
+  level: string;
+  title: string;
+  subtitle: string;
+  strengths: {
+    icon: string;
+    text: string;
+  }[];
+  improvements: Improvement[];
+};
 
 
 const categories = ["Plomberie", "Electricité", "Peinture", "Agencement", "Carrelage", "Divers", "Jardinage"];
@@ -67,6 +90,8 @@ export default function ProfilePro() {
     outputRange: [0, 1],
     extrapolate: "clamp",
   });
+
+  const [coach, setCoach] = useState<CoachPro | null>(null);
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -119,6 +144,8 @@ const [cities, setCities] = useState<City[]>([]);
   const fetchProfile = async () => {
     try {
       const data = await apiFetch("/users/me");
+      const coachData = await apiFetch("/users/me/pro-coach");
+setCoach(coachData);
       setName(data.name || "");
       setEmail(data.email || "");
       setPhone(data.phone || "");
@@ -240,6 +267,30 @@ setSkills(Array.isArray(data.skills) ? data.skills : []);
       setSkills(skills.filter((s) => s !== skill));
     else setSkills([...skills, skill]);
   };
+
+const completion = React.useMemo(() => {
+  let score = 0;
+
+  if (profileImage) score += 15;
+  if (description.trim()) score += 15;
+  if (location) score += 10;
+  if (phone) score += 5;
+  if (siret) score += 10;
+  if (skills.length >= 3) score += 15;
+  if (equipment.length >= 3) score += 10;
+  if (portfolio.length >= 6) score += 20;
+
+  return score;
+}, [
+  profileImage,
+  description,
+  location,
+  phone,
+  siret,
+  skills,
+  equipment,
+  portfolio,
+]);
 
   const IDF_DEPARTMENTS = ["75", "92", "93", "94", "77", "78", "91", "95"];
 
@@ -401,7 +452,7 @@ Alert.alert(
   return (
     <ImageBackground source={fond} style={{ flex: 1 }} >
       <KeyboardAvoidingView
-        style={{ paddingBottom: 40 }}
+        style={{ paddingBottom: 40, flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
          // ajuste selon ton header
       >
@@ -419,10 +470,13 @@ Alert.alert(
 > 
 
 <View 
-style={{alignItems: "center", gap: 10, backgroundColor: "#d8d8d8", padding: 15, borderRadius: 20, width: "100%"}}
+style={{alignItems: "center", gap: 10, backgroundColor: "#f3f3f3", padding: 15, borderRadius: 25, width: "100%", shadowColor:"#000",
+    shadowOpacity:.18,
+    shadowRadius:8,
+    elevation:5}}
 accessible
   accessibilityLabel="Photo de profil" >
-      <Text style={{fontFamily: "Mont", color: "#000000"}}>Photo de profil</Text>
+      <Text style={{fontFamily: "Montmed", color: "#000000"}}>Photo de profil</Text>
       {profileImage && (
     <Image
       source={{ uri: profileImage.url || profileImage.uri }}
@@ -452,6 +506,26 @@ accessible
       <Text style={{ color: "white", fontFamily: "Mont" }}>Supprimer</Text>
     </TouchableOpacity>
     </View>
+    </View>
+
+<View>
+    <Text style={styles.score}>{completion}%</Text>
+
+    <View style={styles.progressBar}>
+        <Animated.View
+            style={[
+                styles.progressFill,
+                {
+                    width: `${completion}%`
+                }
+            ]}
+        />
+    </View>
+
+    <Text style={styles.progressText}>
+        {coach.subtitle}
+    </Text>
+
     </View>
 
 <View style={styles.box}>
@@ -493,6 +567,7 @@ accessible
       backgroundColor: "#fff",
       padding: 10,
       borderRadius: 8,
+      fontSize: 16
     }}
     accessible
     accessibilityLabel="Rechercher une ville"
@@ -590,9 +665,20 @@ accessible
         ))}
       </View>
 
-      <TouchableOpacity style={[styles.addProfileButton, {marginBlock: 15, borderColor: "#2c6724", borderWidth: 1}]} onPress={handlePickPortfolioImages} >
-        <Text style={{color: "#fff", fontFamily: "Mont"}}>Ajouter des photos</Text>
-      </TouchableOpacity>
+      <TouchableOpacity
+style={styles.addPortfolioCard}
+onPress={handlePickPortfolioImages}
+>
+
+<Text style={styles.addIcon}>
++
+</Text>
+
+<Text style={styles.addText}>
+Ajouter
+</Text>
+
+</TouchableOpacity>
       </View>
 
       <View style={{ marginTop: 20 }}>
@@ -684,13 +770,13 @@ backgroundColor: "#247868",
 width: "100%",
 alignItems: "center",
 justifyContent: "center",
-padding: 10,
-borderRadius: 20
+padding: 16,
+borderRadius: 25
   },
   input: {
     borderWidth: 1,
     borderColor: "#ffffff",
-    borderRadius: 8,
+    borderRadius: 12,
     padding: 10,
     marginBottom: 15,
     marginTop: 10,
@@ -698,7 +784,7 @@ borderRadius: 20
     backgroundColor: "#ffffff",
     
     fontFamily: "Londrina",
-    fontSize: 15
+    fontSize: 16
   },
   profileImage: {
     width: 90,
@@ -715,9 +801,9 @@ borderRadius: 20
     margin: 5,
   },
   portfolioImage: {
-    width: 95,
-    height: 95,
-    borderRadius: 10,
+    width: 110,
+    height: 110,
+    borderRadius: 15,
     borderWidth: 2,
     borderColor: "#fff"
   },
@@ -829,4 +915,60 @@ cityText: {
   fontFamily: "Londrina",
 },
 
+score:{
+    marginTop:18,
+    fontSize:36,
+    fontFamily:"Montt",
+    color:"#247868",
+    alignSelf:"center"
+},
+
+progressBar:{
+    marginTop:15,
+    height:14,
+    borderRadius:10,
+    backgroundColor:"#ECECEC",
+    overflow:"hidden"
+},
+
+progressFill:{
+    height:"100%",
+    borderRadius:10,
+    backgroundColor:"#38B26C"
+},
+
+progressText:{
+    marginTop:12,
+    textAlign:"center",
+    color:"#666",
+    fontFamily:"Montmed"
+},
+addPortfolioCard:{
+    width:100,
+    height:100,
+
+    borderRadius:15,
+
+    borderWidth:2,
+    borderStyle:"dashed",
+    borderColor:"#bbb",
+
+    justifyContent:"center",
+    alignItems:"center",
+
+    margin:6,
+
+    backgroundColor:"#fafafa"
+},
+
+addIcon:{
+    fontSize:34,
+    color:"#247868"
+},
+
+addText:{
+    marginTop:4,
+    fontFamily:"Mont",
+    color:"#666"
+},
 });
