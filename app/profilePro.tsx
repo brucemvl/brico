@@ -470,13 +470,13 @@ Alert.alert(
 > 
 
 <View 
-style={{alignItems: "center", gap: 10, backgroundColor: "#f3f3f3", padding: 15, borderRadius: 25, width: "100%", shadowColor:"#000",
-    shadowOpacity:.18,
-    shadowRadius:8,
+style={{alignItems: "center", gap: 10, backgroundColor: "#ffffff", padding: 15, borderRadius: 25, width: "100%", shadowColor:"#247868", shadowOffset: {width: 0, height: 0},
+    shadowOpacity:.58,
+    shadowRadius:5,
     elevation:5}}
 accessible
   accessibilityLabel="Photo de profil" >
-      <Text style={{fontFamily: "Montmed", color: "#000000"}}>Photo de profil</Text>
+      <Text style={{fontFamily: "Montt", color: "#247868"}}>Photo de profil</Text>
       {profileImage && (
     <Image
       source={{ uri: profileImage.url || profileImage.uri }}
@@ -529,7 +529,7 @@ accessible
     </View>
 
 <View style={styles.box}>
-      <Text style={{fontFamily: "Mont", color: "#ffffff"}}>Nom</Text>
+      <Text style={{fontFamily: "Montt", color: "#247868"}}>👤 Nom</Text>
       <TextInput 
       style={styles.input} 
       value={name} 
@@ -540,7 +540,7 @@ accessible
 </View>
 
 <View style={styles.box}>
-      <Text style={{fontFamily: "Mont", color: "#ffffff"}}>Téléphone</Text>
+      <Text style={{fontFamily: "Montt", color: "#247868"}}>📞 Téléphone</Text>
       <TextInput 
       style={styles.input} 
       value={phone} 
@@ -553,8 +553,8 @@ accessible
 </View>
 
 <View style={[styles.box, { paddingBottom: 20 }]}>
-  <Text style={{ fontFamily: "Mont", color: "#ffffff", marginBottom: 10 }}>
-    Localisation
+  <Text style={{ fontFamily: "Montt", color: "#247868", marginBottom: 10 }}>
+    📍 Localisation
   </Text>
 
   <TextInput
@@ -564,10 +564,12 @@ accessible
     style={{
       width: 320,
       fontFamily: "Londrina",
-      backgroundColor: "#fff",
+          backgroundColor: "#f1f1f1",
       padding: 10,
       borderRadius: 8,
-      fontSize: 16
+      fontSize: 16,
+      borderWidth: 1,
+      borderColor: "#247868"
     }}
     accessible
     accessibilityLabel="Rechercher une ville"
@@ -578,7 +580,7 @@ accessible
 </View>
 
 <View style={styles.box}>
-      <Text style={{fontFamily: "Mont", color: "#ffffff"}}>SIRET</Text>
+      <Text style={{fontFamily: "Montt", color: "#247868"}}>🏢 SIRET</Text>
       <TextInput style={styles.input} value={siret} onChangeText={setSiret} keyboardType="numeric" maxLength={14} accessible accessibilityLabel="Numéro SIRET" accessibilityHint="Saisir votre numéro professionnel" />
       {siret.length === 14 && (
         <View style={styles.badge}><Text style={styles.badgeText}>✔ Badge PRO activé</Text></View>
@@ -586,7 +588,7 @@ accessible
       </View>
 
 <View style={styles.box}>
-      <Text style={{fontFamily: "Mont", color: "#ffffff"}}>Description</Text>
+      <Text style={{fontFamily: "Montt", color: "#247868"}}>📝 Description</Text>
       <TextInput 
       style={[styles.input, { height: 100 }]} 
       value={description} 
@@ -598,7 +600,7 @@ accessible
 </View>
 
 <View style={styles.box}>
-      <Text style={{ marginBottom: 15, fontFamily: "Mont", color: "#ffffff" }}>Compétences</Text>
+      <Text style={{ marginBottom: 15, fontFamily: "Montt", color: "#247868" }}>Compétences</Text>
       <View style={styles.skillsContainer} accessible accessibilityLabel="Sélection des compétences">
         {categories.map((cat) => (
           <TouchableOpacity key={cat} style={[styles.skillButton, skills.includes(cat) && styles.skillSelected]} onPress={() => toggleSkill(cat)}>
@@ -609,7 +611,7 @@ accessible
       </View>
 
       <View style={styles.box}>
-      <Text style={{marginBottom: 15, fontFamily: "Mont", color: "#ffffff"}}>Matériel</Text>
+      <Text style={{marginBottom: 15, fontFamily: "Montt", color: "#247868"}}>🧰 Matériel</Text>
 <View style={styles.skillsContainer}>
     {equipmentOptions.map((item) => (
       <TouchableOpacity
@@ -635,7 +637,7 @@ accessible
 
 
 <View style={styles.box}>
-      <Text style={{ marginBottom: 15, fontFamily: "Mont", color: "#ffffff" }}>Mes réalisations</Text>
+      <Text style={{ marginBottom: 15, fontFamily: "Montt", color: "#247868" }}>Mes réalisations</Text>
 
       <View style={styles.portfolioContainer}>
         {portfolio.map((img, index) => (
@@ -766,22 +768,27 @@ const styles = StyleSheet.create({
 },
   title: { fontSize: 22, fontFamily: "Montt" },
   box: {
-backgroundColor: "#247868",
+backgroundColor: "#ffffff",
 width: "100%",
 alignItems: "center",
 justifyContent: "center",
 padding: 16,
-borderRadius: 25
+borderRadius: 25,
+shadowColor:"#247868",
+    shadowOpacity:.78,
+    shadowRadius:5,
+    shadowOffset: {width: 0, height: 0},
+    elevation:5
   },
   input: {
     borderWidth: 1,
-    borderColor: "#ffffff",
+    borderColor: "#247868",
     borderRadius: 12,
     padding: 10,
     marginBottom: 15,
     marginTop: 10,
     width: "100%",
-    backgroundColor: "#ffffff",
+    backgroundColor: "#f1f1f1",
     
     fontFamily: "Londrina",
     fontSize: 16

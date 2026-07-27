@@ -180,7 +180,7 @@ const shareApp = async () => {
   };
 
   const headerOpacity = scrollY.interpolate({
-    inputRange: [0, 60],
+    inputRange: [0, 100],
     outputRange: [0, 1],
     extrapolate: "clamp",
   });
@@ -192,19 +192,19 @@ const shareApp = async () => {
   });
 
   const fadeOut = scrollY.interpolate({
-    inputRange: [0, 100],
+    inputRange: [0, 500],
     outputRange: [1, 0],
     extrapolate: "clamp",
   });
 
   const translateY = scrollY.interpolate({
-    inputRange: [0, 100],
+    inputRange: [0, 300],
     outputRange: [0, -40],
     extrapolate: "clamp",
   });
 
   const scale = scrollY.interpolate({
-    inputRange: [0, 100],
+    inputRange: [0, 300],
     outputRange: [1, 0.90],
     extrapolate: "clamp",
   });
