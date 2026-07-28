@@ -378,6 +378,8 @@ heroBadge: {
   paddingHorizontal: 12,
   paddingVertical: 8,
   borderRadius: 20,
+  alignItems: "center",
+  justifyContent: "center"
 },
 
 heroBadgeText: {

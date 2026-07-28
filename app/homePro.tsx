@@ -402,9 +402,9 @@ const filteredRequests = (() => {
 
   if (loading) {
     return (
-      <View style={styles.center}>
+      <View style={[styles.container, {marginTop: 300, gap: 10}]}>
+        <Image source={logo} style={{width: 120, height: 120}}/>
         <ActivityIndicator color={"#1a5b4f"} />
-        <Text style={{fontFamily: "Londrinak", color: "#1a5b4f"}}>Chargement des demandes...</Text>
       </View>
     );
   }

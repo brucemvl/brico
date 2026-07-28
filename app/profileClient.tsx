@@ -299,7 +299,7 @@ setLocationQuery(data.location || "");
   keyboardShouldPersistTaps="handled"
 > 
 <Text style={styles.title}>Mon Profil</Text>
-<View style={{alignItems: "center", gap: 10, backgroundColor: "#d8d8d8", padding: 15, borderRadius: 20, width: "100%"}}>
+<View style={{alignItems: "center", gap: 10, backgroundColor: "#f8f8f8", padding: 15, borderRadius: 20, width: "100%", shadowColor:"#247868", shadowOpacity:.78, shadowRadius:5, shadowOffset: {width: 0, height: 0}, elevation:5}}>
 
 <Text style={{fontFamily: "Mont"}}>Photo</Text>
 
@@ -324,17 +324,17 @@ style={styles.profileImage}
 </View>
 
 <View style={styles.box}>
-      <Text style={{fontFamily: "Mont", color: "#ffffff"}}>Nom</Text>
+      <Text style={{fontFamily: "Montt", color: "#247868"}}>Nom</Text>
       <TextInput style={styles.input} value={name} onChangeText={setName} />
 </View>
 
 <View style={styles.box}>
-      <Text style={{fontFamily: "Mont", color: "#ffffff"}}>Téléphone</Text>
+      <Text style={{fontFamily: "Montt", color: "#247868"}}>Téléphone</Text>
       <TextInput style={styles.input} value={phone} onChangeText={setPhone} keyboardType="numeric" maxLength={10} />
 </View>
 
 <View style={[styles.box, { paddingBottom: 20 }]}>
-  <Text style={{ fontFamily: "Mont", color: "#ffffff", marginBottom: 10 }}>
+  <Text style={{ fontFamily: "Montt", color: "#247868", marginBottom: 10 }}>
     Localisation
   </Text>
 
@@ -343,11 +343,17 @@ style={styles.profileImage}
     onChangeText={searchCities}
     placeholder="Tapez une ville..."
     style={{
-      width: 320,
-      fontFamily: "Londrina",
-      backgroundColor: "#fff",
-      padding: 10,
-      borderRadius: 8,
+      borderWidth: 1,
+    borderColor: "#247868",
+    borderRadius: 12,
+    padding: 10,
+    marginBottom: 15,
+    marginTop: 10,
+    width: "100%",
+    backgroundColor: "#f1f1f1",
+    
+    fontFamily: "Londrina",
+    fontSize: 16
     }}
     accessible
     accessibilityLabel="Rechercher une ville"
@@ -430,7 +436,7 @@ const styles = StyleSheet.create({
 
 container:{
 alignItems:"center",
-paddingTop:40,
+paddingTop:30,
 paddingHorizontal:30,
 paddingBottom:80,
 gap: 15
@@ -439,28 +445,34 @@ gap: 15
 title:{
 fontSize:22,
 fontFamily:"Montt",
+color: "#247868"
 },
 
 input: {
     borderWidth: 1,
-    borderColor: "#ffffff",
-    borderRadius: 8,
+    borderColor: "#247868",
+    borderRadius: 12,
     padding: 10,
     marginBottom: 15,
     marginTop: 10,
     width: "100%",
-    backgroundColor: "#ffffff",
+    backgroundColor: "#f1f1f1",
     
     fontFamily: "Londrina",
-    fontSize: 15
+    fontSize: 16
   },
 box: {
-backgroundColor: "#247868",
+backgroundColor: "#ffffff",
 width: "100%",
 alignItems: "center",
 justifyContent: "center",
-padding: 8,
-borderRadius: 20
+padding: 16,
+borderRadius: 25,
+shadowColor:"#247868",
+    shadowOpacity:.78,
+    shadowRadius:5,
+    shadowOffset: {width: 0, height: 0},
+    elevation:5
   },
 
 profileImage:{

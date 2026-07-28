@@ -373,7 +373,7 @@ setAvatar(data.user.avatar);
   if (loading) {
     return (
       <View style={[styles.container, {marginTop: 300, gap: 10}]}>
-        <Image source={logo} style={{width: 120, height: 120}}/>
+        <Image source={logo} style={{width: 160, height: 160}}/>
         <ActivityIndicator color={"#1a5b4f"} />
       </View>
     );
