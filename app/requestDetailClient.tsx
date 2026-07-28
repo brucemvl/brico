@@ -253,6 +253,7 @@ export default function RequestDetailClient() {
     </Text>
       {
       sortedConversations?.map((conv) => {
+        if (!conv.pro) return null;
 const isPinned = userId ? conv.pinnedBy?.includes(userId) : false;
         const unread = userId
   ? conv.messages?.filter(
@@ -295,12 +296,12 @@ const isPinned = userId ? conv.pinnedBy?.includes(userId) : false;
           onPress={openConversation}
           accessible
   accessibilityRole="button"
-  accessibilityLabel={`Conversation avec ${conv.pro.name}`}
+  accessibilityLabel={`Conversation avec ${conv.pro?.name ?? "professionnel"}`}
   accessibilityHint="Ouvrir la discussion"
   >
             {conv.pro.profileImage?.url && <Image source={{ uri: conv.pro.profileImage.url }} style={styles.avatar} accessible={false} />}
             <View style={{ flex: 1 }}>
-              <Text style={{ fontFamily: "Londrinak", fontSize: 17 }}>{conv.pro.name}</Text>
+              <Text style={{ fontFamily: "Londrinak", fontSize: 17 }}>{conv.pro?.name ?? "Professionnel"}</Text>
               {conv.messages?.length > 0 && <Text numberOfLines={1} style={{fontFamily: "Kanit"}} accessible
   accessibilityLabel={`Dernier message : ${conv.messages?.at(-1)?.content || "Aucun message"}`}>{conv.messages[conv.messages.length - 1].content}</Text>}
             </View>

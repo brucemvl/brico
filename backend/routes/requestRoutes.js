@@ -321,13 +321,14 @@ if (isPro && !alreadyViewed) {
 }
 
     if (req.user.role === "client") {
-      const conversations = await Conversation.find({
-        request: req.params.id,
-        client: req.user.id
-      })
-        .populate("pro", "name profileImage")
-        .populate("messages.from", "name profileImage")
+      let conversations = await Conversation.find(
+        { request: req.params.id, client: req.user.id }) 
+        .populate("pro", "name profileImage") 
+        .populate("messages.from", "name profileImage") 
         .sort({ updatedAt: -1 });
+
+        // 🔹 Supprimer les conversations orphelines
+         conversations = conversations.filter(c => c.pro);
 
          // 🔹 Marquer la conversation comme lue
   await Conversation.updateMany(
@@ -339,14 +340,6 @@ if (isPro && !alreadyViewed) {
   }
 );
 
-await Conversation.updateMany(
-  { request: req.params.id, pro: req.user.id },
-  {
-    $set: {
-      lastReadByPro: new Date()
-    }
-  }
-);
 
       return res.json({ ...request.toObject(), conversations });
     }

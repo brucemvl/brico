@@ -600,7 +600,7 @@ accessible
 </View>
 
 <View style={styles.box}>
-      <Text style={{ marginBottom: 15, fontFamily: "Montt", color: "#247868" }}>Compétences</Text>
+      <Text style={{ marginBottom: 15, fontFamily: "Montt", color: "#247868" }}>🛠 Compétences</Text>
       <View style={styles.skillsContainer} accessible accessibilityLabel="Sélection des compétences">
         {categories.map((cat) => (
           <TouchableOpacity key={cat} style={[styles.skillButton, skills.includes(cat) && styles.skillSelected]} onPress={() => toggleSkill(cat)}>
@@ -637,7 +637,7 @@ accessible
 
 
 <View style={styles.box}>
-      <Text style={{ marginBottom: 15, fontFamily: "Montt", color: "#247868" }}>Mes réalisations</Text>
+      <Text style={{ marginBottom: 15, fontFamily: "Montt", color: "#247868" }}>🖼 Mes réalisations</Text>
 
       <View style={styles.portfolioContainer}>
         {portfolio.map((img, index) => (
