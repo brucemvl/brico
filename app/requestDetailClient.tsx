@@ -1,5 +1,4 @@
 import BackButton from "@/components/BackButton";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -15,6 +14,8 @@ import {
 } from "react-native";
 import logo from "../assets/briconnect33.png";
 import fond from "../assets/convert_1.png";
+import pin1 from "../assets/icons/pin1.png";
+import pin2 from "../assets/icons/pin2.png";
 import RequestImages from "../components/RequestImages"; // ← notre nouveau composant
 import { useApi } from "../services/api";
 
@@ -311,15 +312,8 @@ const isPinned = userId ? conv.pinnedBy?.includes(userId) : false;
         onPress={() => togglePin(conv)}
         hitSlop={10}
     >
-        <MaterialCommunityIcons
-            name={
-                isPinned
-                    ? "pin"
-                    : "pin-outline"
-            }
-            size={22}
-            color={isPinned ? "#f5a623" : "#999"}
-        />
+      <Image source={isPinned ? pin2 : pin1} style={{width: 22, height: 22}} />
+        
     </TouchableOpacity>
 
     {unread > 0 && (
