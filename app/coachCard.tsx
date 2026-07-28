@@ -125,7 +125,7 @@ export default function CoachCard({
 
     }, [coach.improvements]);
 
-    const tip = coach.improvements[currentTip];
+    const tip = coach.improvements[currentTip] ?? null;
 
 
     return (
@@ -256,12 +256,12 @@ export default function CoachCard({
 
             )}
 
-            {tip.action && (
+            {tip?.action && (
 
                 <TouchableOpacity
                     style={styles.button}
                     onPress={() => {
-                        if (tip.action) {
+                        if (tip?.action) {
                             onAction?.(tip.action);
                         }
                     }}
