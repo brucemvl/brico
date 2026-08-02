@@ -525,12 +525,12 @@ export default function RequestDetailPro() {
               <Text style={{ textAlign: "center", fontFamily: "Montt", marginBottom: 10, color: "#1a5b4f" }}>Coordonnées</Text>
                               <View style={{ alignItems: "center", marginBottom: 10}} accessible accessibilityLabel={`Client ${request?.client?.name}`}>
 
-                                               <Image source={{ uri: request?.client?.profileImage?.url }} style={{ height: 60, width: 60, borderRadius: 30 }} />
+                                               <Image source={{ uri: request?.client?.profileImage?.url }} style={{ height: 70, width: 70, borderRadius: 35 }} />
 
 
-                  <Text style={{ fontFamily: "Londrina" }}>{request?.client?.name}</Text>
+                  <Text style={{ fontFamily: "Londrina", fontSize: 15 }}>{request?.client?.name}</Text>
                 </View>
-                <View>
+                <View style={{gap: 10}}>
                   {contact.phone && (
                     <TouchableOpacity
                       onPress={() => Linking.openURL(`tel:${contact.phone}`)}
@@ -538,8 +538,8 @@ export default function RequestDetailPro() {
                       accessibilityRole="button"
                       accessibilityLabel={`Appeler ${request?.client?.name}`}
                       accessibilityHint={`Lancer un appel au ${contact.phone}`}
-                      style={{backgroundColor: "#eeeeee", paddingBlock: 6, paddingInline: 12}} >
-                      <Text style={styles.contactText}>📞 {contact.phone}</Text>
+                      style={{backgroundColor: "#eeeeee", paddingBlock: 6, paddingInline: 12, borderRadius: 20, alignItems: "center"}} >
+                      <Text style={[styles.contactText, {letterSpacing: 0.5}]}>📞 {contact.phone}</Text>
                     </TouchableOpacity>
                   )}
                   {contact.email && (
@@ -549,7 +549,7 @@ export default function RequestDetailPro() {
                       accessibilityRole="button"
                       accessibilityLabel={`Envoyer un email à ${request?.client?.name}`}
                       accessibilityHint={`Envoyer un email à ${contact.email}`}
-                      style={{backgroundColor: "#eeeeee", paddingBlock: 6, paddingInline: 12, borderRadius: 20}} >
+                      style={{backgroundColor: "#eeeeee", paddingBlock: 6, paddingInline: 12, borderRadius: 20, alignItems: "center"}} >
                       <Text style={styles.contactText}>✉️ {contact.email}</Text>
                     </TouchableOpacity>
                   )}

@@ -838,7 +838,7 @@ header: {
 
   requestsContainer: { width: "100%", paddingHorizontal: 16, alignItems: "center" },
 card:{
-    width:"100%",
+    width:350,
     borderRadius:22,
     overflow:"hidden",
     marginBottom:18,
@@ -885,7 +885,7 @@ viewsText:{
 badgesRow:{
     flexDirection:"row",
     flexWrap:"wrap",
-    gap:10,
+    gap:12,
 
 },
 
