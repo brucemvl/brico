@@ -90,8 +90,15 @@ export default function CreateRequestForm() {
     });
 
     if (!result.canceled) {
-      setImages(prev => [...prev, ...result.assets]);
-    }
+       setImages(prev =>
+         { const merged = [...prev, ...result.assets];
+           // Supprime les doublons selon l'URI ou l'URL
+            return merged.filter(
+               (img, index, self) => 
+                index === self.findIndex( i => (i.uri || i.url) === (img.uri || img.url) ) );
+
+               });
+               }
   };
 
   const data = [
@@ -229,6 +236,15 @@ export default function CreateRequestForm() {
           }
 
         });
+        const newImages = images.filter(img => img.uri);
+         if (newImages.length > 0) {
+           const imageForm = new FormData();
+            newImages.forEach((img, index) => {
+               imageForm.append("images", { uri: img.uri, name: `photo_${index}.jpg`, type: "image/jpeg", } as any);
+               });
+                await apiFetch(`/requests/${requestId}/images`,
+                  
+           { method: "POST", body: imageForm, }); }
 
         Alert.alert("Succès", "Demande modifiée !");
         router.replace("/homeClient");

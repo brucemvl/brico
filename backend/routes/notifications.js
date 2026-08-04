@@ -70,7 +70,7 @@ router.put("/me/notifications", auth, async (req, res) => {
     const user = await User.findByIdAndUpdate(
       req.user.id,
       { notificationPreferences: updates },
-      { new: true }
+      { returnDocument: "after" }
     );
 
     res.json(user.notificationPreferences);
