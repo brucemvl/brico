@@ -4,7 +4,6 @@ const auth = require("../middlewares/auth");
 const Request = require("../models/Request");
 const Conversation = require("../models/Conversation");
 const { createNotification } = require("../services/notificationService");
-const upload = require("../middlewares/uploadCloudinary");
 const cloudinary = require("../config/cloudinary");
 const fetch = require("node-fetch");
 const User = require("../models/User");
