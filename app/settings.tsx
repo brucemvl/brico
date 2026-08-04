@@ -30,7 +30,7 @@ type NotificationPrefs = {
 type NotificationType = keyof NotificationPrefs;
 
 export default function SettingsScreen() {
-  const { apiFetch } = useApi();
+    const { apiFetch, logout } = useApi();
   const router = useRouter();
 
   const [email, setEmail] = useState("");
@@ -166,6 +166,7 @@ const updateNotifications = async (newPrefs: NotificationPrefs) => {
               });
 
               Alert.alert("Compte supprimé");
+              await logout();
               router.replace("/");
             } catch {
               Alert.alert("Erreur", "Suppression impossible");

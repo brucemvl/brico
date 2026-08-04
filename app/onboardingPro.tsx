@@ -5,19 +5,26 @@ import React, { useContext, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  Animated,
   Dimensions,
   Image,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   View
 } from "react-native";
-import Autocomplete from "react-native-autocomplete-input";
 import { AuthContext } from "../context/AuthContext";
 import { useApi } from "../services/api";
 
+type City = {
+   nom: string;
+    code: string;
+     departement: { code: string; };
+      centre?: { coordinates: [number, number];
 
+       }; };
 
 
 const { width } = Dimensions.get("window");
@@ -42,6 +49,32 @@ const equipmentOptions = [
 ];
 
 export default function OnboardingPro() {
+
+  const IDF_DEPARTMENTS = ["75", "92", "93", "94", "77", "78", "91", "95"];
+
+  const PARIS_ARRONDISSEMENTS = [
+  "Paris 1er",
+  "Paris 2e",
+  "Paris 3e",
+  "Paris 4e",
+  "Paris 5e",
+  "Paris 6e",
+  "Paris 7e",
+  "Paris 8e",
+  "Paris 9e",
+  "Paris 10e",
+  "Paris 11e",
+  "Paris 12e",
+  "Paris 13e",
+  "Paris 14e",
+  "Paris 15e",
+  "Paris 16e",
+  "Paris 17e",
+  "Paris 18e",
+  "Paris 19e",
+  "Paris 20e",
+];
+
   const router = useRouter();
   const { apiFetch } = useApi();
 
@@ -64,7 +97,10 @@ const [portfolio, setPortfolio] = useState<any[]>([]);
 const [loadingSubmit, setLoadingSubmit] = useState(false);
 
   const [locationQuery, setLocationQuery] = useState("");
-    const [cities, setCities] = useState([]);
+    const [cities, setCities] = useState<City[]>([]);
+
+        const [showCityOverlay, setShowCityOverlay] = useState(false);
+    
 
   const steps = [
   "phone",
@@ -139,40 +175,60 @@ setPortfolio((prev) => [...prev, ...result.assets]);
 };
 
   const skipStep = () => {
-  if (steps[step] === "location") {
-    Alert.alert(
-      "Ville obligatoire",
-      "Vous devez sélectionner votre ville pour continuer."
-    );
-    return;
-  }
+  
 
   nextStep();
 };
 
-  const searchCities = async (text) => {
+  const searchCities = async (text: string) => {
   setLocationQuery(text);
 
+
   if (text.length < 2) {
-    setCities([]);
-    return;
+  setCities([]);
+  setShowCityOverlay(false);
+  return;
+}
+
+  if (text.toLowerCase().includes("paris")) {
+    setCities(
+      PARIS_ARRONDISSEMENTS.map((a, i) => ({
+        code: `paris-${i + 1}`,
+        nom: a,
+        departement: { code: "75" },
+      }))
+    );
+    return; // 🔥 stop API ici
   }
 
   try {
-    // On filtre par nom + département
     const res = await fetch(
-      `https://geo.api.gouv.fr/communes?nom=${text}&fields=departement,code,centre&limit=10`
+      `https://geo.api.gouv.fr/communes?nom=${text}&fields=departement,code,centre&limit=20`
     );
 
-    const data = await res.json();
+    const data: City[] = await res.json();
 
-    const sorted = data.sort((a, b) => {
+    const sorted = data.sort((a: City, b: City) => {
+      const aIsIDF = IDF_DEPARTMENTS.includes(a.departement.code);
+      const bIsIDF = IDF_DEPARTMENTS.includes(b.departement.code);
+
+      if (aIsIDF && !bIsIDF) return -1;
+      if (!aIsIDF && bIsIDF) return 1;
+
+      
+
+      // ensuite priorité 92
       if (a.departement.code === "92") return -1;
       if (b.departement.code === "92") return 1;
+
       return 0;
     });
 
+   
+
     setCities(sorted);
+    setShowCityOverlay(true);
+
   } catch (err) {
     console.log("Erreur villes:", err);
   }
@@ -251,11 +307,11 @@ router.replace("/homePro");
 
   return (
     <View style={styles.container}>
-  {steps[step] !== "location" && (
+  
   <TouchableOpacity onPress={skipStep}>
     <Text style={styles.skip}>Ignorer {">>"}</Text>
   </TouchableOpacity>
-)}
+
 
       {/* 🔥 Progress bar */}
       <View style={styles.progressBar}>
@@ -296,31 +352,29 @@ router.replace("/homePro");
         <View style={styles.step}>
           <Text style={styles.title}>Ta ville</Text>
 
-          <Autocomplete
-                  data={cities}
-                  value={locationQuery}
-                  onChangeText={searchCities}
-                  placeholder="Tapez une ville..."
-                  style={{width: 320, fontFamily: "Londrina"}}
-                
-                  flatListProps={{
-                    keyExtractor: (item) => item.code,
-                    renderItem: ({ item }) => (
-                      <TouchableOpacity
-                        onPress={() => {
-                          const selected = `${item.nom} (${item.departement.code})`;
-                          setLocation(selected);
-                          setLocationQuery(selected);
-                          setCities([]);
-                        }}
-                      >
-                        <Text style={{ padding: 10 }}>
-                          {item.nom} ({item.departement.code})
-                        </Text>
-                      </TouchableOpacity>
-                    ),
-                  }}
-                />
+          <TextInput
+              value={locationQuery}
+              onChangeText={searchCities}
+              placeholder="Tapez une ville..."
+              style={{
+                borderWidth: 1,
+              borderColor: "#247868",
+              borderRadius: 12,
+              padding: 10,
+              marginBottom: 15,
+              marginTop: 10,
+              width: "100%",
+              backgroundColor: "#f1f1f1",
+              
+              fontFamily: "Londrina",
+              fontSize: 16
+              }}
+              accessible
+              accessibilityLabel="Rechercher une ville"
+              accessibilityHint="Tapez pour afficher les suggestions"
+              autoCorrect={false}
+              autoCapitalize="words"
+            />
 
           <TouchableOpacity
   style={[
@@ -489,6 +543,47 @@ router.replace("/homePro");
   </View>
 )}
 
+{showCityOverlay && cities.length > 0 && (
+  <TouchableWithoutFeedback onPress={() => setShowCityOverlay(false)}>
+    <View style={styles.overlay}>
+      
+      <TouchableWithoutFeedback>
+        <View style={styles.overlayBox}>
+          
+          <Text style={styles.overlayTitle}>
+            Sélectionner une ville
+          </Text>
+
+          <Animated.FlatList
+            data={cities}
+            keyExtractor={(item) => item.code}
+            keyboardShouldPersistTaps="handled"
+            style={{ width: "100%" }}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                onPress={() => {
+                  const selected = `${item.nom} (${item.departement.code})`;
+                  setLocation(selected);
+                  setLocationQuery(selected);
+                  setCities([]);
+                  setShowCityOverlay(false);
+                }}
+                style={styles.cityItem}
+              >
+                <Text style={styles.cityText}>
+                  {item.nom} ({item.departement.code})
+                </Text>
+              </TouchableOpacity>
+            )}
+          />
+
+        </View>
+      </TouchableWithoutFeedback>
+
+    </View>
+  </TouchableWithoutFeedback>
+)}
+
     </View>
   );
 }
@@ -515,6 +610,7 @@ const styles = StyleSheet.create({
 
   step: {
     alignItems: "center",
+    gap: 10
   },
 
   title: {
@@ -567,5 +663,40 @@ const styles = StyleSheet.create({
     marginTop: 15,
     color: "#999",
     fontFamily: "Kanito"
-  }
+  },
+  overlay: {
+  position: "absolute",
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  backgroundColor: "rgba(0,0,0,0.5)",
+  justifyContent: "center",
+  alignItems: "center",
+  zIndex: 999,
+},
+
+overlayBox: {
+  width: "90%",
+  maxHeight: "70%",
+  backgroundColor: "white",
+  borderRadius: 15,
+  padding: 15,
+},
+
+overlayTitle: {
+  fontSize: 16,
+  fontFamily: "Montt",
+  marginBottom: 10,
+},
+
+cityItem: {
+  padding: 12,
+  borderBottomWidth: 1,
+  borderBottomColor: "#eee",
+},
+
+cityText: {
+  fontFamily: "Londrina",
+},
 });

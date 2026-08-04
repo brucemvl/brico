@@ -6,11 +6,10 @@ const Conversation = require("../models/Conversation");
 const { createNotification } = require("../services/notificationService");
 const upload = require("../middlewares/uploadCloudinary");
 const cloudinary = require("../config/cloudinary");
-const streamifier = require("streamifier");
-const sharp = require("sharp");
 const fetch = require("node-fetch");
 const User = require("../models/User");
 const buildCoach = require("../services/buildCoach");
+const upload = require("../middlewares/uploadRequest");
 
 // 🔒 Fonction de détection avancée
 const containsContactInfo = (text) => {
@@ -418,22 +417,10 @@ router.post("/", auth, upload.array("images"), async (req, res) => {
     // 🔹 Upload des images
     if (req.files?.length) {
       for (const file of req.files) {
-        const response = await fetch(file.path);
-        const buffer = Buffer.from(await response.arrayBuffer());
-        const jpegBuffer = await sharp(buffer).jpeg({ quality: 80 }).toBuffer();
-
-        const uploadResult = await new Promise((resolve, reject) => {
-          const uploadStream = cloudinary.uploader.upload_stream(
-            { folder: "requests", resource_type: "image" },
-            (err, result) => (err ? reject(err) : resolve(result))
-          );
-          streamifier.createReadStream(jpegBuffer).pipe(uploadStream);
-        });
-
-        newRequest.images.push({
-          url: uploadResult.secure_url,
-          public_id: uploadResult.public_id
-        });
+        newRequest.images.push({ 
+          url: file.path,
+            public_id: file.filename 
+             });
       }
     }
 
