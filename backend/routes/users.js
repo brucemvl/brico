@@ -55,7 +55,7 @@ router.post("/push-token", auth, async (req, res) => {
     await User.findByIdAndUpdate(
       req.user.id,
       { expoPushToken: token },
-      { new: true }
+      { returnDocument: "after" }
     );
 
     res.status(200).json({ success: true });

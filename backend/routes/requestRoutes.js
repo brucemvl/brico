@@ -312,7 +312,7 @@ if (isPro && !alreadyViewed) {
       $inc: { views: 1 },
       $addToSet: { viewedBy: req.user.id }
     },
-    { new: true }
+    { returnDocument: "after" }
   )
     .populate("client", "name profileImage")
     .populate("assignedPros.pro", "name profileImage");
