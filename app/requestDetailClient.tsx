@@ -242,6 +242,18 @@ export default function RequestDetailClient() {
                     </LinearGradient>
                     </Animated.View>
 
+                    {request.description &&
+                    <View style={styles.sectionDescription}>
+                        <Text style={styles.sectionTitle}>Description</Text>
+                    
+                        
+                    
+                        <Text style={styles.descriptionText}>
+                            {request.description}
+                        </Text>
+                        </View>
+}
+
       {/* 🔹 Composant images avec upload/suppression/preview */}
       <RequestImages request={request} setRequest={setRequest} />
 
@@ -312,7 +324,7 @@ const isPinned = userId ? conv.pinnedBy?.includes(userId) : false;
         onPress={() => togglePin(conv)}
         hitSlop={10}
     >
-      <Image source={isPinned ? pin2 : pin1} style={{width: 22, height: 22}} />
+      <Image source={isPinned ? pin2 : pin1} style={{width: 20, height: 20}} />
         
     </TouchableOpacity>
 
@@ -351,7 +363,7 @@ paddingBottom: 140,
   height: 50,
   borderRadius: 25,
  },
-  conversationCard: { flexDirection: "row", alignItems: "center", gap: 10, padding: 12, borderWidth: 2, borderColor: "#1a5b4f", borderRadius: 35, marginTop: 10, backgroundColor: "#F3F3F3", width: "85%" },
+  conversationCard: { flexDirection: "row", alignItems: "center", gap: 10, padding: 12, borderWidth: 2, borderColor: "#1a5b4f", borderRadius: 35, marginTop: 10, backgroundColor: "#F3F3F3", width: "88%" },
   unreadBadge: { backgroundColor: "red", borderRadius: 10, width: 20, height: 20, justifyContent: "center", alignItems: "center", marginLeft: 8 },
   unreadText: { color: "white", fontSize: 12, fontFamily: "Montt" },
   heroSubtitle: {
@@ -385,5 +397,40 @@ heroTop: {
   flexDirection: "row",
   justifyContent: "space-between",
   alignItems: "flex-start",
+},
+sectionTitle: {
+  fontSize: 22,
+  fontFamily: "Montt",
+  color: "#1a5b4f",
+  marginBottom: 4,
+  letterSpacing: 0.4,
+},
+
+
+sectionDescription: {
+  width: "100%",
+  backgroundColor: "#fff",
+  borderRadius: 22,
+  padding: 20,
+  marginTop: 18,
+  marginBottom: 18,
+
+  shadowColor: "#000",
+  shadowOpacity: 0.18,
+  shadowRadius: 12,
+  shadowOffset: {
+    width: 0,
+    height: 6,
+  },
+
+  elevation: 5,
+},
+
+descriptionText: {
+  fontFamily: "Londrina",
+  fontSize: 16,
+  color: "#444",
+  lineHeight: 26,
+  textAlign: "justify",
 },
 });
