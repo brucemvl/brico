@@ -873,6 +873,8 @@ viewsBadge:{
     backgroundColor:"rgba(255,255,255,0.18)",
     padding: 8,
     borderRadius:18,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.1)"
     
 },
 
@@ -1026,7 +1028,7 @@ pickerOptionTextActive: {
 thumbRow: {
   flexDirection: "row",
   flexWrap: "wrap",
-  gap: 4,
+  gap: 8,
   marginTop: 15
 },
 
@@ -1035,6 +1037,8 @@ thumb: {
   height: 46,
   borderRadius: 8,
   backgroundColor: "#ddd",
+  borderWidth: 1,
+  borderColor: "#d6d6d6",
 },
 unreadIcon: {
   width: 24,

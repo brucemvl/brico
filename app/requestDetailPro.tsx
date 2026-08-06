@@ -941,7 +941,7 @@ descriptionText: {
   fontFamily: "Londrina",
   fontSize: 16,
   color: "#444",
-  lineHeight: 26,
+  lineHeight: 24,
   textAlign: "justify",
 },
 });

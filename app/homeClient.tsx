@@ -940,6 +940,8 @@ viewsBadge:{
     backgroundColor:"rgba(255,255,255,0.15)",
     padding: 6,
     borderRadius:20,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.1)"
 },
 
 viewsText:{
