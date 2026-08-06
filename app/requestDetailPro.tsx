@@ -406,6 +406,9 @@ export default function RequestDetailPro() {
   const proProposed =
     request?.conversation?.dealProposedByPro && !request?.conversation?.dealAcceptedByPro;
 
+    const discussion = request?.conversation?.messages?.length ?? 0
+
+
 
 
   return (
@@ -559,7 +562,7 @@ export default function RequestDetailPro() {
 
           {/* Actions deal */}
           <View style={styles.dealBox}>
-            {!clientProposed && !proProposed && !dealAccepted && (
+            {!clientProposed && !proProposed && !dealAccepted && discussion > 0 && (
               <TouchableOpacity
                 onPress={handleProposeDeal}
                 disabled={proposingDeal}
