@@ -881,7 +881,7 @@ viewsBadge:{
 viewsText:{
     color:"#fff",
     fontFamily:"Mont",
-    fontSize: 13
+    fontSize: 12
 },
 
 badgesRow:{

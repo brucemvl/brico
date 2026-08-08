@@ -5,7 +5,8 @@ const multer = require("multer");
      cloudinary, params: {
          folder: "requests",
           allowed_formats: ["jpg", "jpeg", "png", "webp", "heic"],
-           transformation: [ { width: 1600, crop: "limit" },
-             { quality: "auto" } ] } });
+           transformation: [ { width: 1600, crop: "limit" }, { fetch_format: "jpg" }, { quality: "auto" } ] }
+         });
+
              
              module.exports = multer({ storage, limits: { fileSize: 10 * 1024 * 1024 } });

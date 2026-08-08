@@ -3,6 +3,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams } from "expo-router";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
+  ActivityIndicator,
   Alert,
   Animated,
   Dimensions,
@@ -569,10 +570,11 @@ export default function RequestDetailPro() {
                 style={{
                   backgroundColor: proposingDeal ? "#8fb9ff" : "#007AFF",
                   width: 180,
-                  padding: 10,
+                  padding: 12,
                   alignItems: "center",
                   justifyContent: "center",
-                  borderRadius: 20
+                  borderRadius: 20,
+                  gap: 3
                 }}
                 accessible
                 accessibilityRole="button"
@@ -580,9 +582,10 @@ export default function RequestDetailPro() {
                 accessibilityHint="Envoyer une proposition d'accord au client"
                 accessibilityState={{ disabled: proposingDeal, busy: proposingDeal }}
               >
-                <Text style={{ color: "#fff", fontFamily: "Mont" }}>
+                <Text style={{ color: "#fff", fontFamily: "Mont", fontSize: 15 }}>
                   {proposingDeal ? "Envoi..." : "Proposer un accord"}
                 </Text>
+                {proposingDeal ? <ActivityIndicator color={"#fff"}  /> : <Text style={{ color: "#fff", fontFamily: "Mont", textAlign: "center", fontSize: 12 }}>Afin d'echanger vos coordonnées</Text>}
               </TouchableOpacity>
             )}
 

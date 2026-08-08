@@ -490,6 +490,7 @@ const missionCompleted = clientHasReviewed;
                   }}
                 >
                   <Text style={styles.buttonText}>Accepter accord</Text>
+                  <Text style={{fontFamily: "Mont", fontSize: 11, color: "#fff", textAlign: "center"}}>Afin d'echanger les coordonnées</Text>
                 </Animated.Text>
               </TouchableOpacity>
             )}
