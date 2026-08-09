@@ -110,6 +110,9 @@ const [pickerOpen, setPickerOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState<"skills" | "all" | string>("all");
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+
+  const ITEMS_PER_PAGE = 10;
+   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
   
 
   const shareApp = async () => {
@@ -272,6 +275,11 @@ useEffect(() => {
   }
 };
 
+useEffect(() => {
+   setVisibleCount(ITEMS_PER_PAGE);
+   },
+    [activeFilter, requestView]);
+
 const finish = requests.filter(r =>
   r.assignedPros?.some(
     ap =>
@@ -308,6 +316,7 @@ const changeRequestView = (view: "requests" | "deals" | "completed") => {
   // 🔹 Logique de filtrage
 const filteredRequests = (() => {
   let baseFiltered: RequestType[] = [];
+  
 
   switch (requestView) {
     case "requests":
@@ -353,6 +362,9 @@ const filteredRequests = (() => {
     return dateB - dateA;
   });
 })();
+
+const visibleRequests = filteredRequests.slice(0, visibleCount);
+ const hasMore = visibleCount < filteredRequests.length;
 
   // 🔹 HasUnread par catégorie pour pastille rouge
   const hasUnreadByCategory = React.useMemo(() => {
@@ -600,7 +612,7 @@ const filteredRequests = (() => {
         {filteredRequests.length === 0 ? (
           <Text style={{fontFamily: "Londrina", fontSize: 18, marginBlock: 20}}>Aucune demande disponible</Text>
         ) : (
-          filteredRequests.map(item => {
+          visibleRequests.map(item => {
             const isMatchingSkill = skills.includes(item.category);
             const isAssignedToMe = item.assignedPros?.some(
   ap => ap.pro === profile?._id && ap.status === "active"
@@ -795,7 +807,16 @@ const images = item.images ?? [];
 </TouchableOpacity>
             );
           })
+          
         )}
+        {hasMore && 
+            <TouchableOpacity style={styles.loadMoreButton} onPress={() =>
+               setVisibleCount(prev => prev + ITEMS_PER_PAGE)}
+                activeOpacity={0.85} > 
+                <LinearGradient colors={["#eaeaea", "#30a590"]} style={styles.loadMoreGradient} > 
+                <Text style={styles.loadMoreText}> Charger 10 demandes de plus </Text>
+                 <Text style={styles.loadMoreSubText}> {visibleCount} / {filteredRequests.length} </Text>
+                  </LinearGradient> </TouchableOpacity> }
       </View>
 
       <TouchableOpacity onPress={async () => { await logout(); router.replace("/"); }} style={{ marginTop: 20, padding: 8 }}>
@@ -1045,5 +1066,9 @@ unreadIcon: {
   height: 24,
   alignSelf: "flex-end",
   marginRight: 12,
-}
+},
+loadMoreButton: { width: "100%", alignItems: "center", marginTop: 8, marginBottom: 20, shadowColor: "#000", shadowOpacity: 0.95, shadowRadius: 8, shadowOffset: { width: 0, height: 4 }, elevation: 4, },
+ loadMoreGradient: { width: 280, borderRadius: 20, paddingVertical: 10, alignItems: "center", justifyContent: "center" },
+  loadMoreText: { color: "#1a5b4f", fontFamily: "Montt", fontSize: 15, },
+   loadMoreSubText: { color: "#1a5b4f", fontFamily: "Mont", fontSize: 12, marginTop: 2, },
 });

@@ -32,6 +32,7 @@ type City = {
 };
 
 
+
 export default function CreateRequestForm() {
   const { apiFetch } = useApi();
   const router = useRouter();
@@ -190,6 +191,42 @@ export default function CreateRequestForm() {
     }
   };
 
+
+  const handleDeleteImage = (img: any) => {
+     Alert.alert
+     ( "Supprimer l'image",
+       "Voulez-vous vraiment supprimer cette image ?",
+       [
+         { text: "Annuler", style: "cancel" },
+         { text: "Supprimer",
+           style: "destructive",
+            onPress: async () => {
+               try { 
+                // 🔹 Image déjà enregistrée en base
+                 if (img._id && requestId) {
+                   await apiFetch(
+                     `/requests/${requestId}/images/${img._id}`,
+                      { method: "DELETE" }
+                     );
+                     } 
+                     // 🔹 Mise à jour locale de l'état
+                      setImages(prev =>
+                         prev.filter(i => {
+                           // images serveur
+                            if (img._id) return i._id !== img._id;
+                             // images locales 
+                             return i.uri !== img.uri;
+                             })
+                             );
+                             } catch (err) {
+                               Alert.alert( "Erreur",
+                                 "Impossible de supprimer l'image" );
+                                 }
+                                 } 
+                                } 
+                              ] );
+                             };
+
   const handleSubmit = async () => {
     if (!title || !location || !category) {
       Alert.alert("Erreur", "Champs obligatoires manquants.");
@@ -278,7 +315,7 @@ export default function CreateRequestForm() {
         keyboardVerticalOffset={10}
       >
 
-        <ScrollView style={{ padding: 20, paddingTop: 120 }}>
+        <ScrollView style={{ padding: 20, paddingTop: 120}}>
           <LinearGradient
             colors={["#30a590", "#1a5b4f"]}
             style={styles.heroCard}
@@ -371,10 +408,25 @@ export default function CreateRequestForm() {
             </TouchableOpacity>
 
             <View style={styles.imagePreviewContainer}>
-              {images.map((img, index) => (
-                <Image key={index} accessible={false} source={{ uri: img.uri || img.url }} style={styles.previewImage} />
-              ))}
-            </View>
+  {images.map((img, index) => (
+    <View
+      key={img._id || img.uri || index}
+      style={styles.previewWrapper}
+    >
+      <Image
+        source={{ uri: img.uri || img.url }}
+        style={styles.previewImage}
+      />
+
+      <TouchableOpacity
+        style={styles.deleteImageButton}
+        onPress={() => handleDeleteImage(img)}
+      >
+        <Text style={styles.deleteImageText}>×</Text>
+      </TouchableOpacity>
+    </View>
+  ))}
+</View>
 
             {loading ? <ActivityIndicator size="large" /> :
               <TouchableOpacity
@@ -641,5 +693,8 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontFamily: "Montt",
     fontSize: 16
-  }
+  },
+  previewWrapper: { position: "relative", },
+   deleteImageButton: { position: "absolute", top: -6, right: -6, width: 24, height: 24, borderRadius: 12, backgroundColor: "#EF4444", justifyContent: "center", alignItems: "center", shadowColor: "#000", shadowOpacity: 0.2, shadowRadius: 4, elevation: 3, },
+    deleteImageText: { color: "#fff", fontSize: 18, lineHeight: 20, fontWeight: "bold", },
 })
