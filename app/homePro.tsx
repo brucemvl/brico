@@ -813,7 +813,7 @@ const images = item.images ?? [];
             <TouchableOpacity style={styles.loadMoreButton} onPress={() =>
                setVisibleCount(prev => prev + ITEMS_PER_PAGE)}
                 activeOpacity={0.85} > 
-                <LinearGradient colors={["#eaeaea", "#30a590"]} style={styles.loadMoreGradient} > 
+                <LinearGradient colors={["#eaeaea", "#9b9d9d"]} style={styles.loadMoreGradient} > 
                 <Text style={styles.loadMoreText}> Charger 10 demandes de plus </Text>
                  <Text style={styles.loadMoreSubText}> {visibleCount} / {filteredRequests.length} </Text>
                   </LinearGradient> </TouchableOpacity> }
@@ -873,9 +873,9 @@ cardHeader:{
     flexDirection:"row",
     justifyContent:"space-between",
     alignItems:"center",
-    padding:18,
+    padding:14,
 },
-  cardTitle: { color: "#ffffff", fontSize: 19, marginBottom: 5, fontFamily: "Londrinak", width: "76%" },
+  cardTitle: { color: "#ffffff", fontSize: 19, marginBottom: 5, fontFamily: "Londrinak", width: "84%" },
 
 
 cardBody:{
@@ -1069,6 +1069,6 @@ unreadIcon: {
 },
 loadMoreButton: { width: "100%", alignItems: "center", marginTop: 8, marginBottom: 20, shadowColor: "#000", shadowOpacity: 0.95, shadowRadius: 8, shadowOffset: { width: 0, height: 4 }, elevation: 4, },
  loadMoreGradient: { width: 280, borderRadius: 20, paddingVertical: 10, alignItems: "center", justifyContent: "center" },
-  loadMoreText: { color: "#1a5b4f", fontFamily: "Montt", fontSize: 15, },
+  loadMoreText: { color: "#5c5c5c", fontFamily: "Londrinak", fontSize: 15, },
    loadMoreSubText: { color: "#1a5b4f", fontFamily: "Mont", fontSize: 12, marginTop: 2, },
 });
