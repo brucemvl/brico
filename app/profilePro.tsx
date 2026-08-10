@@ -57,6 +57,14 @@ type CoachPro = {
   improvements: Improvement[];
 };
 
+type ProfileType = {
+    _id?: string;
+  name?: string;
+  location?: string;
+  profileImage?: { url?: string };
+  averageRating?: number;
+  proBadge?: boolean
+};
 
 const categories = ["Plomberie", "Electricité", "Peinture", "Agencement", "Carrelage", "Divers", "Jardinage", "Demenagement"];
 
@@ -107,12 +115,16 @@ const [equipment, setEquipment] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
   const [uploadingIndex, setUploadingIndex] = useState<number | null>(null);
       const [showCityOverlay, setShowCityOverlay] = useState(false);
+        const [profile, setProfile] = useState<ProfileType | null>(null);
+      
   
 
   const [locationQuery, setLocationQuery] = useState("");
 const [cities, setCities] = useState<City[]>([]);
 
   const scaleAnim = useRef(new Animated.Value(1)).current;
+
+  
   
     const onPressIn = () => {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -167,6 +179,18 @@ setSkills(Array.isArray(data.skills) ? data.skills : []);
   useEffect(() => {
     fetchProfile();
   }, []);
+
+  const openProfile = async() => {
+      const data = await apiFetch("/users/me");
+
+  router.push({
+    pathname: "/profile",
+    params: {
+      id: data?._id,
+      
+    }
+  });
+};
 
   // 🔹 Image Picker Profile
   const handlePickProfileImage = async () => {
@@ -527,6 +551,8 @@ accessible
     </Text>
 
     </View>
+
+    <TouchableOpacity onPress={openProfile} style={{backgroundColor: "#247868", paddingBlock: 6, paddingInline: 12, borderRadius: 20}}><Text style={{fontFamily: "Montmed", color: "#fff"}}>Votre profil</Text></TouchableOpacity>
 
 <View style={styles.box}>
       <Text style={{fontFamily: "Montt", color: "#247868"}}>👤 Nom</Text>
@@ -923,7 +949,7 @@ cityText: {
 },
 
 score:{
-    marginTop:18,
+    marginTop:10,
     fontSize:36,
     fontFamily:"Montt",
     color:"#247868",

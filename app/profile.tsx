@@ -18,6 +18,16 @@ import logo from "../assets/briconnect33.png";
 import fond from "../assets/convert_1.png";
 import { useApi } from "../services/api";
 
+const skillIcons = {
+   Plomberie: require("../assets/icons/plomberie.png"),
+    Electricité: require("../assets/icons/electricite.png"),
+     Peinture: require("../assets/icons/peinture.png"),
+      Carrelage: require("../assets/icons/carrelage.png"),
+       Agencement: require("../assets/icons/agencement.png"),
+        Jardinage: require("../assets/icons/jardinage.png"),
+         Divers: require("../assets/icons/divers.png"),
+         Demenagement: require("../assets/icons/demenagement.png"),
+         };
 
 
 const defaultAvatar =
@@ -297,12 +307,13 @@ useEffect(() => {
         <View style={styles.section}>
           <Text style={styles.title}>Compétences</Text>
 
-          <View style={styles.skillsContainer}>
-            {user.skills.map((skill: string, i: number) => (
-              <View key={i} style={styles.skill}>
-                <Text style={styles.skillText}>{skill}</Text>
-              </View>
-            ))}
+          <View style={[styles.skillsContainer, {gap: 14}]}>
+            {user.skills.map((skill, i) => (
+               <LinearGradient key={i} style={styles.skill} colors={["#fff", "#30a590"]}>
+                 <Image source={skillIcons[skill] || skillIcons.Divers} style={styles.skillIcon} />
+                  <Text style={styles.skillText}>{skill}</Text>
+                   </LinearGradient>
+                   ))}
           </View>
         </View>
       )}
@@ -314,8 +325,8 @@ useEffect(() => {
 
     <View style={styles.skillsContainer}>
       {parsedEquipment?.map((item: string, i: number) => (
-        <View key={i} style={styles.skill}>
-          <Text style={styles.skillText}>{item}</Text>
+        <View key={i} style={styles.equipment}>
+          <Text style={styles.equipmentText}>{item}</Text>
         </View>
       ))}
     </View>
@@ -521,7 +532,7 @@ paddingBottom: 60  },
     justifyContent: "center"
   },
 
-  skill: {
+  equipment: {
     backgroundColor:"#1a5b4f",
 
 paddingHorizontal:14,
@@ -531,12 +542,16 @@ borderRadius:30,
 
 margin:3
   },
-
-  skillText: {
+  equipmentText: {
     fontSize: 13,
     fontFamily: "Mont",
     color:"#d2f0ea",
   },
+  skill: { flexDirection: "column", alignItems: "center", gap: 8, paddingHorizontal: 12, paddingVertical: 14, borderRadius: 16, borderWidth: 1, borderColor: "#D1FAE5", },
+   skillIcon: { width: 18, height: 18, resizeMode: "contain", },
+   skillText: { fontFamily: "Montt", color: "#000", fontSize: 13, },
+
+  
 
   portfolio: {
     flexDirection: "row",
