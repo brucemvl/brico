@@ -80,7 +80,7 @@ type CoachPro = {
   improvements: Improvement[];
 };
 
-const categories = ["Plomberie", "Peinture", "Agencement", "Electricité", "Carrelage", "Divers", "Jardinage"];
+const categories = ["Plomberie", "Peinture", "Agencement", "Electricité", "Carrelage", "Divers", "Jardinage", "Demenagement"];
 
 const defaultAvatar = "https://res.cloudinary.com/dwjssp2pd/image/upload/v1773074497/default_pro.jpg";
 

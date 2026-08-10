@@ -109,6 +109,7 @@ export default function CreateRequestForm() {
     { label: "🧱 Carrelage", value: "Carrelage" },
     { label: "🏠 Agencement", value: "Agencement" },
     { label: "🌳 Jardinage", value: "Jardinage" },
+    { label: "🚚 Demenagement", value: "Demenagement" },
     { label: "📦 Divers", value: "Divers" },
   ];
 

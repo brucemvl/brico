@@ -29,7 +29,7 @@ type City = {
 
 const { width } = Dimensions.get("window");
 
-const categories = ["Plomberie", "Electricité", "Peinture", "Agencement", "Carrelage", "Divers", "Jardinage"];
+const categories = ["Plomberie", "Electricité", "Peinture", "Agencement", "Carrelage", "Divers", "Jardinage", "Demenagement"];
 
 const equipmentOptions = [
   "Caisse à outils",
