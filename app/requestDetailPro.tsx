@@ -12,7 +12,9 @@ import {
   KeyboardAvoidingView,
   Linking,
   Modal,
+  PanResponder,
   Platform,
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -102,8 +104,71 @@ export default function RequestDetailPro() {
 
   // Images preview
   const [previewVisible, setPreviewVisible] = useState(false);
-  const [previewImage, setPreviewImage] = useState<string>("");
   const [uploading, setUploading] = useState(false);
+
+
+  const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
+  
+  const isModalVisible = selectedImageIndex !== null;
+  
+  const [reviewImagesModal, setReviewImagesModal] = useState<any[]>([]);
+  
+  const translateX = useState(new Animated.Value(0))[0];
+  
+  const openImageModal = (images: any[], index: number) => {
+    setReviewImagesModal(images);
+    setSelectedImageIndex(index);
+  };
+  
+  const closeImageModal = () => {
+    setSelectedImageIndex(null);
+  };
+  
+  const showPreviousImage = () => {
+    if (!reviewImagesModal.length || selectedImageIndex === null) return;
+  
+    setSelectedImageIndex((prev) => {
+      if (prev === null) return null;
+      return prev === 0 ? reviewImagesModal.length - 1 : prev - 1;
+    });
+  };
+  
+  const showNextImage = () => {
+    if (!reviewImagesModal.length || selectedImageIndex === null) return;
+  
+    setSelectedImageIndex((prev) => {
+      if (prev === null) return null;
+      return prev === reviewImagesModal.length - 1 ? 0 : prev + 1;
+    });
+  };
+  
+  const panResponder = React.useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (_, gestureState) => {
+        return Math.abs(gestureState.dx) > 20;
+      },
+  
+      onPanResponderMove: (_, gestureState) => {
+        translateX.setValue(gestureState.dx);
+      },
+  
+      onPanResponderRelease: (_, gestureState) => {
+        if (gestureState.dx > 120) {
+          // swipe droite → image précédente
+          showPreviousImage();
+        } else if (gestureState.dx < -120) {
+          // swipe gauche → image suivante
+          showNextImage();
+        }
+  
+        // reset position
+        Animated.spring(translateX, {
+          toValue: 0,
+          useNativeDriver: true,
+        }).start();
+      },
+    })
+  ).current;
 
   const formatRelativeDate = (dateString?: string) => {
   if (!dateString) return "";
@@ -328,14 +393,6 @@ export default function RequestDetailPro() {
 };
 
 
-
- 
-
-  const openPreview = (url: string) => {
-    setPreviewImage(url);
-    setPreviewVisible(true);
-  };
-
   useEffect(() => {
     const animation = Animated.loop(
       Animated.sequence([
@@ -502,10 +559,10 @@ export default function RequestDetailPro() {
                 gap: 12,
             }}
         >
-            {request.images.map((img, idx) => (
-                <TouchableOpacity
-                    key={idx}
-                    onPress={() => openPreview(img.url)}
+            {request.images.map((img: any, index: number) => (
+                <Pressable
+                    key={img._id} 
+                    onPress={() => openImageModal(request.images ?? [], index)}
                 >
                     <Image
                         source={{ uri: img.url }}
@@ -515,7 +572,7 @@ export default function RequestDetailPro() {
                             borderRadius: 16,
                         }}
                     />
-                </TouchableOpacity>
+                </Pressable>
             ))}
         </ScrollView>
     )}
@@ -708,19 +765,49 @@ export default function RequestDetailPro() {
         </Animated.ScrollView>
 
         {/* Modal preview image */}
-        <Modal visible={previewVisible} transparent animationType="fade">
-          <TouchableOpacity
-            style={{
-              flex: 1,
-              backgroundColor: "rgba(0,0,0,0.9)",
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-            onPress={() => setPreviewVisible(false)}
-            activeOpacity={1}
+        <Modal
+          visible={isModalVisible}
+          transparent
+          animationType="fade"
+          onRequestClose={closeImageModal}
+        >
+          <Pressable style={styles.modalOverlay} onPress={closeImageModal}>
+          <Pressable
+            style={styles.modalContent}
+            onPress={(e) => e.stopPropagation()}
+            
           >
-            <Image source={{ uri: previewImage }} style={{ width: "90%", height: "80%", resizeMode: "contain", borderRadius: 12 }} />
-          </TouchableOpacity>
+            {selectedImageIndex !== null &&
+             reviewImagesModal[selectedImageIndex] && (
+              <>
+                <Animated.Image {...panResponder.panHandlers}
+                 source={{ uri: reviewImagesModal[selectedImageIndex].url }}
+                  style={[
+    styles.modalImage,
+    {
+      transform: [{ translateX }],
+    },
+  ]}
+  />
+                {reviewImagesModal.length > 1 && (
+                      <View style={styles.modalNav}>
+                        <Pressable style={styles.navButton} onPress={showPreviousImage}>
+                          <Text style={styles.navButtonText}>‹</Text>
+                        </Pressable>
+                
+                        <Text style={styles.imageCounter}>
+                          {selectedImageIndex + 1} / {reviewImagesModal.length}
+                        </Text>
+                
+                        <Pressable style={styles.navButton} onPress={showNextImage}>
+                          <Text style={styles.navButtonText}>›</Text>
+                        </Pressable>
+                      </View>
+                    )}
+                  </>
+                )}
+          </Pressable>
+          </Pressable>
         </Modal>
       </KeyboardAvoidingView>
 
@@ -808,7 +895,6 @@ sendIcon: {
   marginLeft: 2, // centre visuellement le ➜
 },  input: { borderWidth: 1, borderColor: "#ccc", borderRadius: 8, padding: 10 },
   reviewButton: { backgroundColor: "#007AFF", padding: 12, borderRadius: 8, alignItems: "center", marginTop: 10, width: "80%" },
-  modalOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "center", alignItems: "center" },
   modal: { backgroundColor: "white", padding: 20, borderRadius: 10, width: "85%", gap: 10 },
   modalTitle: { fontSize: 18, fontFamily: "Montt", marginBottom: 15, textAlign: "center" },
   stars: { flexDirection: "row", justifyContent: "center", marginBottom: 20 },
@@ -950,4 +1036,56 @@ descriptionText: {
   lineHeight: 24,
   textAlign: "justify",
 },
+modalOverlay: {
+  flex: 1,
+  backgroundColor: "rgba(0,0,0,0.65)",
+  justifyContent: "center",
+  alignItems: "center",
+  paddingHorizontal: 20,
+},
+
+modalContent: {
+  width: "100%",
+  maxWidth: 420,
+  alignItems: "center",
+  justifyContent: "center",
+},
+
+modalImage: {
+  width: "100%",
+  height: 520,
+  borderRadius: 18,
+  backgroundColor: "#fff",
+borderColor: "#fff",
+  borderWidth: 1},
+
+modalNav: {
+  marginTop: 14,
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 18,
+},
+
+navButton: {
+  width: 44,
+  height: 44,
+  borderRadius: 22,
+  backgroundColor: "#1a5b4f",
+  alignItems: "center",
+  justifyContent: "center",
+  borderColor: "#fff",
+  borderWidth: 1
+},
+
+navButtonText: {
+  color: "#fff",
+  fontSize: 26,
+},
+
+imageCounter: {
+  color: "#fff",
+  fontSize: 16,
+  fontFamily: "Mont",
+}
 });
