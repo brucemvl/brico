@@ -12,7 +12,6 @@ import {
   KeyboardAvoidingView,
   Linking,
   Modal,
-  PanResponder,
   Platform,
   Pressable,
   ScrollView,
@@ -22,11 +21,17 @@ import {
   TouchableOpacity,
   View
 } from "react-native";
+import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
+import {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  withTiming,
+} from 'react-native-reanimated';
+import { scheduleOnRN } from 'react-native-worklets';
 import logo from "../assets/briconnect33.png";
 import fond from "../assets/convert_1.png";
 import { useApi } from "../services/api";
-
-
 
 type MessageType = {
   from: { _id: string; name: string; profileImage?: string };
@@ -95,16 +100,11 @@ export default function RequestDetailPro() {
   const scrollRef = useRef<ScrollView>(null);
   const [contact, setContact] = useState<{ phone?: string; email?: string } | null>(null);
 
-  const [reviewModal, setReviewModal] = useState(false);
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
   const [proposingDeal, setProposingDeal] = useState(false);
 
   const reviewScale = useRef(new Animated.Value(1)).current;
-
-  // Images preview
-  const [previewVisible, setPreviewVisible] = useState(false);
-  const [uploading, setUploading] = useState(false);
 
 
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
@@ -112,8 +112,8 @@ export default function RequestDetailPro() {
   const isModalVisible = selectedImageIndex !== null;
   
   const [reviewImagesModal, setReviewImagesModal] = useState<any[]>([]);
+  const translateX = useSharedValue(0);
   
-  const translateX = useState(new Animated.Value(0))[0];
   
   const openImageModal = (images: any[], index: number) => {
     setReviewImagesModal(images);
@@ -142,33 +142,46 @@ export default function RequestDetailPro() {
     });
   };
   
-  const panResponder = React.useRef(
-    PanResponder.create({
-      onMoveShouldSetPanResponder: (_, gestureState) => {
-        return Math.abs(gestureState.dx) > 20;
+
+const animatedImageStyle = useAnimatedStyle(() => {
+  const rotation = translateX.value / 30;
+
+  return {
+    transform: [
+      {
+        translateX: translateX.value,
       },
-  
-      onPanResponderMove: (_, gestureState) => {
-        translateX.setValue(gestureState.dx);
+      {
+        rotate: `${rotation}deg`,
       },
-  
-      onPanResponderRelease: (_, gestureState) => {
-        if (gestureState.dx > 120) {
-          // swipe droite → image précédente
-          showPreviousImage();
-        } else if (gestureState.dx < -120) {
-          // swipe gauche → image suivante
-          showNextImage();
-        }
-  
-        // reset position
-        Animated.spring(translateX, {
-          toValue: 0,
-          useNativeDriver: true,
-        }).start();
-      },
-    })
-  ).current;
+    ],
+  };
+});
+
+const panGesture = Gesture.Pan()
+  .onUpdate((event) => {
+    translateX.value = event.translationX;
+  })
+  .onEnd((event) => {
+    const dx = event.translationX;
+
+    if (dx > 80) {
+      translateX.value = withTiming(500, { duration: 200 }, () => {
+        scheduleOnRN(showPreviousImage);
+      });
+    } else if (dx < -80) {
+      translateX.value = withTiming(-500, { duration: 200 }, () => {
+        scheduleOnRN(showNextImage);
+      });
+    } else {
+      translateX.value = withSpring(0);
+    }
+  });
+
+  useEffect(() => {
+  translateX.value = 0;
+}, [selectedImageIndex]);
+
 
   const formatRelativeDate = (dateString?: string) => {
   if (!dateString) return "";
@@ -490,6 +503,7 @@ export default function RequestDetailPro() {
           scrollEventThrottle={6}
           keyboardShouldPersistTaps="handled"
     automaticallyAdjustKeyboardInsets={true}
+    scrollEnabled={!isModalVisible}
 
         >
           <Animated.View
@@ -553,6 +567,7 @@ export default function RequestDetailPro() {
     {request.images && request.images.length > 0 && (
         <ScrollView
             horizontal
+            scrollEnabled={!isModalVisible}
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={{
                 paddingTop: 18,
@@ -770,25 +785,23 @@ export default function RequestDetailPro() {
           transparent
           animationType="fade"
           onRequestClose={closeImageModal}
+          presentationStyle="overFullScreen"
         >
-          <Pressable style={styles.modalOverlay} onPress={closeImageModal}>
-          <Pressable
-            style={styles.modalContent}
-            onPress={(e) => e.stopPropagation()}
-            
-          >
+          <GestureHandlerRootView style={{ flex: 1 }}>
+          <View style={styles.modalOverlay}> {/* zone de fermeture */} 
+            <Pressable style={styles.modalBackground} onPress={closeImageModal} />
+          <View style={styles.modalContent}>
             {selectedImageIndex !== null &&
              reviewImagesModal[selectedImageIndex] && (
               <>
-                <Animated.Image {...panResponder.panHandlers}
-                 source={{ uri: reviewImagesModal[selectedImageIndex].url }}
+              <GestureDetector gesture={panGesture}>
+                  <Animated.Image source={{ uri: reviewImagesModal[selectedImageIndex].url }}
                   style={[
-    styles.modalImage,
-    {
-      transform: [{ translateX }],
-    },
-  ]}
-  />
+      styles.modalImage,
+      animatedImageStyle,
+    ]} />
+               </GestureDetector>
+
                 {reviewImagesModal.length > 1 && (
                       <View style={styles.modalNav}>
                         <Pressable style={styles.navButton} onPress={showPreviousImage}>
@@ -803,11 +816,12 @@ export default function RequestDetailPro() {
                           <Text style={styles.navButtonText}>›</Text>
                         </Pressable>
                       </View>
+                      )} 
+                      </>
                     )}
-                  </>
-                )}
-          </Pressable>
-          </Pressable>
+                  </View> 
+                  </View>
+                  </GestureHandlerRootView>
         </Modal>
       </KeyboardAvoidingView>
 
@@ -1036,28 +1050,9 @@ descriptionText: {
   lineHeight: 24,
   textAlign: "justify",
 },
-modalOverlay: {
-  flex: 1,
-  backgroundColor: "rgba(0,0,0,0.65)",
-  justifyContent: "center",
-  alignItems: "center",
-  paddingHorizontal: 20,
-},
-
-modalContent: {
-  width: "100%",
-  maxWidth: 420,
-  alignItems: "center",
-  justifyContent: "center",
-},
-
-modalImage: {
-  width: "100%",
-  height: 520,
-  borderRadius: 18,
-  backgroundColor: "#fff",
-borderColor: "#fff",
-  borderWidth: 1},
+modalOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.92)", justifyContent: "center", alignItems: "center", },
+ modalContent: { width: "100%", alignItems: "center", justifyContent: "center", zIndex: 2,},
+ modalImage: { width: 360, height: 360, borderRadius: 20, resizeMode: "cover", },
 
 modalNav: {
   marginTop: 14,
@@ -1087,5 +1082,7 @@ imageCounter: {
   color: "#fff",
   fontSize: 16,
   fontFamily: "Mont",
-}
+},
+modalBackground: { ...StyleSheet.absoluteFillObject, },
+swipeArea: { width: "100%", height: 420, alignItems: "center", justifyContent: "center", },
 });

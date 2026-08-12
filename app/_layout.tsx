@@ -4,6 +4,7 @@ import * as Notifications from 'expo-notifications';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from "react";
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { AuthProvider } from '../context/AuthContext';
 import { useColorScheme } from '../hooks/use-color-scheme';
 import { useApi } from "../services/api";
@@ -43,6 +44,7 @@ import { useApi } from "../services/api";
                                    const colorScheme = useColorScheme();
                                     const theme = colorScheme === 'dark' ? DarkTheme : DefaultTheme;
                                      return ( 
+                                      <GestureHandlerRootView style={{ flex: 1 }}>
                                      <AuthProvider> 
                                        <PushRegister /> 
                                        <ThemeProvider value={theme}>
@@ -51,5 +53,7 @@ import { useApi } from "../services/api";
                                            <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
                                             </Stack> <StatusBar style="auto" />
                                              </ThemeProvider>
-                                              </AuthProvider> );
+                                              </AuthProvider> 
+                                              </GestureHandlerRootView>
+                                              );
                                 }
