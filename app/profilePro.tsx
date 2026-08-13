@@ -341,7 +341,7 @@ const completion = React.useMemo(() => {
   "Paris 20e",
 ];
 
-  const searchCities = async (text) => {
+  const searchCities = async (text: string) => {
   setLocationQuery(text);
 
 
@@ -369,7 +369,7 @@ const completion = React.useMemo(() => {
 
     const data = await res.json();
 
-    const sorted = data.sort((a, b) => {
+    const sorted = data.sort((a: City, b: City) => {
       const aIsIDF = IDF_DEPARTMENTS.includes(a.departement.code);
       const bIsIDF = IDF_DEPARTMENTS.includes(b.departement.code);
 
@@ -547,12 +547,17 @@ accessible
     </View>
 
     <Text style={styles.progressText}>
-        {coach.subtitle}
+        {coach?.subtitle}
     </Text>
 
     </View>
 
-    <TouchableOpacity onPress={openProfile} style={{backgroundColor: "#247868", paddingBlock: 6, paddingInline: 12, borderRadius: 20}}><Text style={{fontFamily: "Montmed", color: "#fff"}}>Votre profil</Text></TouchableOpacity>
+    <TouchableOpacity
+    accessible
+  accessibilityLabel="Profil"
+  accessibilityHint="Voir votre profil"
+   onPress={openProfile} 
+   style={{backgroundColor: "#247868", paddingBlock: 10, paddingInline: 18, borderRadius: 20, marginBlock: 8}}><Text style={{fontFamily: "Montmed", color: "#fff"}}>Votre profil</Text></TouchableOpacity>
 
 <View style={styles.box}>
       <Text style={{fontFamily: "Montt", color: "#247868"}}>👤 Nom</Text>

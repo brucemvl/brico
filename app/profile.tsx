@@ -18,16 +18,7 @@ import logo from "../assets/briconnect33.png";
 import fond from "../assets/convert_1.png";
 import { useApi } from "../services/api";
 
-const skillIcons = {
-   Plomberie: require("../assets/icons/plomberie.png"),
-    Electricité: require("../assets/icons/electricite.png"),
-     Peinture: require("../assets/icons/peinture.png"),
-      Carrelage: require("../assets/icons/carrelage.png"),
-       Agencement: require("../assets/icons/agencement.png"),
-        Jardinage: require("../assets/icons/jardinage.png"),
-         Divers: require("../assets/icons/divers.png"),
-         Demenagement: require("../assets/icons/demenagement.png"),
-         };
+
 
 
 const defaultAvatar =
@@ -74,6 +65,17 @@ const showNextImage = () => {
     return prev === reviewImagesModal.length - 1 ? 0 : prev + 1;
   });
 };
+
+const skillIcons = {
+   Plomberie: require("../assets/icons/plomberie.png"),
+    Electricité: require("../assets/icons/electricite.png"),
+     Peinture: require("../assets/icons/peinture.png"),
+      Carrelage: require("../assets/icons/carrelage.png"),
+       Agencement: require("../assets/icons/agencement.png"),
+        Jardinage: require("../assets/icons/jardinage.png"),
+         Divers: require("../assets/icons/divers.png"),
+         Demenagement: require("../assets/icons/demenagement.png"),
+         };
 
 const panResponder = React.useRef(
   PanResponder.create({
@@ -309,7 +311,7 @@ useEffect(() => {
 
           <View style={[styles.skillsContainer, {gap: 14}]}>
             {user.skills.map((skill, i) => (
-               <LinearGradient key={i} style={styles.skill} colors={["#fff", "#30a590"]}>
+               <LinearGradient key={i} style={styles.skill} colors={["#cbffef", "#217163"]}>
                  <Image source={skillIcons[skill] || skillIcons.Divers} style={styles.skillIcon} />
                   <Text style={styles.skillText}>{skill}</Text>
                    </LinearGradient>
@@ -325,9 +327,9 @@ useEffect(() => {
 
     <View style={styles.skillsContainer}>
       {parsedEquipment?.map((item: string, i: number) => (
-        <View key={i} style={styles.equipment}>
+        <LinearGradient key={i} style={styles.equipment} colors={["#cbffef", "#217163"]}>
           <Text style={styles.equipmentText}>{item}</Text>
-        </View>
+        </LinearGradient>
       ))}
     </View>
   </View>
@@ -529,23 +531,25 @@ paddingBottom: 60  },
     flexDirection: "row",
     flexWrap: "wrap",
     alignItems: "center",
-    justifyContent: "center"
+    justifyContent: "center",
+    marginTop: 10
   },
 
   equipment: {
-    backgroundColor:"#1a5b4f",
 
 paddingHorizontal:14,
 paddingVertical:10,
 
 borderRadius:30,
+borderWidth: 1,
+ borderColor: "#D1FAE5",
 
 margin:3
   },
   equipmentText: {
     fontSize: 13,
-    fontFamily: "Mont",
-    color:"#d2f0ea",
+    fontFamily: "Montmed",
+    color:"#353535",
   },
   skill: { flexDirection: "column", alignItems: "center", gap: 8, paddingHorizontal: 12, paddingVertical: 14, borderRadius: 16, borderWidth: 1, borderColor: "#D1FAE5", },
    skillIcon: { width: 18, height: 18, resizeMode: "contain", },
