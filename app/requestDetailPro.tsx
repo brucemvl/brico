@@ -5,7 +5,6 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
-  Animated,
   Dimensions,
   Image,
   ImageBackground,
@@ -14,6 +13,7 @@ import {
   Modal,
   Platform,
   Pressable,
+  Animated as RNAnimated,
   ScrollView,
   StyleSheet,
   Text,
@@ -22,12 +22,7 @@ import {
   View
 } from "react-native";
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
-import {
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-  withTiming,
-} from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, useSharedValue, withSpring, withTiming, } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 import logo from "../assets/briconnect33.png";
 import fond from "../assets/convert_1.png";
@@ -104,7 +99,7 @@ export default function RequestDetailPro() {
   const [comment, setComment] = useState("");
   const [proposingDeal, setProposingDeal] = useState(false);
 
-  const reviewScale = useRef(new Animated.Value(1)).current;
+  const reviewScale = useRef(new RNAnimated.Value(1)).current;
 
 
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
@@ -143,20 +138,13 @@ export default function RequestDetailPro() {
   };
   
 
-const animatedImageStyle = useAnimatedStyle(() => {
-  const rotation = translateX.value / 30;
-
-  return {
-    transform: [
-      {
-        translateX: translateX.value,
-      },
-      {
-        rotate: `${rotation}deg`,
-      },
-    ],
-  };
-});
+const animatedImageStyle = useAnimatedStyle(() => { 
+  const rotation = translateX.value / 20;
+   return { transform: [ { translateX: translateX.value },
+     { rotate: `${rotation}deg` },
+      { scale: 0.98 }, ],
+       opacity: 1 - Math.min(Math.abs(translateX.value) / 350, 0.4), };
+ });
 
 const panGesture = Gesture.Pan()
   .onUpdate((event) => {
@@ -202,7 +190,7 @@ const panGesture = Gesture.Pan()
   return date.toLocaleDateString("fr-FR");
 };
 
-  const scrollY = new Animated.Value(0);
+  const scrollY = new RNAnimated.Value(0);
 
   const headerOpacity = scrollY.interpolate({
     inputRange: [0, 60],
@@ -407,14 +395,14 @@ const panGesture = Gesture.Pan()
 
 
   useEffect(() => {
-    const animation = Animated.loop(
-      Animated.sequence([
-        Animated.timing(reviewScale, {
+    const animation = RNAnimated.loop(
+      RNAnimated.sequence([
+        RNAnimated.timing(reviewScale, {
           toValue: 1.08,
           duration: 500,
           useNativeDriver: true,
         }),
-        Animated.timing(reviewScale, {
+        RNAnimated.timing(reviewScale, {
           toValue: 1,
           duration: 500,
           useNativeDriver: true,
@@ -490,13 +478,13 @@ const panGesture = Gesture.Pan()
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       // ajuste selon ton header
       >
-        <Animated.View style={{ opacity: headerOpacity, flexDirection: "row", alignItems: "center", position: "relative", top: 30, paddingBottom: 15 }}>
+        <RNAnimated.View style={{ opacity: headerOpacity, flexDirection: "row", alignItems: "center", position: "relative", top: 30, paddingBottom: 15 }}>
           <Image source={logo} style={{ height: 60, width: 60 }} />
-          <Text style={{ fontFamily: "Montt", fontSize: 16 }}>{request.title.slice(0,1).toUpperCase() + request.title.slice(1, request.title.length)}</Text></Animated.View>
+          <Text style={{ fontFamily: "Montt", fontSize: 16 }}>{request.title.slice(0,1).toUpperCase() + request.title.slice(1, request.title.length)}</Text></RNAnimated.View>
         <BackButton />
-        <Animated.ScrollView
+        <RNAnimated.ScrollView
           contentContainerStyle={styles.container}
-          onScroll={Animated.event(
+          onScroll={RNAnimated.event(
             [{ nativeEvent: { contentOffset: { y: scrollY } } }],
             { useNativeDriver: false }
           )}
@@ -506,7 +494,7 @@ const panGesture = Gesture.Pan()
     scrollEnabled={!isModalVisible}
 
         >
-          <Animated.View
+          <RNAnimated.View
             style={{
               marginBlock: 10,
               width: "100%",
@@ -551,7 +539,7 @@ const panGesture = Gesture.Pan()
                             </View>
               
             </LinearGradient>
-          </Animated.View>
+          </RNAnimated.View>
           {request.description &&
 <View style={styles.sectionDescription}>
     <Text style={styles.sectionTitle}>Description</Text>
@@ -777,7 +765,7 @@ const panGesture = Gesture.Pan()
   <Text style={styles.sendIcon}>➜</Text>
 </TouchableOpacity>
 </View>
-        </Animated.ScrollView>
+        </RNAnimated.ScrollView>
 
         {/* Modal preview image */}
         <Modal
@@ -794,13 +782,15 @@ const panGesture = Gesture.Pan()
             {selectedImageIndex !== null &&
              reviewImagesModal[selectedImageIndex] && (
               <>
-              <GestureDetector gesture={panGesture}>
-                  <Animated.Image source={{ uri: reviewImagesModal[selectedImageIndex].url }}
-                  style={[
-      styles.modalImage,
-      animatedImageStyle,
-    ]} />
-               </GestureDetector>
+              {reviewImagesModal.length > 1 ? 
+               <GestureDetector gesture={panGesture}>
+                 <Animated.Image source={{ uri: reviewImagesModal[selectedImageIndex].url }}
+                  style={[styles.modalImage, animatedImageStyle]} /> 
+                  </GestureDetector>  
+                  : 
+                   <Animated.Image source={{ uri: reviewImagesModal[selectedImageIndex].url }}
+                    style={styles.modalImage} />
+                     }
 
                 {reviewImagesModal.length > 1 && (
                       <View style={styles.modalNav}>
