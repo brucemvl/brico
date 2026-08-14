@@ -18,11 +18,14 @@ import {
 } from "react-native";
 import logo from "../assets/briconnect33.png";
 import fond from "../assets/convert_1.png";
+import budget from "../assets/icons/dollar.png";
 import msg from "../assets/icons/enveloppe.png";
+import location from "../assets/icons/marker.png";
 import notifIcon from "../assets/icons/notif.png";
 import settings from "../assets/icons/settings.png";
 import share from "../assets/icons/share.png";
 import star from "../assets/icons/star.png";
+import tool from "../assets/icons/wrench.png";
 import { useApi } from "../services/api";
 import CoachCardPro from "./coachCardPro";
 
@@ -673,20 +676,23 @@ const images = item.images ?? [];
         <View style={styles.badgesRow}>
 
             <View style={styles.badge}>
+              <Image source={tool} style={styles.badgeIcon} />
                 <Text style={styles.badgeText}>
-                    🔧 {item.category}
+                    {item.category}
                 </Text>
             </View>
 
             <View style={styles.badge}>
+              <Image source={location} style={styles.badgeIcon} />
                 <Text style={styles.badgeText}>
-                    📍 {item.location}
+                     {item.location}
                 </Text>
             </View>
 
             <View style={styles.badge}>
+              <Image source={budget} style={styles.badgeIcon} />
                 <Text style={styles.badgeText}>
-                    💰 {item.budget <= 0 ? "À définir" : item.budget + " €"}
+                    {item.budget <= 0 ? "À définir" : item.budget + " €"}
                 </Text>
             </View>
 
@@ -925,10 +931,19 @@ badge:{
         height:0
     },
     elevation:6,
+    flexDirection: "row",
+      alignItems: "center",
+      gap: 6
+
+},
+badgeIcon: {
+  height: 20,
+  width: 20
+
 },
 
 badgeText:{
-    color:"#1a5b4f",
+    color:"#000000",
     fontFamily:"Montt",
     fontSize: 13
 },
