@@ -71,6 +71,7 @@ export default function Register() {
 
       <TextInput
         placeholder="Nom complet"
+        placeholderTextColor="#777777"
         value={name}
         onChangeText={setName}
         style={styles.input}
@@ -82,6 +83,7 @@ export default function Register() {
 
       <TextInput
         placeholder="Email"
+        placeholderTextColor="#777777"
         value={email}
         onChangeText={setEmail}
         keyboardType="email-address"
@@ -95,6 +97,7 @@ export default function Register() {
 
       <TextInput
         placeholder="Mot de passe"
+        placeholderTextColor="#777777"
         secureTextEntry
         value={password}
         onChangeText={setPassword}
@@ -148,6 +151,12 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     fontFamily: "Mont",
     width: 300,
-    borderColor: "#1a5b4f"
+    borderColor: "#1a5b4f",
+    // Important pour le mode sombre
+  backgroundColor: "#FFFFFF",
+  color: "#000000",
+
+  // Android
+  includeFontPadding: false,
   },
 });

@@ -487,9 +487,19 @@ const missionCompleted = clientHasReviewed;
                     color: "#fefefe",
                     fontFamily: "Mont",
                     transform: [{ scale: reviewScale }],
+                    
                   }}
                 >
                   <Text style={styles.buttonText}>Accepter accord</Text>
+                </Animated.Text>
+                 <Animated.Text
+                  style={{
+                    color: "#fefefe",
+                    fontFamily: "Mont",
+                    transform: [{ scale: reviewScale }],
+                    
+                  }}
+                >
                   <Text style={{fontFamily: "Mont", fontSize: 11, color: "#fff", textAlign: "center"}}>Afin d'echanger les coordonnées</Text>
                 </Animated.Text>
               </TouchableOpacity>
@@ -741,7 +751,7 @@ value={message}
 
 const styles = StyleSheet.create({
   actions: { flexDirection: "row", justifyContent: "space-around", padding: 10 },
-  button: { backgroundColor: "#007AFF", padding: 14, borderRadius: 18 },
+  button: { backgroundColor: "#007AFF", padding: 16, borderRadius: 22, flexDirection: "column", alignItems: "center" },
   buttonText: { color: "white", fontFamily: "Mont", fontSize: 13 },
   dealStatus: { textAlign: "center", color: "#1a5b4f", marginBottom: 5, fontFamily: "Mont" },
   dealAccepted: { textAlign: "center", color: "green", fontFamily: "Kanito", marginBottom: 5 },

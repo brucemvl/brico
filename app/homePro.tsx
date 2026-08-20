@@ -933,17 +933,17 @@ badge:{
     elevation:6,
     flexDirection: "row",
       alignItems: "center",
-      gap: 6
+      gap: 7
 
 },
 badgeIcon: {
-  height: 20,
-  width: 20
+  height: 19,
+  width: 19
 
 },
 
 badgeText:{
-    color:"#000000",
+    color:"#1a5b4f",
     fontFamily:"Montt",
     fontSize: 13
 },
