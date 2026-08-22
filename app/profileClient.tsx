@@ -176,7 +176,7 @@ setLocationQuery(data.location || "");
   "Paris 20e",
 ];
 
-  const searchCities = async (text) => {
+  const searchCities = async (text: string) => {
   setLocationQuery(text);
 
 
@@ -204,7 +204,7 @@ setLocationQuery(data.location || "");
 
     const data = await res.json();
 
-    const sorted = data.sort((a, b) => {
+    const sorted = data.sort((a: City, b: City) => {
       const aIsIDF = IDF_DEPARTMENTS.includes(a.departement.code);
       const bIsIDF = IDF_DEPARTMENTS.includes(b.departement.code);
 
@@ -438,7 +438,7 @@ container:{
 alignItems:"center",
 paddingTop:30,
 paddingHorizontal:30,
-paddingBottom:80,
+paddingBottom:150,
 gap: 15
 },
 

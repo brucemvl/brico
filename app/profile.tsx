@@ -532,7 +532,8 @@ paddingBottom: 60  },
     flexWrap: "wrap",
     alignItems: "center",
     justifyContent: "center",
-    marginTop: 10
+    marginTop: 10,
+    gap: 3
   },
 
   equipment: {
@@ -542,7 +543,7 @@ paddingVertical:10,
 
 borderRadius:30,
 borderWidth: 1,
- borderColor: "#D1FAE5",
+    borderColor: "#3535351a",
 
 margin:3
   },
@@ -550,10 +551,11 @@ margin:3
     fontSize: 13,
     fontFamily: "Montmed",
     color:"#353535",
+    
   },
-  skill: { flexDirection: "column", alignItems: "center", gap: 8, paddingHorizontal: 12, paddingVertical: 14, borderRadius: 16, borderWidth: 1, borderColor: "#D1FAE5", },
+  skill: { flexDirection: "column", alignItems: "center", gap: 8, paddingHorizontal: 12, paddingVertical: 14, borderRadius: 16, borderWidth: 1, borderColor: "#3535351a", },
    skillIcon: { width: 18, height: 18, resizeMode: "contain", },
-   skillText: { fontFamily: "Montt", color: "#000", fontSize: 13, },
+   skillText: { fontFamily: "Montmed", color: "#000", fontSize: 13, },
 
   
 

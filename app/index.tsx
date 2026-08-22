@@ -91,7 +91,7 @@ export default function Welcome() {
   const clientAnim = useRef(createButtonAnim()).current;
   const proAnim = useRef(createButtonAnim()).current;
 
-  if (loading) return null;
+  if (loading || !fontsLoaded) return null;
 
   return (
     <LinearGradient
@@ -190,7 +190,7 @@ const styles = StyleSheet.create({
     fontFamily: "Londrina"
   },
   buttonWrapper: {
-    width: 240,
+    width: 280,
     marginBottom: 20,
     borderRadius: 30,
     shadowColor: '#000',
@@ -207,7 +207,8 @@ const styles = StyleSheet.create({
   buttonTitle: {
   color: 'white',
   fontSize: 16,
-  fontFamily: "Mont",
+  fontFamily: "Montmed",
+  flexShrink: 1
 },
 
 buttonSubtitle: {

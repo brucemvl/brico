@@ -8,15 +8,19 @@ import { ActivityIndicator, Alert, Animated, Image, ImageBackground, Share, Styl
 import logo from "../assets/briconnect33.png";
 import fond from "../assets/convert_1.png";
 import msg from "../assets/icons/enveloppe.png";
+import location from "../assets/icons/markerr.png";
 import modifier from "../assets/icons/modifier.png";
 import notifIcon from "../assets/icons/notif.png";
+import budget from "../assets/icons/sack-dollar.png";
 import settings from "../assets/icons/settings.png";
 import share from "../assets/icons/share.png";
 import star from "../assets/icons/star.png";
 import trash from "../assets/icons/trash3.png";
+import tool from "../assets/icons/wrench-alt.png";
 import { AuthContext } from '../context/AuthContext';
 import { useApi } from "../services/api";
 import CoachCard from './coachCard';
+
 
 
 
@@ -632,7 +636,7 @@ setAvatar(data.user.avatar);
                   style={{ flexDirection: "row", alignItems: "center", gap: 10, width: 360, justifyContent: "center" }}
                 >
                   <TouchableOpacity
-                    style={{ width: 315, shadowColor: "#000",
+                    style={{ width: 335, shadowColor: "#000",
   shadowOpacity: 0.82,
   shadowRadius: 8,
   shadowOffset: {
@@ -673,15 +677,23 @@ setAvatar(data.user.avatar);
                         <View style={styles.badges}>
 
     <View style={styles.badge}>
-        <Text style={{fontFamily: "Montt"}}>🔧 {item.category}</Text>
+                    <Image source={tool} style={styles.badgeIcon} />
+
+        <Text style={{fontFamily: "Montt"}}>{item.category}</Text>
     </View>
 
     <View style={styles.badge}>
-        <Text style={{fontFamily: "Montt"}}>💰 {item.budget} €</Text>
+                    <Image source={budget} style={styles.badgeIcon} />
+
+        <Text style={{fontFamily: "Montt"}}>{item.budget} €</Text>
     </View>
 
+
+
     <View style={styles.badge}>
-        <Text style={{fontFamily: "Montt"}}>📍 {item.location}</Text>
+                    <Image source={location} style={styles.badgeIcon} />
+
+        <Text style={{fontFamily: "Montt"}}>{item.location}</Text>
     </View>
 
 </View>
@@ -957,10 +969,18 @@ badges:{
 },
 
 badge:{
-    backgroundColor:"#eef7f4",
-    paddingHorizontal:14,
-    paddingVertical:8,
-    borderRadius:18,
+    backgroundColor:"#dceae6",
+    paddingHorizontal:16,
+    paddingVertical:10,
+    borderRadius:20,
+    flexDirection: "row",
+    gap: 8,
+    alignItems: "center"
+},
+badgeIcon: {
+  height: 19,
+  width: 19
+
 },
 cardFooter: {
   flexDirection: "row",

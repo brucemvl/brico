@@ -9,6 +9,7 @@ const fetch = require("node-fetch");
 const User = require("../models/User");
 const buildCoach = require("../services/buildCoach");
 const upload = require("../middlewares/uploadRequest");
+const { uploadImages } = require("../middlewares/upload");
 
 // 🔒 Fonction de détection avancée
 const containsContactInfo = (text) => {
@@ -390,7 +391,7 @@ if (isPro && !alreadyViewed) {
 // =======================
 // 🔹 POST création d’une demande (client)
 // =======================
-router.post("/", auth, upload.array("images"), async (req, res) => {
+router.post("/", auth, uploadImages, async (req, res) => {
   try {
     if (!req.user || req.user.role !== "client") {
       return res.status(403).json({ error: "Seulement clients" });
@@ -484,7 +485,7 @@ router.put("/:id", auth, async (req, res) => {
 
 
 // MODIFICATIONS IMAGES
-router.post("/:id/images", auth, upload.array("images"), async (req, res) => {
+router.post("/:id/images", auth, uploadImages, async (req, res) => {
   try {
 
     const request = await Request.findById(req.params.id);

@@ -138,7 +138,7 @@ export default function CreateRequestForm() {
     "Paris 20e",
   ];
 
-  const searchCities = async (text) => {
+  const searchCities = async (text: string) => {
     setLocationQuery(text);
 
 
@@ -166,7 +166,7 @@ export default function CreateRequestForm() {
 
       const data = await res.json();
 
-      const sorted = data.sort((a, b) => {
+      const sorted = data.sort((a: City, b: City) => {
         const aIsIDF = IDF_DEPARTMENTS.includes(a.departement.code);
         const bIsIDF = IDF_DEPARTMENTS.includes(b.departement.code);
 
@@ -404,7 +404,7 @@ export default function CreateRequestForm() {
               accessibilityHint="Sélectionner des photos pour illustrer votre demande"
             >
               <Text style={styles.imageButtonText}>
-                📷 Ajouter des photos
+                📷  Ajouter des photos
               </Text>
             </TouchableOpacity>
 
