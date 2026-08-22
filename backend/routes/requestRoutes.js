@@ -8,7 +8,7 @@ const cloudinary = require("../config/cloudinary");
 const fetch = require("node-fetch");
 const User = require("../models/User");
 const buildCoach = require("../services/buildCoach");
-const upload = require("../middlewares/upload");
+const upload = require("../middlewares/uploadCloudinary");
 
 // 🔒 Fonction de détection avancée
 const containsContactInfo = (text) => {
