@@ -66,6 +66,15 @@ const showNextImage = () => {
   });
 };
 
+const openProfileImage = () => {
+  const profileImage = user?.profileImage?.url;
+
+  if (!profileImage) return;
+
+  setReviewImagesModal([{ url: profileImage }]);
+  setSelectedImageIndex(0);
+};
+
 const skillIcons = {
    Plomberie: require("../assets/icons/plomberie.png"),
     Electricité: require("../assets/icons/electricite.png"),
@@ -250,12 +259,17 @@ useEffect(() => {
     
   }}
 >
-          <Image
-          source={{
-            uri: user.profileImage?.url || defaultAvatar
-          }}
-          style={styles.avatar}
-        />
+          <Pressable
+  onPress={openProfileImage}
+  style={styles.avatarPressable}
+>
+  <Image
+    source={{
+      uri: user.profileImage?.url || defaultAvatar
+    }}
+    style={styles.avatar}
+  />
+</Pressable>
               <LinearGradient colors={["#1a5b4f", "#30a590"]} style={{width: "85%", alignItems: "center", paddingInline: 20, paddingTop: 54, paddingBottom: 24, borderRadius: 20, gap: 4, left: 25}}>
         
 <View style={{alignItems: "center"}}>
@@ -478,13 +492,16 @@ const styles = StyleSheet.create({
     paddingInline: 10,
 paddingBottom: 60  },
 
+avatarPressable: {
+  position: "absolute",
+  zIndex: 99,
+  left: 0,
+},
+
   avatar: {
     width: 100,
     height: 110,
     borderRadius: 25,
-    position: "absolute",
-    zIndex: 99,
-    left: 0,
     borderWidth: 2,
      borderColor: "#fcfcfc"
   },
