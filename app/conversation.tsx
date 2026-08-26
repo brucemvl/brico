@@ -6,13 +6,13 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
   Alert,
-  Animated,
   Image,
   ImageBackground,
   KeyboardAvoidingView,
   Linking,
   Modal,
   Platform,
+  Animated as RNAnimated,
   ScrollView,
   StyleSheet,
   Text,
@@ -21,11 +21,19 @@ import {
   TouchableWithoutFeedback,
   View
 } from "react-native";
+import Reanimated, {
+  Easing,
+  useAnimatedProps,
+  useSharedValue,
+  withRepeat,
+  withTiming,
+} from "react-native-reanimated";
+import Svg, { Rect } from "react-native-svg";
 import fond from "../assets/convert_1.png";
 import { useApi } from "../services/api";
 
 
-
+const AnimatedRect = Reanimated.createAnimatedComponent(Rect);
 
 
 
@@ -94,15 +102,15 @@ export default function Conversation() {
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
 
-  const reviewScale = useRef(new Animated.Value(1)).current;
+const reviewScale = useRef(new RNAnimated.Value(1)).current;
 
   const scrollRef = useRef<ScrollView | null>(null);
 
-  const scaleAnim = useRef(new Animated.Value(1)).current;
+  const scaleAnim = useRef(new RNAnimated.Value(1)).current;
 
   const onPressIn = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    Animated.spring(scaleAnim, {
+    RNAnimated.spring(scaleAnim, {
       toValue: 1.3,
       useNativeDriver: true,
       friction: 4,
@@ -111,7 +119,7 @@ export default function Conversation() {
   };
 
   const onPressOut = () => {
-    Animated.spring(scaleAnim, {
+    RNAnimated.spring(scaleAnim, {
       toValue: 1, // Retour à la taille normale
       useNativeDriver: true,
       friction: 4,
@@ -119,6 +127,24 @@ export default function Conversation() {
     }).start();
   };
 
+  const glowProgress = useSharedValue(0);
+  
+  useEffect(() => {
+    glowProgress.value = withRepeat(
+      withTiming(1, {
+        duration: 1800,
+        easing: Easing.linear,
+      }),
+      -1,
+      false
+    );
+  }, []);
+  
+  const glowAnimatedProps = useAnimatedProps(() => {
+    return {
+      strokeDashoffset: glowProgress.value * 500,
+    };
+  });
 
 
   // Charger utilisateur
@@ -190,14 +216,14 @@ export default function Conversation() {
   }, [dealAccepted, conversation?._id]);
 
   useEffect(() => {
-    const animation = Animated.loop(
-      Animated.sequence([
-        Animated.timing(reviewScale, {
+    const animation = RNAnimated.loop(
+      RNAnimated.sequence([
+        RNAnimated.timing(reviewScale, {
           toValue: 1.06,
           duration: 500,
           useNativeDriver: true,
         }),
-        Animated.timing(reviewScale, {
+        RNAnimated.timing(reviewScale, {
           toValue: 1,
           duration: 500,
           useNativeDriver: true,
@@ -475,14 +501,77 @@ const missionCompleted = clientHasReviewed;
           <View style={styles.actions}>
 
             {!clientProposed && !proProposed && !dealAccepted && (
-              <TouchableOpacity style={styles.button} onPress={proposeDeal}>
-                <Text style={styles.buttonText}>Proposer accord</Text>
-              </TouchableOpacity>
+               <View style={styles.glowButtonWrapper}>
+              
+                {/* Halo lumineux qui tourne */}
+                <Svg
+                pointerEvents="none"
+                  width={190}
+                  height={72}
+                  style={styles.glowSvg}
+                  viewBox="0 0 190 72"
+              >
+                {/* Halo diffus */}
+                <Rect
+                  x={3}
+                  y={3}
+                  width={184}
+                  height={66}
+                  rx={20}
+                  ry={20}
+                  fill="transparent"
+                  stroke="#f2220b"
+                  strokeWidth={6}
+                  opacity={0.18}
+                />
+              
+                {/* Liseret lumineux animé */}
+                <AnimatedRect
+                  x={2}
+                  y={2}
+                  width={184}
+                  height={68}
+                  rx={24}
+                  ry={24}
+                  fill="transparent"
+                  stroke="#0a2850"
+                  strokeWidth={3}
+                  strokeLinecap="round"
+                  strokeDasharray="55 500"
+                  animatedProps={glowAnimatedProps}
+                />
+              </Svg>
+              
+                {/* Bouton réel */}
+                <TouchableOpacity
+                  onPress={proposeDeal}
+                  style={
+                    styles.dealButton}
+                  accessible
+                  accessibilityRole="button"
+                  accessibilityLabel="Proposer un accord"
+                  accessibilityHint="Envoyer une proposition d'accord au client"
+                  accessibilityState={{
+                    
+                  }}
+                >
+                  <Text style={styles.dealButtonTitle}>
+                    Proposer un accord
+                  </Text>
+              
+                  
+                    <Text style={styles.dealButtonSubtitle}>
+                      Afin d'échanger vos coordonnées
+                    </Text>
+                  
+                </TouchableOpacity>
+              
+              </View>
             )}
 
             {proProposed && !dealAccepted && (
               <TouchableOpacity style={styles.button} onPress={acceptDeal}>
-                <Animated.Text
+                <Reanimated.Text
                   style={{
                     color: "#fefefe",
                     fontFamily: "Mont",
@@ -491,8 +580,8 @@ const missionCompleted = clientHasReviewed;
                   }}
                 >
                   <Text style={styles.buttonText}>Accepter accord</Text>
-                </Animated.Text>
-                 <Animated.Text
+                </Reanimated.Text>
+                 <Reanimated.Text
                   style={{
                     color: "#fefefe",
                     fontFamily: "Mont",
@@ -501,7 +590,7 @@ const missionCompleted = clientHasReviewed;
                   }}
                 >
                   <Text style={{fontFamily: "Mont", fontSize: 11, color: "#fff", textAlign: "center"}}>Afin d'echanger les coordonnées</Text>
-                </Animated.Text>
+                </Reanimated.Text>
               </TouchableOpacity>
             )}
           </View>
@@ -648,11 +737,11 @@ const missionCompleted = clientHasReviewed;
                 onPressOut={onPressOut}
 
               >
-                <Animated.View style={{ transform: [{ scale: scaleAnim }], alignItems: "center", justifyContent: "center" }}>
+                <RNAnimated.View style={{ transform: [{ scale: scaleAnim }], alignItems: "center", justifyContent: "center" }}>
                   <LinearGradient colors={["#30a590", "#1a5b4f"]} style={{ padding: 12, marginBottom: 20, backgroundColor: "#1a5b4f", borderRadius: 18 }}>
                     <Text style={styles.buttonText}>Voir profil</Text>
                   </LinearGradient>
-                </Animated.View>
+                </RNAnimated.View>
               </TouchableWithoutFeedback>
             </View>
           </View>
@@ -906,5 +995,61 @@ sendArrow:{
     margin: 10,
     width: 260,
     alignSelf: "center"
-  }
+  },
+  glowButtonWrapper: {
+  width: 190,
+  height: 72,
+  borderRadius: 24,
+  alignItems: "center",
+  justifyContent: "center",
+
+  shadowColor: "#00d9ff",
+  shadowOpacity: 0.8,
+  shadowRadius: 12,
+  shadowOffset: {
+    width: 0,
+    height: 0,
+  },
+  elevation: 8,
+},
+
+glowSvg: {
+  position: "absolute",
+  left: 0,
+  top: 0,
+   width: 190,
+  height: 72,
+},
+
+dealButton: {
+  width: 184,
+  minHeight: 66,
+
+  backgroundColor: "#007AFF",
+
+  paddingHorizontal: 14,
+  paddingVertical: 8,
+
+  alignItems: "center",
+  justifyContent: "center",
+
+  borderRadius: 20,
+
+  gap: 3,
+},
+
+
+dealButtonTitle: {
+  color: "#fff",
+  fontFamily: "Montmed",
+  fontSize: 15,
+  textAlign: "center",
+},
+
+dealButtonSubtitle: {
+  color: "rgba(255,255,255,0.9)",
+  fontFamily: "Mont",
+  textAlign: "center",
+  fontSize: 11,
+},
 });

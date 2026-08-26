@@ -632,7 +632,7 @@ const glowAnimatedProps = useAnimatedProps(() => {
                       accessibilityRole="button"
                       accessibilityLabel={`Appeler ${request?.client?.name}`}
                       accessibilityHint={`Lancer un appel au ${contact.phone}`}
-                      style={{backgroundColor: "#eeeeee", paddingBlock: 6, paddingInline: 12, borderRadius: 20, alignItems: "center"}} >
+                      style={{backgroundColor: "#eeeeee", paddingBlock: 6, paddingInline: 12, borderRadius: 20, alignItems: "center", borderWidth: 1, borderColor: "#155d3b5d"}} >
                       <Text style={[styles.contactText, {letterSpacing: 0.5}]}>📞 {contact.phone}</Text>
                     </TouchableOpacity>
                   )}
@@ -643,7 +643,7 @@ const glowAnimatedProps = useAnimatedProps(() => {
                       accessibilityRole="button"
                       accessibilityLabel={`Envoyer un email à ${request?.client?.name}`}
                       accessibilityHint={`Envoyer un email à ${contact.email}`}
-                      style={{backgroundColor: "#eeeeee", paddingBlock: 6, paddingInline: 12, borderRadius: 20, alignItems: "center"}} >
+                      style={{backgroundColor: "#eeeeee", paddingBlock: 6, paddingInline: 12, borderRadius: 20, alignItems: "center", borderWidth: 1, borderColor: "#155d3b5d"}} >
                       <Text style={styles.contactText}>✉️ {contact.email}</Text>
                     </TouchableOpacity>
                   )}
@@ -1202,7 +1202,7 @@ dealButtonDisabled: {
 
 dealButtonTitle: {
   color: "#fff",
-  fontFamily: "Mont",
+  fontFamily: "Montmed",
   fontSize: 15,
   textAlign: "center",
 },
