@@ -22,11 +22,22 @@ import {
   View
 } from "react-native";
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
-import Animated, { useAnimatedStyle, useSharedValue, withSpring, withTiming, } from 'react-native-reanimated';
+import Animated, {
+  Easing,
+  useAnimatedProps,
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withSpring,
+  withTiming,
+} from "react-native-reanimated";
+import Svg, { Rect } from "react-native-svg";
 import { scheduleOnRN } from 'react-native-worklets';
 import logo from "../assets/briconnect33.png";
 import fond from "../assets/convert_1.png";
 import { useApi } from "../services/api";
+
+const AnimatedRect = Animated.createAnimatedComponent(Rect);
 
 type MessageType = {
   from: { _id: string; name: string; profileImage?: string };
@@ -215,6 +226,25 @@ const panGesture = Gesture.Pan()
     outputRange: [1, 0.90],
     extrapolate: "clamp",
   });
+
+ const glowProgress = useSharedValue(0);
+
+useEffect(() => {
+  glowProgress.value = withRepeat(
+    withTiming(1, {
+      duration: 1800,
+      easing: Easing.linear,
+    }),
+    -1,
+    false
+  );
+}, []);
+
+const glowAnimatedProps = useAnimatedProps(() => {
+  return {
+    strokeDashoffset: glowProgress.value * 500,
+  };
+});
 
   // Charger utilisateur
   useEffect(() => {
@@ -624,29 +654,78 @@ const panGesture = Gesture.Pan()
           {/* Actions deal */}
           <View style={styles.dealBox}>
             {!clientProposed && !proProposed && !dealAccepted && discussion > 0 && (
-              <TouchableOpacity
-                onPress={handleProposeDeal}
-                disabled={proposingDeal}
-                style={{
-                  backgroundColor: proposingDeal ? "#8fb9ff" : "#007AFF",
-                  width: 180,
-                  padding: 12,
-                  alignItems: "center",
-                  justifyContent: "center",
-                  borderRadius: 20,
-                  gap: 3
-                }}
-                accessible
-                accessibilityRole="button"
-                accessibilityLabel="Proposer un accord"
-                accessibilityHint="Envoyer une proposition d'accord au client"
-                accessibilityState={{ disabled: proposingDeal, busy: proposingDeal }}
-              >
-                <Text style={{ color: "#fff", fontFamily: "Mont", fontSize: 15 }}>
-                  {proposingDeal ? "Envoi..." : "Proposer un accord"}
-                </Text>
-                {proposingDeal ? <ActivityIndicator color={"#fff"}  /> : <Text style={{ color: "#fff", fontFamily: "Mont", textAlign: "center", fontSize: 12 }}>Afin d'echanger vos coordonnées</Text>}
-              </TouchableOpacity>
+              <View style={styles.glowButtonWrapper}>
+
+  {/* Halo lumineux qui tourne */}
+  <Svg
+  pointerEvents="none"
+    width={190}
+    height={72}
+    style={styles.glowSvg}
+    viewBox="0 0 190 72"
+>
+  {/* Halo diffus */}
+  <Rect
+    x={3}
+    y={3}
+    width={184}
+    height={66}
+    rx={20}
+    ry={20}
+    fill="transparent"
+    stroke="#f2220b"
+    strokeWidth={6}
+    opacity={0.18}
+  />
+
+  {/* Liseret lumineux animé */}
+  <AnimatedRect
+    x={2}
+    y={2}
+    width={184}
+    height={68}
+    rx={24}
+    ry={24}
+    fill="transparent"
+    stroke="#0a2850"
+    strokeWidth={3}
+    strokeLinecap="round"
+    strokeDasharray="55 500"
+    animatedProps={glowAnimatedProps}
+  />
+</Svg>
+
+  {/* Bouton réel */}
+  <TouchableOpacity
+    onPress={handleProposeDeal}
+    disabled={proposingDeal}
+    style={[
+      styles.dealButton,
+      proposingDeal && styles.dealButtonDisabled,
+    ]}
+    accessible
+    accessibilityRole="button"
+    accessibilityLabel="Proposer un accord"
+    accessibilityHint="Envoyer une proposition d'accord au client"
+    accessibilityState={{
+      disabled: proposingDeal,
+      busy: proposingDeal,
+    }}
+  >
+    <Text style={styles.dealButtonTitle}>
+      {proposingDeal ? "Envoi..." : "Proposer un accord"}
+    </Text>
+
+    {proposingDeal ? (
+      <ActivityIndicator color="#fff" />
+    ) : (
+      <Text style={styles.dealButtonSubtitle}>
+        Afin d'échanger vos coordonnées
+      </Text>
+    )}
+  </TouchableOpacity>
+
+</View>
             )}
 
             {clientProposed && !dealAccepted && (
@@ -1075,4 +1154,63 @@ imageCounter: {
 },
 modalBackground: { ...StyleSheet.absoluteFillObject, },
 swipeArea: { width: "100%", height: 420, alignItems: "center", justifyContent: "center", },
+glowButtonWrapper: {
+  width: 190,
+  height: 72,
+  borderRadius: 24,
+  alignItems: "center",
+  justifyContent: "center",
+
+  shadowColor: "#00d9ff",
+  shadowOpacity: 0.8,
+  shadowRadius: 12,
+  shadowOffset: {
+    width: 0,
+    height: 0,
+  },
+  elevation: 8,
+},
+
+glowSvg: {
+  position: "absolute",
+  left: 0,
+  top: 0,
+   width: 190,
+  height: 72,
+},
+
+dealButton: {
+  width: 184,
+  minHeight: 66,
+
+  backgroundColor: "#007AFF",
+
+  paddingHorizontal: 14,
+  paddingVertical: 8,
+
+  alignItems: "center",
+  justifyContent: "center",
+
+  borderRadius: 20,
+
+  gap: 3,
+},
+
+dealButtonDisabled: {
+  backgroundColor: "#8fb9ff",
+},
+
+dealButtonTitle: {
+  color: "#fff",
+  fontFamily: "Mont",
+  fontSize: 15,
+  textAlign: "center",
+},
+
+dealButtonSubtitle: {
+  color: "rgba(255,255,255,0.9)",
+  fontFamily: "Mont",
+  textAlign: "center",
+  fontSize: 11,
+},
 });
