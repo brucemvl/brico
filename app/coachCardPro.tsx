@@ -256,24 +256,27 @@ export default function CoachCardPro({
 
             )}
 
-            {tip.action && (
+            <View style={styles.actionContainer}>
 
-                <TouchableOpacity
-                    style={styles.button}
-                    onPress={() => {
-                        if (tip.action) {
-                            onAction?.(tip.action);
-                        }
-                    }}
-                >
+    {tip.action ? (
 
-                    <Text style={styles.buttonText}>
-                        {tip.action.label}
-                    </Text>
+        <TouchableOpacity
+            style={styles.button}
+            onPress={() => onAction?.(tip.action!)}
+            activeOpacity={0.8}
+        >
+            <Text style={styles.buttonText}>
+                {tip.action.label}
+            </Text>
+        </TouchableOpacity>
 
-                </TouchableOpacity>
+    ) : (
 
-            )}
+        <View style={styles.buttonPlaceholder} />
+
+    )}
+
+</View>
 
         </LinearGradient>
 
@@ -377,7 +380,6 @@ const styles = StyleSheet.create({
     },
 
     button: {
-        marginTop: 18,
         backgroundColor: "#fff",
         alignItems: "center",
         justifyContent: "center",
@@ -444,4 +446,13 @@ const styles = StyleSheet.create({
         backgroundColor: "#fff",
         transform: [{ scale: 1.1 }],
     },
+    actionContainer: {
+    height: 66,
+    marginTop: 0,
+    justifyContent: "flex-end",
+},
+    buttonPlaceholder: {
+    height: 48,
+    opacity: 0,
+},
 });

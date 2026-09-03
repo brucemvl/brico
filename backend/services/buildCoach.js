@@ -270,7 +270,12 @@ if (request.stats.pendingOffers >= 3) {
         priority: 60,
         icon: "📉",
         title: "Votre annonce n'attire pas encore",
-        description: "Essayez d'ajouter des photos ou de préciser votre besoin."
+        description: "Essayez d'ajouter des photos ou de préciser votre besoin.",
+        action: {
+            type: "edit_request",
+            requestId: request._id,
+            label: "Modifier la description"
+        }
     });
 
 }
@@ -283,7 +288,12 @@ if (request.stats.pendingOffers >= 3) {
         priority: 50,
         icon: "⏰",
         title: "Actualisez votre annonce",
-        description: "Une annonce récente remonte davantage dans les résultats."
+        description: "Une annonce récente remonte davantage dans les résultats.",
+        action: {
+            type: "edit_request",
+            requestId: request._id,
+            label: "Modifier la description"
+        }
     });
 
 }

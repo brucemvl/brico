@@ -571,7 +571,7 @@ const missionCompleted = clientHasReviewed;
 
             {proProposed && !dealAccepted && (
               <TouchableOpacity style={styles.button} onPress={acceptDeal}>
-                <Reanimated.Text
+                <RNAnimated.Text
                   style={{
                     color: "#fefefe",
                     fontFamily: "Mont",
@@ -580,8 +580,8 @@ const missionCompleted = clientHasReviewed;
                   }}
                 >
                   <Text style={styles.buttonText}>Accepter accord</Text>
-                </Reanimated.Text>
-                 <Reanimated.Text
+                </RNAnimated.Text>
+                 <RNAnimated.Text
                   style={{
                     color: "#fefefe",
                     fontFamily: "Mont",
@@ -590,7 +590,7 @@ const missionCompleted = clientHasReviewed;
                   }}
                 >
                   <Text style={{fontFamily: "Mont", fontSize: 11, color: "#fff", textAlign: "center"}}>Afin d'echanger les coordonnées</Text>
-                </Reanimated.Text>
+                </RNAnimated.Text>
               </TouchableOpacity>
             )}
           </View>

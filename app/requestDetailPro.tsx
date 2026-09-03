@@ -582,7 +582,10 @@ const glowAnimatedProps = useAnimatedProps(() => {
         {request.description}
     </Text>
 
-    {request.images && request.images.length > 0 && (
+    
+</View>}
+
+{request.images && request.images.length > 0 && (
         <ScrollView
             horizontal
             scrollEnabled={!isModalVisible}
@@ -609,7 +612,7 @@ const glowAnimatedProps = useAnimatedProps(() => {
             ))}
         </ScrollView>
     )}
-</View>}
+
           {proProposed && !dealAccepted && <Text style={styles.dealStatus} accessibilityLiveRegion="polite">Vous avez proposé un accord — en attente du client ⏳</Text>}
           {dealAccepted && <Text style={[styles.dealStatus, { color: "green" }]} accessibilityLiveRegion="polite">🤝 Accord validé</Text>}
 
