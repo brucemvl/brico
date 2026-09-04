@@ -1,8 +1,7 @@
-import { useFocusEffect } from "@react-navigation/native";
 import { useFonts } from "expo-font";
 import { LinearGradient } from "expo-linear-gradient";
 import * as Notifications from 'expo-notifications';
-import { useRouter } from "expo-router";
+import { useFocusEffect, useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,

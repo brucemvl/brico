@@ -1,8 +1,7 @@
-import { useFocusEffect } from '@react-navigation/native';
 import { useFonts } from "expo-font";
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, Animated, Image, ImageBackground, Share, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import logo from "../assets/briconnect33.png";

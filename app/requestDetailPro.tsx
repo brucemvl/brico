@@ -1,7 +1,7 @@
 import BackButton from "@/components/BackButton";
 import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams } from "expo-router";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -582,7 +582,33 @@ const glowAnimatedProps = useAnimatedProps(() => {
         {request.description}
     </Text>
 
-    
+    {request.images && request.images.length > 0 && (
+        <ScrollView
+            horizontal
+            scrollEnabled={!isModalVisible}
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{
+                paddingTop: 18,
+                gap: 12,
+            }}
+        >
+            {request.images.map((img: any, index: number) => (
+                <Pressable
+                    key={img._id} 
+                    onPress={() => openImageModal(request.images ?? [], index)}
+                >
+                    <Image
+                        source={{ uri: img.url }}
+                        style={{
+                            width: 140,
+                            height: 140,
+                            borderRadius: 16,
+                        }}
+                    />
+                </Pressable>
+            ))}
+        </ScrollView>
+    )}
 </View>}
 
 {request.images && request.images.length > 0 && (
@@ -612,7 +638,7 @@ const glowAnimatedProps = useAnimatedProps(() => {
             ))}
         </ScrollView>
     )}
-
+    
           {proProposed && !dealAccepted && <Text style={styles.dealStatus} accessibilityLiveRegion="polite">Vous avez proposé un accord — en attente du client ⏳</Text>}
           {dealAccepted && <Text style={[styles.dealStatus, { color: "green" }]} accessibilityLiveRegion="polite">🤝 Accord validé</Text>}
 
