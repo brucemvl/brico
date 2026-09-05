@@ -821,7 +821,8 @@ const images = item.images ?? [];
                 <LinearGradient colors={["#eaeaea", "#9b9d9d"]} style={styles.loadMoreGradient} > 
                 <Text style={styles.loadMoreText}> Charger 10 demandes de plus </Text>
                  <Text style={styles.loadMoreSubText}> {visibleCount} / {filteredRequests.length} </Text>
-                  </LinearGradient> </TouchableOpacity> }
+                  </LinearGradient> 
+                  </TouchableOpacity> }
       </View>
 
       <TouchableOpacity onPress={async () => { await logout(); router.replace("/"); }} style={{ marginTop: 20, padding: 8 }}>

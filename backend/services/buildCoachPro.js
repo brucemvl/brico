@@ -22,7 +22,7 @@ module.exports = function buildCoachPro(user) {
 
     strengths.push({
         icon: "📷",
-        text: "Photo de profil ajoutée"
+        title: "Photo de profil ajoutée"
     });
 
 } else {
@@ -46,7 +46,7 @@ if (user.description?.trim()) {
 
     strengths.push({
         icon: "📝",
-        text: "Description complète"
+        title: "Description complète"
     });
 
 } else {

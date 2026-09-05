@@ -1,6 +1,6 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from 'expo-router';
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
     Animated,
     Image,
@@ -18,6 +18,12 @@ type CoachAction = {
     label: string;
 };
 
+type Strength = {
+  icon: string;
+  title: string;
+  description: string;
+};
+
 type Improvement = {
     priority: number;
     icon: string;
@@ -32,10 +38,7 @@ type Coach = {
     title: string;
     subtitle: string;
 
-    strengths: {
-        icon: string;
-        text: string;
-    }[];
+    strengths: Strength[];
 
     improvements: Improvement[];
 
@@ -78,6 +81,58 @@ export default function CoachCardPro({
     const [currentTip, setCurrentTip] = useState(0);
 
     const translateX = useRef(new Animated.Value(0)).current;
+
+    const [currentStrength, setCurrentStrength] = useState(0);
+
+const strengthOpacity = useRef(new Animated.Value(1)).current;
+const strengthTranslateX = useRef(new Animated.Value(0)).current;
+
+useEffect(() => {
+  if (coach.strengths.length <= 1) return;
+
+  const interval = setInterval(() => {
+    Animated.parallel([
+      Animated.timing(strengthOpacity, {
+        toValue: 0,
+        duration: 250,
+        useNativeDriver: true,
+      }),
+      Animated.timing(strengthTranslateX, {
+        toValue: -10,
+        duration: 250,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      setCurrentStrength(
+        prev => (prev + 1) % coach.strengths.length
+      );
+
+      strengthTranslateX.setValue(10);
+
+      Animated.parallel([
+        Animated.timing(strengthOpacity, {
+          toValue: 1,
+          duration: 250,
+          useNativeDriver: true,
+        }),
+        Animated.timing(strengthTranslateX, {
+          toValue: 0,
+          duration: 250,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    });
+  }, 4000);
+
+  return () => clearInterval(interval);
+}, [coach.strengths]);
+
+const strength =
+  coach.strengths.length > 0
+    ? coach.strengths[currentStrength]
+    : null;
+
+
 
 
     useEffect(() => {
@@ -184,22 +239,51 @@ export default function CoachCardPro({
 
                 <View style={styles.section}>
 
-                    <Text style={styles.sectionTitle}>
-                        Ce qui est déjà bien
-                    </Text>
+                    
 
-                    {coach.strengths.map((item, index) => (
+                    {coach.strengths.length > 0 && (
+  <View style={styles.section}>
+    <Text style={styles.sectionTitle}>
+      Ce qui est déjà bien
+    </Text>
 
-                        <Text
-                            key={index}
-                            style={styles.goodItem}
-                        >
+    <Animated.View
+      style={[
+        styles.tipCard,
+        {
+          opacity: strengthOpacity,
+          transform: [{ translateX: strengthTranslateX }],
+        },
+      ]}
+    >
+      <Text style={styles.tipIcon}>
+        {strength?.icon}
+      </Text>
 
-                            {item.icon} {item.text}
+      <View style={{ flex: 1 }}>
+        <Text style={styles.tipTitle}>
+          {strength?.title}
+        </Text>
 
-                        </Text>
+        <Text style={styles.tipDescription}>
+          {strength?.description}
+        </Text>
+      </View>
+    </Animated.View>
 
-                    ))}
+    <View style={styles.pagination}>
+      {coach.strengths.map((_, index) => (
+        <View
+          key={index}
+          style={[
+            styles.dot,
+            index === currentStrength && styles.activeDot,
+          ]}
+        />
+      ))}
+    </View>
+  </View>
+)}
 
                 </View>
 
