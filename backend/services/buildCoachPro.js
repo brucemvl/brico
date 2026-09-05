@@ -22,7 +22,8 @@ module.exports = function buildCoachPro(user) {
 
     strengths.push({
         icon: "📷",
-        title: "Photo de profil ajoutée"
+        title: "Photo de profil ajoutée",
+        description: "Un profil avec photo obtient plus de réponses"
     });
 
 } else {
@@ -71,7 +72,8 @@ if (user.location) {
 
     strengths.push({
         icon: "📍",
-        text: "Localisation renseignée"
+        title: "Localisation renseignée",
+        description: "Les clients proches de chez vous pourront plus facilement vous trouver."
     });
 
 } else {
@@ -132,7 +134,8 @@ if (stats.skills >= 3) {
 
     strengths.push({
         icon: "🔧",
-        text: "Compétences bien renseignées"
+        title: "Compétences bien renseignées",
+        description: "Vous recevrez en priorité les offres correspondant à vos compétences"
     });
 
 } else {
@@ -156,7 +159,8 @@ if (stats.equipment >= 3) {
 
     strengths.push({
         icon: "🧰",
-        text: "Matériel renseigné"
+        title: "Matériel renseigné",
+        description: ""
     });
 
 } else {
@@ -180,7 +184,7 @@ if (user.proBadge) {
 
     strengths.push({
         icon: "✔️",
-        text: "Profil vérifié"
+        title: "Profil vérifié"
     });
 
 }
@@ -191,7 +195,8 @@ if((user.ratings?.length || 0) >= 5){
 
     strengths.push({
         icon:"⭐",
-        text:"Vous inspirez confiance"
+        title:"Vous inspirez confiance",
+        description: "Les clients notent vos prestations"
     });
 
 }
@@ -202,7 +207,8 @@ if (stats.portfolioPhotos >= 6) {
 
     strengths.push({
         icon: "🖼️",
-        text: "Portfolio très complet"
+        title: "Portfolio très complet",
+        description: "Vous affichez l'etendue de vos travaux"
     });
 
 } else if (stats.portfolioPhotos >= 3) {
@@ -211,7 +217,8 @@ if (stats.portfolioPhotos >= 6) {
 
     strengths.push({
         icon: "🖼️",
-        text: "Quelques réalisations publiées"
+        title: "Quelques réalisations publiées",
+        description: "Vous affichez quelques travaux réalisés"
     });
 
 } else {
@@ -235,7 +242,7 @@ if (stats.reviews >= 6) {
 
     strengths.push({
         icon: "⭐",
-        text: "De nombreux avis clients"
+        title: "De nombreux avis clients"
     });
 
 }
@@ -245,7 +252,7 @@ else if (stats.reviews >= 3) {
 
     strengths.push({
         icon: "⭐",
-        text: "Vous avez déjà plusieurs avis"
+        title: "Vous avez déjà plusieurs avis"
     });
 
 }
@@ -267,7 +274,8 @@ if (stats.averageRating >= 4.8 && stats.reviews >= 3) {
 
     strengths.push({
         icon: "🌟",
-        text: "Excellente réputation"
+        title: "Excellente réputation",
+        description: "Les clients sont satisfaits de votre travail"
     });
 
 }
@@ -277,7 +285,7 @@ else if (stats.averageRating >= 4.5 && stats.reviews >= 3) {
 
     strengths.push({
         icon: "👍",
-        text: "Très bonnes évaluations"
+        title: "Très bonnes évaluations"
     });
 
 }
@@ -289,7 +297,7 @@ if (stats.completedJobs >= 10) {
 
     strengths.push({
         icon: "🏡",
-        text: "Beaucoup de chantiers réalisés"
+        title: "Beaucoup de chantiers réalisés"
     });
 
 }
@@ -299,7 +307,7 @@ else if (stats.completedJobs >= 5) {
 
     strengths.push({
         icon: "🏡",
-        text: "Plusieurs réalisations terminées"
+        title: "Plusieurs réalisations terminées"
     });
 
 }

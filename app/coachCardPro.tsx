@@ -342,7 +342,7 @@ const strength =
 
             <View style={styles.actionContainer}>
 
-    {tip.action ? (
+    {tip?.action ? (
 
         <TouchableOpacity
             style={styles.button}
