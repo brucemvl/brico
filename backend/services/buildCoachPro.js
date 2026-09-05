@@ -46,7 +46,8 @@ if (user.description?.trim()) {
 
     strengths.push({
         icon: "📝",
-        title: "Description complète"
+        title: "Description complète",
+        description: "Les clients peuvent mieux vous connaitre"
     });
 
 } else {
@@ -94,7 +95,8 @@ if (user.phone) {
 
     strengths.push({
         icon: "📞",
-        text: "Téléphone renseigné"
+        title: "Téléphone renseigné",
+        description: "Les clients auront accès a votre numero en cas d'accord"
     });
 
 }
@@ -105,7 +107,8 @@ if (user.siret) {
 
     strengths.push({
         icon: "🏢",
-        text: "SIRET renseigné"
+        title: "SIRET renseigné",
+        description: "Vous obtenez le badge PRO"
     });
 
 } else {
