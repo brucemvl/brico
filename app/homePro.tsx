@@ -77,7 +77,8 @@ type CoachPro = {
   subtitle: string;
   strengths: {
     icon: string;
-    text: string;
+    title: string;
+    description: string
   }[];
   improvements: Improvement[];
 };
@@ -885,7 +886,7 @@ cardHeader:{
 
 
 cardBody:{
-    padding:18,
+    padding:14,
 },
 
 cardDate:{
@@ -954,10 +955,10 @@ infoBadges:{
 },
 
 footer:{
-    marginTop:18,
+    marginTop:14,
     borderTopWidth:1,
     borderTopColor:"#ececec",
-    paddingTop:16,
+    paddingTop:14,
 
     flexDirection:"row",
     justifyContent:"space-between",
@@ -997,7 +998,7 @@ skillText:{
     fontFamily:"Montt",
     color:"#1a5b4f",
 },
-  skillBadge: { margin: 5, backgroundColor: "#e2db1c", padding: 8, borderRadius: 8, alignItems: "center" },
+  skillBadge: { margin: 4, backgroundColor: "#e2db1c", padding: 8, borderRadius: 12, alignItems: "center" },
   acceptedBadge: { margin: 5, backgroundColor: "#ffeeba", padding: 8, borderRadius: 8, alignItems: "center" },
 
   messageBadge: { width: 16, height: 16, borderRadius: 8, backgroundColor: "red", alignSelf: "flex-end", marginInline: 12 },

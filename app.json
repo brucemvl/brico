@@ -2,16 +2,14 @@
   "expo": {
     "name": "Briconnect",
     "slug": "briconnect",
-    "version": "1.5.0",
+    "version": "1.5.1",
     "orientation": "portrait",
     "icon": "./assets/images/briconnectICON2.png",
     "scheme": "bricoconnect",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.brico.app",
-      "CFBundleLocalizations": "fr",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "NSPhotoLibraryUsageDescription": "Cette application accède à vos photos pour vous permettre d’ajouter des images à vos demandes de travaux ou à votre profil.",
@@ -26,7 +24,6 @@
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
-      "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "package": "com.bmdev14.bricoconnect"
     },

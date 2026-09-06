@@ -258,7 +258,7 @@ export default function RequestDetailClient() {
 
       {/* 🔹 Conversations */}
       <Text 
-      style={{ marginTop: 20, fontFamily: "Montt", fontSize: 15 }} accessible
+      style={{ marginTop: 16, fontFamily: "Montt", fontSize: 15 }} accessible
   accessibilityRole="header"
   accessibilityLabel="Liste des conversations avec les professionnels" >
     Conversations avec les pros
@@ -411,8 +411,8 @@ sectionDescription: {
   backgroundColor: "#fff",
   borderRadius: 22,
   padding: 20,
-  marginTop: 18,
-  marginBottom: 18,
+  marginTop: 10,
+  marginBottom: 10,
 
   shadowColor: "#000",
   shadowOpacity: 0.18,

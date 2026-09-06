@@ -498,6 +498,14 @@ const glowAnimatedProps = useAnimatedProps(() => {
     const discussion = request?.conversation?.messages?.length ?? 0
 
 
+    const openProfileImage = () => {
+  const profileImage = request?.client?.profileImage?.url;
+
+  if (!profileImage) return;
+
+  setReviewImagesModal([{ url: profileImage }]);
+  setSelectedImageIndex(0);
+};
 
 
   return (
@@ -543,10 +551,14 @@ const glowAnimatedProps = useAnimatedProps(() => {
                     {formatRelativeDate(request.createdAt)}
                 </Text>
                 </View>
+                <Pressable
+                  onPress={openProfileImage}
+                >
                 <Image
                 source={{uri: request?.client?.profileImage?.url}}
                 style={styles.heroAvatar}
             />
+            </Pressable>
                 </View>
                 <View style={styles.heroBadges}>
                 <View style={styles.heroBadge}>
@@ -592,21 +604,7 @@ const glowAnimatedProps = useAnimatedProps(() => {
                 gap: 12,
             }}
         >
-            {request.images.map((img: any, index: number) => (
-                <Pressable
-                    key={img._id} 
-                    onPress={() => openImageModal(request.images ?? [], index)}
-                >
-                    <Image
-                        source={{ uri: img.url }}
-                        style={{
-                            width: 140,
-                            height: 140,
-                            borderRadius: 16,
-                        }}
-                    />
-                </Pressable>
-            ))}
+            
         </ScrollView>
     )}
 </View>}
@@ -629,8 +627,8 @@ const glowAnimatedProps = useAnimatedProps(() => {
                     <Image
                         source={{ uri: img.url }}
                         style={{
-                            width: 140,
-                            height: 140,
+                            width: 130,
+                            height: 130,
                             borderRadius: 16,
                         }}
                     />
@@ -884,9 +882,8 @@ const glowAnimatedProps = useAnimatedProps(() => {
           presentationStyle="overFullScreen"
         >
           <GestureHandlerRootView style={{ flex: 1 }}>
-          <View style={styles.modalOverlay}> {/* zone de fermeture */} 
-            <Pressable style={styles.modalBackground} onPress={closeImageModal} />
-          <View style={styles.modalContent}>
+          <Pressable style={styles.modalOverlay} onPress={closeImageModal}>
+              <Pressable style={styles.modalContent} onPress={(e) => e.stopPropagation()}>
             {selectedImageIndex !== null &&
              reviewImagesModal[selectedImageIndex] && (
               <>
@@ -917,8 +914,8 @@ const glowAnimatedProps = useAnimatedProps(() => {
                       )} 
                       </>
                     )}
-                  </View> 
-                  </View>
+                  </Pressable> 
+                  </Pressable>
                   </GestureHandlerRootView>
         </Modal>
       </KeyboardAvoidingView>
@@ -936,7 +933,7 @@ const styles = StyleSheet.create({
     paddingBottom: 140, alignItems: "center"
   },
   title: { fontSize: 22, fontFamily: "Londrinak", marginBottom: 8, color: "#fff", textShadowColor: "#000", textShadowRadius: 2, textShadowOffset: {width: 2, height: 2}, padding: 2, letterSpacing: 0.5 },
-  chatTitle: { marginTop: 20, marginBottom: 10, fontFamily: "Montt", textAlign: "center", fontSize: 20, color: "#1a5b4f" },
+  chatTitle: { marginTop: 10, marginBottom: 10, fontFamily: "Montt", textAlign: "center", fontSize: 20, color: "#1a5b4f" },
   dealBox: { borderRadius: 8, marginVertical: 10, alignItems: "center" },
   dealAction: { color: "#fff", fontFamily: "Mont" },
   dealStatus: { color: "#555", fontFamily: "Kanito" },
@@ -1127,8 +1124,8 @@ sectionDescription: {
   backgroundColor: "#fff",
   borderRadius: 22,
   padding: 20,
-  marginTop: 18,
-  marginBottom: 18,
+  marginTop: 10,
+  marginBottom: 10,
 
   shadowColor: "#000",
   shadowOpacity: 0.18,
@@ -1181,7 +1178,7 @@ imageCounter: {
   fontSize: 16,
   fontFamily: "Mont",
 },
-modalBackground: { ...StyleSheet.absoluteFillObject, },
+modalBackground: { flex: 1 },
 swipeArea: { width: "100%", height: 420, alignItems: "center", justifyContent: "center", },
 glowButtonWrapper: {
   width: 190,
