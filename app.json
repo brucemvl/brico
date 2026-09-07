@@ -2,7 +2,7 @@
   "expo": {
     "name": "Briconnect",
     "slug": "briconnect",
-    "version": "1.5.1",
+    "version": "1.5.2",
     "orientation": "portrait",
     "icon": "./assets/images/briconnectICON2.png",
     "scheme": "bricoconnect",
@@ -47,13 +47,7 @@
         }
       ],
       "expo-font",
-      [
-  "@stripe/stripe-react-native",
-  {
-    "merchantIdentifier": "merchant.com.brico",
-    "enableGooglePay": false
-  }
-],
+      
       "expo-image",
       "expo-status-bar",
       "expo-web-browser"
