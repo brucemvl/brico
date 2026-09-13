@@ -25,15 +25,12 @@ router.get("/me", auth, async (req, res) => {
 
 router.get("/me/pro-coach", auth, async (req, res) => {
   try {
-    console.log("COACH ROUTE");
 
     const user = await User.findById(req.user.id);
 
-    console.log("USER OK");
 
     const coach = buildCoachPro(user);
 
-    console.log("COACH :", coach);
 
     res.json(coach);
 

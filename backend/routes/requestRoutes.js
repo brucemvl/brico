@@ -391,14 +391,49 @@ if (isPro && !alreadyViewed) {
 // 🔹 POST création d’une demande (client)
 // =======================
 router.post("/", auth, upload.uploadImages, async (req, res) => {
+
+  const startedAt = Date.now();
+
+  console.log("🟢 REQUEST_CREATE_START", {
+    userId: req.user?.id,
+    role: req.user?.role,
+    contentType: req.headers["content-type"],
+  });
+
   try {
+
     if (!req.user || req.user.role !== "client") {
-      return res.status(403).json({ error: "Seulement clients" });
+
+      console.log("🔴 REQUEST_CREATE_FORBIDDEN", {
+        userId: req.user?.id,
+        role: req.user?.role,
+      });
+
+      return res.status(403).json({
+        error: "Seulement clients"
+      });
     }
 
-    const { title, description, category, location, budget } = req.body;
+    console.log("📦 REQUEST_BODY_RECEIVED", {
+      userId: req.user.id,
+      title: req.body?.title,
+      category: req.body?.category,
+      location: req.body?.location,
+      budget: req.body?.budget,
+      descriptionLength: req.body?.description?.length || 0,
+      filesCount: req.files?.length || 0,
+    });
 
-    // 🔹 Construire l'objet explicitement
+    const {
+      title,
+      description,
+      category,
+      location,
+      budget
+    } = req.body;
+
+    console.log("💾 REQUEST_BUILD_OBJECT");
+
     const newRequest = new Request({
       client: req.user.id,
       title,
@@ -413,37 +448,111 @@ router.post("/", auth, upload.uploadImages, async (req, res) => {
       proValidated: false
     });
 
-    // 🔹 Upload des images
+    console.log("📸 REQUEST_FILES", {
+      count: req.files?.length || 0,
+    });
+
     if (req.files?.length) {
+
       for (const file of req.files) {
-        newRequest.images.push({ 
+
+        console.log("📸 REQUEST_FILE", {
+          path: file.path,
+          filename: file.filename,
+          mimetype: file.mimetype,
+        });
+
+        newRequest.images.push({
           url: file.path,
-            public_id: file.filename 
-             });
+          public_id: file.filename
+        });
       }
     }
 
+    console.log("💾 REQUEST_MONGO_SAVE_START");
+
     await newRequest.save();
 
-// 🔔 Notifier les pros ayant la compétence
- const pros = await User.find({
-  role: "pro",
-  skills: category,
-  expoPushToken: { $exists: true, $ne: "" } // seulement ceux avec token
-}).select("_id expoPushToken");
+    console.log("✅ REQUEST_MONGO_SAVE_SUCCESS", {
+      requestId: newRequest._id.toString(),
+      userId: req.user.id,
+      durationMs: Date.now() - startedAt,
+    });
 
-for (const pro of pros) {
-  await createNotification({
-    userId: pro._id,
-    type: "request",
-    requestId: newRequest._id
-  });
-}
+    // Notifications
 
-    res.status(201).json(newRequest);
+    try {
+
+      console.log("🔔 REQUEST_FIND_PROS", {
+        category,
+      });
+
+      const pros = await User.find({
+        role: "pro",
+        skills: category,
+        expoPushToken: {
+          $exists: true,
+          $ne: ""
+        }
+      }).select("_id expoPushToken");
+
+      console.log("🔔 REQUEST_PROS_FOUND", {
+        requestId: newRequest._id.toString(),
+        count: pros.length,
+      });
+
+      for (const pro of pros) {
+
+        try {
+
+          await createNotification({
+            userId: pro._id,
+            type: "request",
+            requestId: newRequest._id
+          });
+
+        } catch (notificationError) {
+
+          console.error("⚠️ REQUEST_NOTIFICATION_ERROR", {
+            requestId: newRequest._id.toString(),
+            proId: pro._id.toString(),
+            message: notificationError.message,
+            stack: notificationError.stack,
+          });
+
+        }
+      }
+
+    } catch (notificationError) {
+
+      console.error("⚠️ REQUEST_NOTIFICATION_SYSTEM_ERROR", {
+        requestId: newRequest._id.toString(),
+        message: notificationError.message,
+        stack: notificationError.stack,
+      });
+
+    }
+
+    console.log("🚀 REQUEST_CREATE_SUCCESS", {
+      requestId: newRequest._id.toString(),
+      userId: req.user.id,
+      durationMs: Date.now() - startedAt,
+    });
+
+    return res.status(201).json(newRequest);
+
   } catch (err) {
-    console.error("POST /requests error:", err);
-    res.status(500).json({ error: "Erreur serveur" });
+
+    console.error("💥 REQUEST_CREATE_ERROR", {
+      userId: req.user?.id,
+      message: err.message,
+      stack: err.stack,
+      durationMs: Date.now() - startedAt,
+    });
+
+    return res.status(500).json({
+      error: "Erreur serveur"
+    });
   }
 });
 
