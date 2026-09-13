@@ -487,14 +487,24 @@ router.post("/", auth, upload.uploadImages, async (req, res) => {
         category,
       });
 
-      const pros = await User.find({
+      const pros = await User.find(
+  category === "Divers"
+    ? {
+        role: "pro",
+        expoPushToken: {
+          $exists: true,
+          $ne: ""
+        }
+      }
+    : {
         role: "pro",
         skills: category,
         expoPushToken: {
           $exists: true,
           $ne: ""
         }
-      }).select("_id expoPushToken");
+      }
+).select("_id expoPushToken");
 
       console.log("🔔 REQUEST_PROS_FOUND", {
         requestId: newRequest._id.toString(),
