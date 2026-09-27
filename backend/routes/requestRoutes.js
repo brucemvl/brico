@@ -61,7 +61,7 @@ router.get("/client", auth, async (req, res) => {
             conv.messages?.some(
               msg =>
                 msg.from.toString() !== req.user.id.toString() &&
-                !msg.readBy.includes(req.user.id)
+                !(msg.readBy || []).includes(req.user.id)
             )
           ) {
             unreadType = "message";
@@ -107,7 +107,7 @@ const lastInteraction =
     : null;
 
     const analysis = {
-  noPhoto: r.images.length === 0,
+  noPhoto: !r.images || r.images.length === 0,
 
   shortDescription:
     !r.description || r.description.trim().length < 40,
@@ -145,7 +145,7 @@ const stats = {
 
   views: r.views,
 
-    photos: r.images.length,
+    photos: r.images?.length || 0,
 
     ageInDays: Math.floor(
         (Date.now() - new Date(r.createdAt).getTime()) /
@@ -173,12 +173,12 @@ const hasUnread = !!unreadType;
 const coach = buildCoach(formatted);
 
 res.json({
-    requests: formatted,
-    coach,
-    user: {
-        name: currentUser.name,
-        avatar: currentUser.profileImage.url
-    }
+  requests: formatted,
+  coach,
+  user: {
+    name: currentUser?.name || "",
+    avatar: currentUser?.profileImage?.url || null
+  }
 });
   } catch (err) {
     console.error("GET /requests/client error:", err);
