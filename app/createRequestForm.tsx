@@ -2,7 +2,7 @@ import BackButton from "@/components/BackButton";
 import * as ImagePicker from "expo-image-picker";
 import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -246,12 +246,12 @@ export default function CreateRequestForm() {
       formData.append("budget", budget);
 
       images.forEach((img, index) => {
-        formData.append("images", {
-          uri: img.uri,
-          name: `photo_${index}.jpg`,
-          type: "image/jpeg",
-        } as any);
-      });
+  formData.append("images", {
+    uri: img.uri,
+    name: img.fileName || `photo_${index}`,
+    type: img.mimeType || "image/jpeg",
+  } as any);
+});
 
       if (isEditing) {
 
