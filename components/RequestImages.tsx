@@ -1,3 +1,4 @@
+import { File } from "expo-file-system";
 import * as ImagePicker from "expo-image-picker";
 import { useState } from "react";
 import {
@@ -35,48 +36,43 @@ export default function RequestImages({ request, setRequest }: { request: Reques
 
   // 🔹 Ajouter des images
   const addImages = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsMultipleSelection: true,
-      quality: 0.8,
-    });
+     const result = await ImagePicker.launchImageLibraryAsync({
+       mediaTypes: ["images"],
+        allowsMultipleSelection: true,
+         quality: 0.8,
+         });
+          if (result.canceled) return;
+          
+          try { setUploading(true);
+             const formData = new FormData();
+              result.assets.forEach((img) => { 
+                const file = new File(img.uri);
+                 console.log("📸 FILE UPDATE", {
+                   uri: img.uri,
+                    name: file.name,
+                     type: file.type,
+                     size: file.size,
+                     }); 
+                     
+                     formData.append("images", file); });
+                     
+                     const updated = await apiFetch( `/requests/${request._id}/images`, {
+                       method: "POST",
+                        body: formData,
+                       } );
+                       
+                       setRequest((prev: any) => prev ? {
+                         ...prev,
+                          images: updated.images,
+                         } : prev );
+                         } 
+                         catch (err) {
+                           console.log("Erreur ajout images:", err);
+                            Alert.alert( "Erreur", "Impossible d'ajouter les images" );
+                           } finally { setUploading(false);
 
-    if (result.canceled) return;
-
-    try {
-      setUploading(true);
-
-      const formData = new FormData();
-      result.assets.forEach((img, index) => {
-        const uriParts = img.uri.split(".");
-        const fileType = uriParts[uriParts.length - 1];
-        formData.append("images", {
-          uri: img.uri,
-          name: `photo_${Date.now()}_${index}.${fileType}`,
-          type: `image/${fileType}`,
-        } as any);
-      });
-
-      const updated = await apiFetch(`/requests/${request._id}/images`, {
-        method: "POST",
-        body: formData,
-      });
-
-setRequest((prev: any) =>
-  prev
-    ? {
-        ...prev,
-        images: updated.images,
-      }
-    : prev
-);
-    } catch (err) {
-      console.log("Erreur ajout images:", err);
-      Alert.alert("Erreur", "Impossible d'ajouter les images");
-    } finally {
-      setUploading(false);
-    }
-  };
+                            }
+                           };
 
   // 🔹 Supprimer une image
   const deleteImage = async (imageId: string) => {

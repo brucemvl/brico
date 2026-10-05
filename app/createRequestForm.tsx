@@ -1,4 +1,5 @@
 import BackButton from "@/components/BackButton";
+import { File } from "expo-file-system";
 import * as ImagePicker from "expo-image-picker";
 import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -82,25 +83,31 @@ export default function CreateRequestForm() {
 
 
   const pickImages = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images, // uniquement images
-      quality: 0.8,         // compression
-      base64: false,         // inutile si tu uploades le fichier
-      exif: false,
-      allowsMultipleSelection: true, // si tu veux sélectionner plusieurs
+  const result = await ImagePicker.launchImageLibraryAsync({
+    mediaTypes: ["images"],
+    quality: 0.8,
+    base64: false,
+    exif: false,
+    allowsMultipleSelection: true,
+  });
+
+  if (!result.canceled) {
+    const newImages = result.assets.map((asset) => ({
+      uri: asset.uri,
+      fileName: asset.fileName || `photo_${Date.now()}.jpg`,
+      mimeType: asset.mimeType || "image/jpeg",
+    }));
+
+    setImages((prev) => {
+      const merged = [...prev, ...newImages];
+
+      return merged.filter(
+        (img, index, self) =>
+          index === self.findIndex((i) => i.uri === img.uri)
+      );
     });
-
-    if (!result.canceled) {
-       setImages(prev =>
-         { const merged = [...prev, ...result.assets];
-           // Supprime les doublons selon l'URI ou l'URL
-            return merged.filter(
-               (img, index, self) => 
-                index === self.findIndex( i => (i.uri || i.url) === (img.uri || img.url) ) );
-
-               });
-               }
-  };
+  }
+};
 
   const data = [
     { label: "🔧 Plomberie", value: "Plomberie" },
@@ -228,15 +235,62 @@ export default function CreateRequestForm() {
                               ] );
                              };
 
-  const handleSubmit = async () => {
-    if (!title || !location || !category) {
-      Alert.alert("Erreur", "Champs obligatoires manquants.");
-      return;
-    }
+  
+                             const handleSubmit = async () => {
+  if (!title || !location || !category) {
+    Alert.alert("Erreur", "Champs obligatoires manquants.");
+    return;
+  }
 
-    setLoading(true);
+  setLoading(true);
 
-    try {
+  try {
+    if (isEditing) {
+      // 1️⃣ Modifier les informations de la demande
+      await apiFetch(`/requests/${requestId}`, {
+        method: "PUT",
+        body: JSON.stringify({
+          title,
+          description,
+          category,
+          location,
+          budget,
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      // 2️⃣ Ajouter les nouvelles images
+      const newImages = images.filter((img) => img.uri);
+
+      if (newImages.length > 0) {
+        const imageForm = new FormData();
+
+        newImages.forEach((img) => {
+          const file = new File(img.uri);
+
+          console.log("📸 FILE UPDATE", {
+            uri: img.uri,
+            name: file.name,
+            type: file.type,
+            size: file.size,
+          });
+
+          imageForm.append("images", file);
+        });
+
+        await apiFetch(`/requests/${requestId}/images`, {
+          method: "POST",
+          body: imageForm,
+        });
+      }
+
+      Alert.alert("Succès", "Demande modifiée !");
+      router.replace("/homeClient");
+
+    } else {
+      // 3️⃣ Création
       const formData = new FormData();
 
       formData.append("title", title);
@@ -245,66 +299,34 @@ export default function CreateRequestForm() {
       formData.append("location", location);
       formData.append("budget", budget);
 
-      images.forEach((img, index) => {
-  formData.append("images", {
-    uri: img.uri,
-    name: img.fileName || `photo_${index}`,
-    type: img.mimeType || "image/jpeg",
-  } as any);
-});
+      images.forEach((img) => {
+        const file = new File(img.uri);
 
-      if (isEditing) {
-
-        await apiFetch(`/requests/${requestId}`, {
-
-          method: "PUT",
-
-          body: JSON.stringify({
-
-            title,
-            description,
-            category,
-            location,
-            budget
-
-          }),
-
-          headers: {
-            "Content-Type": "application/json"
-          }
-
-        });
-        const newImages = images.filter(img => img.uri);
-         if (newImages.length > 0) {
-           const imageForm = new FormData();
-            newImages.forEach((img, index) => {
-               imageForm.append("images", { uri: img.uri, name: `photo_${index}.jpg`, type: "image/jpeg", } as any);
-               });
-                await apiFetch(`/requests/${requestId}/images`,
-                  
-           { method: "POST", body: imageForm, }); }
-
-        Alert.alert("Succès", "Demande modifiée !");
-        router.replace("/homeClient");
-
-      } else {
-
-        await apiFetch("/requests", {
-          method: "POST",
-          body: formData,
-
+        console.log("📸 FILE CREATE", {
+          uri: img.uri,
+          name: file.name,
+          type: file.type,
+          size: file.size,
         });
 
-        Alert.alert("Succès", "Demande créée !");
-        router.replace("/homeClient");
-      }
+        formData.append("images", file);
+      });
 
-    } catch (err: any) {
-      Alert.alert("Erreur", err?.message || "Erreur inconnue");
-    } finally {
-      setLoading(false);
+      await apiFetch("/requests", {
+        method: "POST",
+        body: formData,
+      });
+
+      Alert.alert("Succès", "Demande créée !");
+      router.replace("/homeClient");
     }
-  };
+
+  } catch (err: any) {
+    Alert.alert("Erreur", err?.message || "Erreur inconnue");
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
 

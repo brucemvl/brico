@@ -1,4 +1,5 @@
 import BackButton from '@/components/BackButton';
+import { File } from "expo-file-system";
 import * as Haptics from 'expo-haptics';
 import * as ImageManipulator from "expo-image-manipulator";
 import * as ImagePicker from "expo-image-picker";
@@ -23,7 +24,6 @@ import logo from "../assets/briconnect33.png";
 import fond from "../assets/convert_1.png";
 import trash from "../assets/icons/trash2.png";
 import { useApi } from "../services/api";
-
 
 type City = {
   code: string;
@@ -200,7 +200,7 @@ setSkills(Array.isArray(data.skills) ? data.skills : []);
     }
 
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ["images"],
       allowsEditing: true,
       aspect: [1, 1],
       quality: 0.7,
@@ -245,7 +245,7 @@ setSkills(Array.isArray(data.skills) ? data.skills : []);
     }
 
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ["images"],
       allowsMultipleSelection: true,
       quality: 0.7,
     });
@@ -400,6 +400,14 @@ const completion = React.useMemo(() => {
     try {
       setSaving(true);
 
+       if (containsForbiddenInfo(description)) {
+  Alert.alert(
+    "Contenu interdit",
+    "Veuillez ne pas inclure de numéro de téléphone ou d'email dans la description."
+  );
+  return;
+}
+
       const formData = new FormData();
       formData.append("name", name);
       formData.append("phone", phone);
@@ -417,11 +425,10 @@ const completion = React.useMemo(() => {
           { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG }
         );
 
-        formData.append("profileImage", {
-          uri: manipulated.uri,
-          name: "profile.jpg",
-          type: "image/jpeg",
-        } as any);
+        const file = new File(manipulated.uri);
+        
+         formData.append("profileImage", file);
+
       }
 
       // Portfolio
@@ -437,22 +444,15 @@ const completion = React.useMemo(() => {
           { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG }
         );
 
-        formData.append("portfolio", {
-          uri: manipulated.uri,
-          name: `portfolio_${i}.jpg`,
-          type: "image/jpeg",
-        } as any);
+        const file = new File(manipulated.uri); 
+        
+        formData.append("portfolio", file);
+
       }
 
       setUploadingIndex(null);
 
-      if (containsForbiddenInfo(description)) {
-  Alert.alert(
-    "Contenu interdit",
-    "Veuillez ne pas inclure de numéro de téléphone ou d'email dans la description."
-  );
-  return;
-}
+
 
       await apiFetch("/users/profile/pro", {
         method: "PUT",
