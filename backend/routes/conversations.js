@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const auth = require("../middlewares/auth");
-
+const upload = require("../middlewares/upload");
 const Conversation = require("../models/Conversation");
 const Request = require("../models/Request");
 const User = require("../models/User");
@@ -156,11 +156,12 @@ router.post("/:id/message", auth, async (req, res) => {
     }
 
     conversation.messages.push({
-      from: req.user.id,
-      content,
-      readBy: [req.user.id],
-      createdAt: new Date()
-    });
+  from: req.user.id,
+  content: content.trim(),
+  images: [],
+  readBy: [req.user.id],
+  createdAt: new Date()
+});
 
     conversation.lastInteractionAt = new Date();
     conversation.lastInteractionBy = req.user.id;
@@ -463,6 +464,110 @@ router.delete("/:id/pin", auth, async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Erreur serveur" });
+  }
+});
+
+// =======================
+// 🔹 Envoyer des photos dans une conversation
+// =======================
+router.post("/:id/images", auth, upload.uploadImages, async (req, res) => {
+  try {
+    const conversation = await Conversation.findById(req.params.id);
+
+    if (!conversation) {
+      return res.status(404).json({
+        error: "Conversation introuvable"
+      });
+    }
+
+    // 🔒 Vérifier que l'utilisateur appartient à la conversation
+    const isClient =
+      conversation.client.toString() === req.user.id.toString();
+
+    const isPro =
+      conversation.pro.toString() === req.user.id.toString();
+
+    if (!isClient && !isPro) {
+      return res.status(403).json({
+        error: "Non autorisé"
+      });
+    }
+
+    // 📸 Vérifier les fichiers
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({
+        error: "Aucune image reçue"
+      });
+    }
+
+    console.log("📸 CONVERSATION_IMAGES", {
+      conversationId: conversation._id.toString(),
+      userId: req.user.id,
+      filesCount: req.files.length
+    });
+
+    // 📸 Préparer les images
+    const images = req.files.map((file) => ({
+      url: file.path,
+      public_id: file.filename
+    }));
+
+    // 📨 Créer un message contenant les photos
+    conversation.messages.push({
+      from: req.user.id,
+      content: "",
+      images,
+      readBy: [req.user.id],
+      createdAt: new Date()
+    });
+
+    // 🔄 Mise à jour de l'activité
+    conversation.lastInteractionAt = new Date();
+    conversation.lastInteractionBy = req.user.id;
+
+    if (isClient) {
+      conversation.lastClientUpdateAt = new Date();
+    }
+
+    if (isPro) {
+      conversation.lastProUpdateAt = new Date();
+    }
+
+    await conversation.save();
+
+    // 👤 Déterminer le destinataire
+    const receiverId = isClient
+      ? conversation.pro
+      : conversation.client;
+
+    // 🔔 Notification
+    await createNotification({
+      userId: receiverId,
+      type: "message",
+      requestId: conversation.request,
+      conversationId: conversation._id,
+      senderId: req.user.id
+    });
+
+    // 👤 Re-populate les expéditeurs
+    await conversation.populate(
+      "messages.from",
+      "name profileImage"
+    );
+
+    console.log("✅ CONVERSATION_IMAGES_SUCCESS", {
+      conversationId: conversation._id.toString(),
+      imagesCount: images.length
+    });
+
+    return res.json(conversation);
+
+  } catch (err) {
+    console.error("❌ CONVERSATION_IMAGES_ERROR:", err);
+
+    return res.status(500).json({
+      error: err.message
+    });
   }
 });
 module.exports = router;

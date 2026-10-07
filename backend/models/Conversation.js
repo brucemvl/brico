@@ -2,7 +2,22 @@ const mongoose = require("mongoose");
 
 const messageSchema = new mongoose.Schema({
   from: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-  content: { type: String, required: true },
+  content: {
+  type: String,
+  default: ""
+},
+
+images: [
+    {
+      url: {
+        type: String,
+        required: true
+      },
+      public_id: {
+        type: String
+      }
+    }
+  ],
 
   readBy: [{
   type: mongoose.Schema.Types.ObjectId,

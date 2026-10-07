@@ -1,9 +1,10 @@
 import BackButton from '@/components/BackButton';
+import { File } from "expo-file-system";
 import * as Haptics from 'expo-haptics';
 import * as ImageManipulator from "expo-image-manipulator";
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -251,11 +252,10 @@ setLocationQuery(data.location || "");
           {compress:0.7, format:ImageManipulator.SaveFormat.JPEG}
         );
 
-        formData.append("profileImage",{
-          uri: manipulated.uri,
-          name:"profile.jpg",
-          type:"image/jpeg"
-        } as any);
+        const file = new File(manipulated.uri);
+formData.append("profileImage", file);
+
+        
       }
 
       await apiFetch("/users/profile/client",{

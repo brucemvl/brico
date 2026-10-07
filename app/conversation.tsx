@@ -3,8 +3,9 @@ import * as Haptics from 'expo-haptics';
 import * as ImagePicker from "expo-image-picker";
 import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
+  ActivityIndicator,
   Alert,
   Image,
   ImageBackground,
@@ -45,9 +46,15 @@ type UserType = {
   };
 };
 
+type MessageImage = {
+  url: string;
+  public_id?: string;
+};
+
 type MessageType = {
   from: UserType;
   content: string;
+  images?: MessageImage[];
   createdAt: string;
   readBy: string[];
   sending?: boolean;
@@ -101,6 +108,9 @@ export default function Conversation() {
   const [reviewModal, setReviewModal] = useState(false);
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
+
+  const [selectedImages, setSelectedImages] = useState<any[]>([]);
+const [sendingImages, setSendingImages] = useState(false);
 
 const reviewScale = useRef(new RNAnimated.Value(1)).current;
 
@@ -314,6 +324,116 @@ const reviewScale = useRef(new RNAnimated.Value(1)).current;
       );
     }
   };
+
+
+  const pickMessageImages = async () => {
+  const permission =
+    await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+  if (!permission.granted) {
+    Alert.alert(
+      "Permission refusée",
+      "L'accès à vos photos est nécessaire pour envoyer une image."
+    );
+    return;
+  }
+
+  const result = await ImagePicker.launchImageLibraryAsync({
+    mediaTypes: ["images"],
+    allowsMultipleSelection: true,
+    quality: 0.8,
+    base64: false,
+    exif: false,
+  });
+
+  if (result.canceled) return;
+
+  const newImages = result.assets.map((asset) => ({
+    uri: asset.uri,
+  }));
+
+  setSelectedImages((prev) => {
+    const merged = [...prev, ...newImages];
+
+    return merged.filter(
+      (img, index, self) =>
+        index === self.findIndex((i) => i.uri === img.uri)
+    );
+  });
+};
+
+const removeSelectedImage = (index: number) => {
+  setSelectedImages((prev) =>
+    prev.filter((_, i) => i !== index)
+  );
+};
+
+
+const sendImages = async () => {
+  if (!conversation?._id || selectedImages.length === 0) return;
+
+  try {
+    setSendingImages(true);
+
+    const formData = new FormData();
+
+    selectedImages.forEach((img, index) => {
+      const file = new File(
+  img.uri,
+  `message_${Date.now()}_${index}.jpg`
+);
+
+      console.log("📸 MESSAGE IMAGE", {
+        uri: img.uri,
+        name: file.name,
+        type: file.type,
+        size: file.size,
+      });
+
+      formData.append("images", file);
+    });
+
+    const res = await apiFetch(
+      `/conversations/${conversation._id}/images`,
+      {
+        method: "POST",
+        body: formData,
+      }
+    );
+
+    // Le backend doit retourner la conversation/messages mis à jour
+    if (res.messages) {
+      setConversation((prev) =>
+        prev
+          ? {
+              ...prev,
+              messages: res.messages,
+            }
+          : prev
+      );
+    }
+
+    setSelectedImages([]);
+
+    requestAnimationFrame(() => {
+      scrollRef.current?.scrollToEnd({
+        animated: true,
+      });
+    });
+
+  } catch (err) {
+    console.error("❌ Erreur envoi photos:", err);
+
+    Alert.alert(
+      "Erreur",
+      err instanceof Error
+        ? err.message
+        : "Impossible d'envoyer les photos"
+    );
+  } finally {
+    setSendingImages(false);
+  }
+};
 
   // Voir profil pro
   const openProfile = () => {
@@ -570,7 +690,13 @@ const missionCompleted = clientHasReviewed;
             )}
 
             {proProposed && !dealAccepted && (
-              <TouchableOpacity style={styles.button} onPress={acceptDeal}>
+              <TouchableOpacity style={styles.button}
+               onPress={acceptDeal}
+               accessible
+                  accessibilityRole="button"
+                  accessibilityLabel="Accepter l'accord"
+                  accessibilityHint="Accepter l'accord avec l'artisan"
+               >
                 <RNAnimated.Text
                   style={{
                     color: "#fefefe",
@@ -608,12 +734,21 @@ const missionCompleted = clientHasReviewed;
               </View>
               <View>
                 {contact.phone && (
-                  <TouchableOpacity onPress={() => Linking.openURL(`tel:${contact.phone}`)}>
+                  <TouchableOpacity 
+                  onPress={() => Linking.openURL(`tel:${contact.phone}`)}
+                  accessible
+                  accessibilityLabel="Appeler l'artisan"
+                  accessibilityHint="Appeler l'artisan au telephone">
                     <Text style={styles.contactText}>📞 {contact.phone}</Text>
                   </TouchableOpacity>
                 )}
                 {contact.email && (
-                  <TouchableOpacity onPress={() => Linking.openURL(`mailto:${contact.email}`)}>
+                  <TouchableOpacity 
+                  onPress={() => Linking.openURL(`mailto:${contact.email}`)}
+                  accessible
+                  accessibilityLabel="Envoyer un mail à l'artisan"
+                  accessibilityHint="Envoyer un mail à l'artisan"
+                  >
                     <Text style={[styles.contactText, contact.email.length > 30 && { fontSize: 12.5 }]}>✉️ {contact.email}</Text>
                   </TouchableOpacity>
                 )}
@@ -817,18 +952,70 @@ const missionCompleted = clientHasReviewed;
             </LinearGradient>
           }
 
+          {selectedImages.length > 0 && (
+  <ScrollView
+    horizontal
+    showsHorizontalScrollIndicator={false}
+    style={styles.selectedImagesContainer}
+  >
+    {selectedImages.map((img, index) => (
+      <View key={`${img.uri}-${index}`} style={styles.selectedImageWrapper}>
+
+        <Image
+          source={{ uri: img.uri }}
+          style={styles.selectedImage}
+        />
+
+        <TouchableOpacity
+          style={styles.removeImageButton}
+          onPress={() => removeSelectedImage(index)}
+        >
+          <Text style={styles.removeImageText}>✕</Text>
+        </TouchableOpacity>
+
+      </View>
+    ))}
+
+    <TouchableOpacity
+      style={styles.sendImagesButton}
+      onPress={sendImages}
+      disabled={sendingImages}
+    >
+      {sendingImages ? (
+        <ActivityIndicator color="#fff" />
+      ) : (
+        <Text style={styles.sendImagesText}>
+          Envoyer
+        </Text>
+      )}
+    </TouchableOpacity>
+  </ScrollView>
+)}
+
           {/* INPUT */}
           <View style={styles.inputContainer}>
 
-<TextInput
-style={styles.inputMsg}
-value={message}
-    onChangeText={setMessage}
-/>
+  <TouchableOpacity
+    style={styles.photoButton}
+    onPress={pickMessageImages}
+    disabled={sendingImages}
+  >
+    <Text style={styles.photoIcon}>📷</Text>
+  </TouchableOpacity>
 
-<TouchableOpacity style={styles.sendButton} onPress={sendMessage}>
+  <TextInput
+    style={styles.inputMsg}
+    value={message}
+    onChangeText={setMessage}
+    placeholder="Votre message..."
+  />
+
+  <TouchableOpacity
+    style={styles.sendButton}
+    onPress={sendMessage}
+  >
     <Text style={styles.sendArrow}>➜</Text>
-</TouchableOpacity>
+  </TouchableOpacity>
 
 </View>
         </ScrollView>
@@ -1052,4 +1239,63 @@ dealButtonSubtitle: {
   textAlign: "center",
   fontSize: 11,
 },
+selectedImagesContainer: {
+  paddingHorizontal: 10,
+  paddingVertical: 8,
+},
+
+selectedImageWrapper: {
+  position: "relative",
+  marginRight: 10,
+},
+
+selectedImage: {
+  width: 70,
+  height: 70,
+  borderRadius: 12,
+},
+
+removeImageButton: {
+  position: "absolute",
+  top: -6,
+  right: -6,
+  width: 22,
+  height: 22,
+  borderRadius: 11,
+  backgroundColor: "#e53935",
+  alignItems: "center",
+  justifyContent: "center",
+},
+
+removeImageText: {
+  color: "#fff",
+  fontSize: 12,
+  fontWeight: "bold",
+},
+
+photoButton: {
+  width: 42,
+  height: 42,
+  borderRadius: 21,
+  justifyContent: "center",
+  alignItems: "center",
+},
+
+photoIcon: {
+  fontSize: 23,
+},
+
+sendImagesButton: {
+  height: 70,
+  paddingHorizontal: 18,
+  borderRadius: 12,
+  backgroundColor: "#1a5b4f",
+  justifyContent: "center",
+  alignItems: "center",
+},
+
+sendImagesText: {
+  color: "#fff",
+  fontFamily: "Mont",
+}
 });
