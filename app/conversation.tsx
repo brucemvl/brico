@@ -31,6 +31,7 @@ import Reanimated, {
 } from "react-native-reanimated";
 import Svg, { Rect } from "react-native-svg";
 import fond from "../assets/convert_1.png";
+import camera from "../assets/icons/camera1.png";
 import { useApi } from "../services/api";
 
 
@@ -370,27 +371,41 @@ const removeSelectedImage = (index: number) => {
 
 
 const sendImages = async () => {
-  if (!conversation?._id || selectedImages.length === 0) return;
+  if (!conversation?._id || selectedImages.length === 0) {
+    return;
+  }
 
   try {
     setSendingImages(true);
 
     const formData = new FormData();
 
-    selectedImages.forEach((img, index) => {
-      const file = new File(
-  img.uri,
-  `message_${Date.now()}_${index}.jpg`
-);
+    for (let index = 0; index < selectedImages.length; index++) {
+      const img = selectedImages[index];
 
-      console.log("📸 MESSAGE IMAGE", {
+      console.log("📸 IMAGE", {
         uri: img.uri,
-        name: file.name,
-        type: file.type,
-        size: file.size,
       });
 
-      formData.append("images", file);
+      // Transformer le fichier local en Blob
+      const response = await fetch(img.uri);
+      const blob = await response.blob();
+
+      console.log("📦 BLOB", {
+        type: blob.type,
+        size: blob.size,
+      });
+
+      formData.append(
+        "images",
+        blob,
+        `message_${Date.now()}_${index}.jpg`
+      );
+    }
+
+    console.log("📤 ENVOI IMAGES", {
+      conversationId: conversation._id,
+      count: selectedImages.length,
     });
 
     const res = await apiFetch(
@@ -401,7 +416,8 @@ const sendImages = async () => {
       }
     );
 
-    // Le backend doit retourner la conversation/messages mis à jour
+    console.log("✅ PHOTOS ENVOYEES");
+
     if (res.messages) {
       setConversation((prev) =>
         prev
@@ -421,14 +437,12 @@ const sendImages = async () => {
       });
     });
 
-  } catch (err) {
+  } catch (err: any) {
     console.error("❌ Erreur envoi photos:", err);
 
     Alert.alert(
       "Erreur",
-      err instanceof Error
-        ? err.message
-        : "Impossible d'envoyer les photos"
+      err?.message || "Impossible d'envoyer les photos"
     );
   } finally {
     setSendingImages(false);
@@ -915,9 +929,33 @@ const missionCompleted = clientHasReviewed;
                       >
                         {!isMe && <Text style={styles.author}>{msg.from.name}</Text>}
 
-                        <Text style={styles.messageText}>{msg.content}</Text>
+                       {msg.content ? (
+    <Text style={styles.messageText}>
+      {msg.content}
+    </Text>
+  ) : null}
 
-                        <View style={styles.messageFooter}>
+{msg.images && msg.images.length > 0 && 
+  <View style={styles.messageImagesContainer}>
+    {msg.images.map((image, imageIndex) => (
+      <TouchableOpacity
+        key={`${image.public_id || image.url}-${imageIndex}`}
+        activeOpacity={0.9}
+        onPress={() => {
+          // Optionnel : ouvrir l'image en grand
+        }}
+      >
+        <Image
+          source={{ uri: image.url }}
+          style={styles.messageImage}
+          resizeMode="cover"
+        />
+      </TouchableOpacity>
+    ))}
+  </View>
+}
+
+<View style={styles.messageFooter}>
                           <Text style={styles.time}>
                             {new Date(msg.createdAt).toLocaleTimeString([], {
                               hour: "2-digit",
@@ -993,15 +1031,10 @@ const missionCompleted = clientHasReviewed;
 )}
 
           {/* INPUT */}
+          <View style={{flexDirection: "row", alignItems: "center"}}>
           <View style={styles.inputContainer}>
 
-  <TouchableOpacity
-    style={styles.photoButton}
-    onPress={pickMessageImages}
-    disabled={sendingImages}
-  >
-    <Text style={styles.photoIcon}>📷</Text>
-  </TouchableOpacity>
+  
 
   <TextInput
     style={styles.inputMsg}
@@ -1018,6 +1051,14 @@ const missionCompleted = clientHasReviewed;
   </TouchableOpacity>
 
 </View>
+<TouchableOpacity
+    style={styles.photoButton}
+    onPress={pickMessageImages}
+    disabled={sendingImages}
+  >
+    <Image source={camera} />
+  </TouchableOpacity>
+  </View>
         </ScrollView>
       </KeyboardAvoidingView>
 
@@ -1072,6 +1113,7 @@ inputContainer:{
     shadowOffset:{width:0,height:3},
     marginTop:12,
     marginBottom:10,
+    width: "90%"
 },
 
 inputMsg:{
@@ -1297,5 +1339,17 @@ sendImagesButton: {
 sendImagesText: {
   color: "#fff",
   fontFamily: "Mont",
+},
+messageImagesContainer: {
+  flexDirection: "row",
+  flexWrap: "wrap",
+  gap: 6,
+  marginTop: 6,
+},
+
+messageImage: {
+  width: 180,
+  height: 180,
+  borderRadius: 12,
 }
 });
