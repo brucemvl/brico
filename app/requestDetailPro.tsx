@@ -39,9 +39,19 @@ import { useApi } from "../services/api";
 
 const AnimatedRect = Animated.createAnimatedComponent(Rect);
 
+type MessageImage = {
+  url: string;
+  public_id?: string;
+};
+
 type MessageType = {
-  from: { _id: string; name: string; profileImage?: string };
+  from: {
+    _id: string;
+    name: string;
+    profileImage?: string;
+  };
   content: string;
+  images?: MessageImage[];
   createdAt: string;
   readBy: string[];
   sending?: boolean;
@@ -814,9 +824,36 @@ const glowAnimatedProps = useAnimatedProps(() => {
                     <Image source={{ uri: request.client?.profileImage?.url }} style={styles.avatar} />
                   )}
                   <View style={[styles.messageBubble, isMe ? styles.myMessage : styles.otherMessage]}>
-                    {!isMe && <Text style={styles.author}>{msg.from.name}</Text>}
-                    <Text style={{ fontFamily: "Mont", letterSpacing: -0.6 }}>{msg.content}</Text>
-                    <View style={styles.messageMeta}>
+                    {!isMe && (
+  <Text style={styles.author}>
+    {msg.from.name}
+  </Text>
+)}
+
+{msg.content ? (
+  <Text style={styles.messageText}>
+    {msg.content}
+  </Text>
+) : null}
+
+{msg.images && msg.images.length > 0 && (
+  <View style={styles.messageImagesContainer}>
+    {msg.images.map((image, imageIndex) => (
+      <Pressable
+        key={`${image.public_id || image.url}-${imageIndex}`}
+        onPress={() => openImageModal(msg.images ?? [], imageIndex)}
+      >
+        <Image
+          source={{ uri: image.url }}
+          style={styles.messageImage}
+          resizeMode="cover"
+        />
+      </Pressable>
+    ))}
+  </View>
+)}
+
+<View style={styles.messageMeta}>
     <Text style={styles.time}>{msgTime}</Text>
 
     {msg.sending ? (
@@ -1238,5 +1275,22 @@ dealButtonSubtitle: {
   fontFamily: "Mont",
   textAlign: "center",
   fontSize: 11,
+},
+messageText: {
+  fontFamily: "Mont",
+  letterSpacing: -0.6,
+},
+
+messageImagesContainer: {
+  flexDirection: "row",
+  flexWrap: "wrap",
+  gap: 6,
+  marginTop: 6,
+},
+
+messageImage: {
+  width: 180,
+  height: 180,
+  borderRadius: 14,
 },
 });
