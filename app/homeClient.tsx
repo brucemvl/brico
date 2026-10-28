@@ -77,6 +77,13 @@ type Coach = {
     action?: CoachAction;
 };
 
+type UnreadRequest = {
+  _id: string;
+  title: string;
+  hasUnread: boolean;
+  unreadType?: "message" | "deal" | "update";
+};
+
 
 
 const defaultAvatar = "https://res.cloudinary.com/dwjssp2pd/image/upload/v1775330960/default_client.png";
@@ -371,6 +378,20 @@ setAvatar(data.user.avatar);
     }
   })();
 
+  const requestsWithUnread = filteredRequests.filter(
+  (request) => request.hasUnread
+);
+
+const unreadMessagesCount = requestsWithUnread.filter(
+  (request) => request.unreadType === "message"
+).length;
+
+const unreadDealsCount = requestsWithUnread.filter(
+  (request) => request.unreadType === "deal"
+).length;
+
+const firstUnreadRequest = requestsWithUnread[0];
+
 
 
   if (loading) {
@@ -447,6 +468,9 @@ setAvatar(data.user.avatar);
         coach={coach}
         firstName={firstName}
         avatar={avatar}
+        unreadRequests={requests.filter(
+    (request) => request.hasUnread
+  )}
         onAction={(action) => {
     switch (action?.type) {
 
@@ -627,7 +651,7 @@ setAvatar(data.user.avatar);
               accessibilityLabel="Aucune demande active">Aucune demande active</Text>
           ) : (
             filteredRequests.map((item) => {
-              const unreadType = getRequestUnreadType(item._id);
+              const unreadType = item.hasUnread ? item.unreadType : null;
               return (
 
                 <View

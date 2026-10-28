@@ -1,6 +1,6 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from 'expo-router';
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
     Animated,
     Image,
@@ -42,6 +42,12 @@ type Coach = {
     action?: CoachAction;
 };
 
+type UnreadRequest = {
+  _id: string;
+  title: string;
+  hasUnread: boolean;
+  unreadType?: "message" | "deal" | "update";
+};
 
 
 
@@ -49,7 +55,7 @@ type Props = {
     coach: Coach;
     firstName: string;
     avatar: string;
-
+unreadRequests?: UnreadRequest[];
     onAction?: (action: CoachAction) => void;
 };
 
@@ -58,6 +64,7 @@ export default function CoachCard({
     coach,
     firstName,
     avatar,
+    unreadRequests = [],
     onAction
 
 }: Props) {
@@ -127,6 +134,16 @@ export default function CoachCard({
 
     const tip = coach.improvements[currentTip] ?? null;
 
+    const unreadMessagesCount = unreadRequests.filter(
+  (request) => request.unreadType === "message"
+).length;
+
+const unreadDealsCount = unreadRequests.filter(
+  (request) => request.unreadType === "deal"
+).length;
+
+const firstUnreadRequest = unreadRequests[0];
+
 
     return (
 
@@ -152,6 +169,61 @@ export default function CoachCard({
                     <Image source={modifier} style={{ width: 20, height: 20 }} />
                 </TouchableOpacity>
             </View>
+
+            {unreadRequests.length > 0 && (
+  <TouchableOpacity
+    style={styles.unreadBanner}
+    activeOpacity={0.85}
+    onPress={() => {
+      if (firstUnreadRequest) {
+        onAction?.({
+          type: "conversation",
+          requestId: firstUnreadRequest._id,
+          label: "Lire les messages",
+        });
+      }
+    }}
+    accessibilityRole="button"
+    accessibilityLabel="Ouvrir les nouveaux messages et propositions"
+  >
+    <View style={styles.unreadMessageIcon}>
+      <Text style={{ fontSize: 23 }}>
+        {unreadMessagesCount > 0 ? "💬" : "🤝"}
+      </Text>
+    </View>
+
+    <View style={{ flex: 1 }}>
+      <Text style={styles.unreadBannerTitle}>
+        {unreadMessagesCount > 0
+          ? "Nouveaux messages"
+          : "Nouvelles propositions"}
+      </Text>
+
+      <Text style={styles.unreadBannerSubtitle}>
+        {[
+          unreadMessagesCount > 0
+            ? `${unreadMessagesCount} demande(s) avec des messages`
+            : null,
+          unreadDealsCount > 0
+            ? `${unreadDealsCount} demande(s) avec des offres`
+            : null,
+        ]
+          .filter(Boolean)
+          .join(" · ")}
+      </Text>
+
+      <Text style={styles.unreadBannerLink}>
+        Consulter maintenant →
+      </Text>
+    </View>
+
+    <View style={styles.unreadCount}>
+      <Text style={styles.unreadCountText}>
+        {unreadRequests.length}
+      </Text>
+    </View>
+  </TouchableOpacity>
+)}
 
             <View style={styles.scoreRow}>
 
@@ -444,4 +516,61 @@ const styles = StyleSheet.create({
         backgroundColor: "#fff",
         transform: [{ scale: 1.1 }],
     },
+
+    unreadBanner: {
+  flexDirection: "row",
+  alignItems: "center",
+  gap: 12,
+  padding: 13,
+  marginBottom: 22,
+  borderRadius: 18,
+  backgroundColor: "rgba(255,255,255,0.15)",
+  borderWidth: 1,
+  borderColor: "rgba(255,255,255,0.35)",
+},
+
+unreadMessageIcon: {
+  width: 44,
+  height: 44,
+  borderRadius: 14,
+  backgroundColor: "#FFFFFF",
+  alignItems: "center",
+  justifyContent: "center",
+},
+
+unreadBannerTitle: {
+  color: "#FFFFFF",
+  fontFamily: "Montt",
+  fontSize: 15,
+},
+
+unreadBannerSubtitle: {
+  color: "rgba(255,255,255,0.9)",
+  fontFamily: "Mont",
+  fontSize: 11,
+  marginTop: 4,
+  lineHeight: 16,
+},
+
+unreadBannerLink: {
+  color: "#FFFFFF",
+  fontFamily: "Montt",
+  fontSize: 12,
+  marginTop: 7,
+},
+
+unreadCount: {
+  minWidth: 28,
+  height: 28,
+  paddingHorizontal: 7,
+  borderRadius: 14,
+  backgroundColor: "#FFFFFF",
+  alignItems: "center",
+  justifyContent: "center",
+},
+unreadCountText: {
+  color: "#1A5B4F",
+  fontFamily: "Montt",
+  fontSize: 13,
+},
 });

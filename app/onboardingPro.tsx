@@ -1,7 +1,8 @@
+import { File } from "expo-file-system";
 import * as ImageManipulator from "expo-image-manipulator";
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
-import React, { useContext, useState } from "react";
+import { useContext, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -17,6 +18,7 @@ import {
 } from "react-native";
 import { AuthContext } from "../context/AuthContext";
 import { useApi } from "../services/api";
+
 
 type City = {
    nom: string;
@@ -255,11 +257,8 @@ setPortfolio((prev) => [...prev, ...result.assets]);
         { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG }
       );
 
-      formData.append("profileImage", {
-        uri: manipulated.uri,
-        name: "profile.jpg",
-        type: "image/jpeg",
-      } as any);
+      const file = new File(manipulated.uri);
+      formData.append("profileImage", file);
     }
 
     for (let i = 0; i < portfolio.length; i++) {
@@ -273,11 +272,10 @@ setPortfolio((prev) => [...prev, ...result.assets]);
         { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG }
       );
 
-      formData.append("portfolio", {
-        uri: manipulated.uri,
-        name: `portfolio_${i}.jpg`,
-        type: "image/jpeg",
-      } as any);
+      const file = new File(manipulated.uri);
+      formData.append("portfolio", file);
+
+      
     }
 
     await apiFetch("/users/profile/pro", {

@@ -41,132 +41,133 @@ router.get("/client", auth, async (req, res) => {
 
     const conversations = await Conversation.find({ client: req.user.id });
 
-    const formatted = requests.map(r => {
-      const conv = conversations.find(
-        c => c.request.toString() === r._id.toString()
+    const clientId = req.user.id.toString();
+
+const formatted = requests.map((r) => {
+  const requestId = r._id.toString();
+
+  // Toutes les conversations liées à cette demande
+  const convs = conversations.filter(
+    (c) => c.request.toString() === requestId
+  );
+
+  // Messages non lus envoyés par les professionnels
+  const unreadMessages = convs.reduce((total, conv) => {
+    const unreadInConversation = (conv.messages || []).filter((msg) => {
+      const senderId = msg.from?._id
+        ? msg.from._id.toString()
+        : msg.from?.toString();
+
+      const readBy = (msg.readBy || []).map((id) =>
+        id.toString()
       );
 
-      let unreadType = null;
+      return senderId !== clientId && !readBy.includes(clientId);
+    }).length;
 
-      if (conv) {
-        const isUnread =
-          conv.lastProUpdateAt &&
-          (!conv.lastReadByClient ||
-            new Date(conv.lastProUpdateAt) > new Date(conv.lastReadByClient));
+    return total + unreadInConversation;
+  }, 0);
 
-        if (isUnread) {
-          if (conv.dealProposedByPro && !conv.dealAcceptedByClient) {
-            unreadType = "deal";
-          } else if (
-            conv.messages?.some(
-              msg =>
-                msg.from.toString() !== req.user.id.toString() &&
-                !(msg.readBy || []).includes(req.user.id)
-            )
-          ) {
-            unreadType = "message";
-          } else {
-            unreadType = "update";
-          }
-        }
-      }
+  // Offres classiques envoyées via POST /requests/:id/offer
+  const pendingRequestOffers = (r.offers || []).filter(
+    (offer) => offer.accepted !== true
+  );
 
-      const convs = conversations.filter(
-  c => c.request.toString() === r._id.toString()
-);
+  // Propositions d'accord envoyées dans les conversations
+  const pendingConversationDeals = convs.filter(
+    (conv) =>
+      conv.dealProposedByPro === true &&
+      conv.dealAcceptedByClient !== true
+  );
 
-const messageCount = convs.reduce(
-  (total, conv) => total + (conv.messages?.length || 0),
-  0
-);
+  const pendingOffers =
+    pendingRequestOffers.length + pendingConversationDeals.length;
 
-const unreadMessages = convs.reduce(
-  (total, conv) =>
-    total +
-    (conv.messages || []).filter(
-      msg =>
-        msg.from.toString() !== req.user.id.toString() &&
-        !msg.readBy.includes(req.user.id)
-    ).length,
-  0
-);
+  // Mise à jour du professionnel qui n'a pas encore été consultée
+  const hasUnreadUpdate = convs.some((conv) => {
+    if (!conv.lastProUpdateAt) return false;
 
-const pendingOffers = convs.filter(
-  c =>
-    c.dealProposedByPro &&
-    !c.dealAcceptedByClient
-).length;
+    return (
+      !conv.lastReadByClient ||
+      new Date(conv.lastProUpdateAt).getTime() >
+        new Date(conv.lastReadByClient).getTime()
+    );
+  });
 
-const lastInteraction =
-  convs.length > 0
+  // Type de nouveauté à afficher sur la carte
+  let unreadType = null;
+
+  if (pendingOffers > 0) {
+    unreadType = "deal";
+  } else if (unreadMessages > 0) {
+    unreadType = "message";
+  } else if (hasUnreadUpdate) {
+    unreadType = "update";
+  }
+
+  const hasUnread = Boolean(unreadType);
+
+  // Statistiques existantes
+  const messageCount = convs.reduce(
+    (total, conv) => total + (conv.messages?.length || 0),
+    0
+  );
+
+  const lastInteraction = convs.length
     ? convs
-        .map(c => c.updatedAt)
+        .map((c) => c.updatedAt)
+        .filter(Boolean)
         .sort(
-  (a, b) => new Date(b).getTime() - new Date(a).getTime()
-)[0]
+          (a, b) => new Date(b).getTime() - new Date(a).getTime()
+        )[0] || null
     : null;
 
-    const analysis = {
-  noPhoto: !r.images || r.images.length === 0,
+  // Analyse utilisée par le coach
+  const analysis = {
+    noPhoto: !r.images || r.images.length === 0,
 
-  shortDescription:
-    !r.description || r.description.trim().length < 40,
+    shortDescription:
+      !r.description || r.description.trim().length < 40,
 
-  noBudget:
-    !r.budget || Number(r.budget) <= 0,
+    noBudget: !r.budget || Number(r.budget) <= 0,
 
-  manyViewsNoMessages:
-    r.views >= 8 && messageCount === 0,
+    manyViewsNoMessages:
+      r.views >= 8 && messageCount === 0,
 
-  hasPendingOffer:
-    pendingOffers > 0,
+    hasPendingOffer: pendingOffers > 0,
 
-  oldOpenRequest:
-    r.status === "open" &&
-    (Date.now() - new Date(r.createdAt)) >
-      1000 * 60 * 60 * 24 * 10,
+    oldOpenRequest:
+      r.status === "open" &&
+      Date.now() - new Date(r.createdAt).getTime() >
+        1000 * 60 * 60 * 24 * 10,
 
-  firstCompletedRequest:
-    r.status === "completed" &&
-    !r.ratingGiven
-};
+    firstCompletedRequest:
+      r.status === "completed" && !r.ratingGiven,
+  };
 
-const stats = {
-
-  conversations: convs.length,
-
-  messages: messageCount,
-
-  unreadMessages,
-
-  pendingOffers,
-
-  lastInteraction,
-
-  views: r.views,
-
+  const stats = {
+    conversations: convs.length,
+    messages: messageCount,
+    unreadMessages,
+    pendingOffers,
+    lastInteraction,
+    views: r.views,
     photos: r.images?.length || 0,
 
     ageInDays: Math.floor(
-        (Date.now() - new Date(r.createdAt).getTime()) /
+      (Date.now() - new Date(r.createdAt).getTime()) /
         (1000 * 60 * 60 * 24)
-    )
+    ),
+  };
 
-};
-
-const hasUnread = !!unreadType;
-
-      return {
-        ...r.toObject(),
-        hasUnread,
-
+  return {
+    ...r.toObject(),
+    hasUnread,
     unreadType,
-
     stats,
-
-    analysis
-      };
-    });
+    analysis,
+  };
+});
 
     const currentUser = await User.findById(req.user.id);
 
@@ -330,11 +331,24 @@ if (isPro && !alreadyViewed) {
 
          // 🔹 Marquer la conversation comme lue
   await Conversation.updateMany(
-  { request: req.params.id, client: req.user.id },
+  {
+    request: req.params.id,
+    client: req.user.id,
+  },
   {
     $set: {
-      lastReadByClient: new Date()
-    }
+      lastReadByClient: new Date(),
+    },
+    $addToSet: {
+      "messages.$[msg].readBy": req.user.id,
+    },
+  },
+  {
+    arrayFilters: [
+      {
+        "msg.readBy": { $ne: req.user.id },
+      },
+    ],
   }
 );
 
