@@ -74,11 +74,24 @@ const formatted = requests.map((r) => {
   );
 
   // Propositions d'accord envoyées dans les conversations
-  const pendingConversationDeals = convs.filter(
-    (conv) =>
-      conv.dealProposedByPro === true &&
-      conv.dealAcceptedByClient !== true
-  );
+   const pendingConversationDeals = convs.filter((conv) => {
+    if (
+      conv.dealProposedByPro !== true ||
+      conv.dealAcceptedByClient === true
+    ) {
+      return false;
+    }
+
+    // Pas encore consultée, ou proposition plus récente que la lecture
+    return (
+      !conv.lastReadByClient ||
+      (
+        conv.lastProUpdateAt &&
+        new Date(conv.lastProUpdateAt).getTime() >
+          new Date(conv.lastReadByClient).getTime()
+      )
+    );
+  });
 
   const pendingOffers =
     pendingRequestOffers.length + pendingConversationDeals.length;
