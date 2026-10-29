@@ -245,6 +245,13 @@ await Conversation.updateOne(
     console.error("POST /conversations/:id/mark-read error:", err);
     res.status(500).json({ error: err.message });
   }
+
+  console.log("MARK-READ", {
+  conversationId: conversation._id.toString(),
+  requestId: conversation.request.toString(),
+  userId: req.user.id.toString(),
+  role: req.user.role,
+});
 });
 
 // =======================
