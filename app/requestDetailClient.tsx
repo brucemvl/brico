@@ -276,13 +276,7 @@ const isPinned = userId ? conv.pinnedBy?.includes(userId) : false;
   : 0;
 
         const openConversation = async () => {
-  try {
-    await apiFetch(`/conversations/${conv._id}/mark-read`, {
-      method: "POST",
-    });
-  } catch (error) {
-    console.error("Erreur lors du marquage comme lu :", error);
-  }
+  
 
   // 🔥 force refresh
   setRequest(prev => {

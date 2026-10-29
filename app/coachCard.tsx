@@ -1,6 +1,6 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from 'expo-router';
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
     Animated,
     Image,
@@ -85,6 +85,25 @@ export default function CoachCard({
     const [currentTip, setCurrentTip] = useState(0);
 
     const translateX = useRef(new Animated.Value(0)).current;
+
+    const badgeBlink = React.useRef(new Animated.Value(1)).current;
+    
+      useEffect(() => {
+        Animated.loop(
+          Animated.sequence([
+            Animated.timing(badgeBlink, {
+              toValue: 0,
+              duration: 200,
+              useNativeDriver: true,
+            }),
+            Animated.timing(badgeBlink, {
+              toValue: 1,
+              duration: 1300,
+              useNativeDriver: true,
+            }),
+          ])
+        ).start();
+      }, [badgeBlink]);
 
 
     useEffect(() => {
@@ -202,10 +221,10 @@ const firstUnreadRequest = unreadRequests[0];
       <Text style={styles.unreadBannerSubtitle}>
         {[
           unreadMessagesCount > 0
-            ? `${unreadMessagesCount} demande(s) avec des messages`
+            ? `${unreadMessagesCount} demande avec des messages`
             : null,
           unreadDealsCount > 0
-            ? `${unreadDealsCount} demande(s) avec des offres`
+            ? `${unreadDealsCount} demande avec des offres`
             : null,
         ]
           .filter(Boolean)
@@ -217,11 +236,11 @@ const firstUnreadRequest = unreadRequests[0];
       </Text>
     </View>
 
-    <View style={styles.unreadCount}>
+    <Animated.View style={[styles.unreadCount, {opacity: badgeBlink}]}>
       <Text style={styles.unreadCountText}>
         {unreadRequests.length}
       </Text>
-    </View>
+    </Animated.View>
   </TouchableOpacity>
 )}
 

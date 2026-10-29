@@ -3,7 +3,7 @@ import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect, useRouter } from 'expo-router';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, Animated, Image, ImageBackground, Share, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Animated, Image, ImageBackground, RefreshControl, Share, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import logo from "../assets/briconnect33.png";
 import fond from "../assets/convert_1.png";
 import msg from "../assets/icons/enveloppe.png";
@@ -102,7 +102,7 @@ export default function HomeClient() {
 
     const [advices, setAdvices] = useState<any>(null);
 
-
+const [refreshing, setRefreshing] = useState(false);
     const [coach, setCoach] = useState<Coach | null>(null);
 const [firstName, setFirstName] = useState("");
 const [avatar, setAvatar] = useState("");
@@ -353,6 +353,12 @@ setAvatar(data.user.avatar);
     router.replace('/');
   };
 
+  const onRefresh = async () => {
+  setRefreshing(true);
+  await fetchRequests();
+  setRefreshing(false);
+};
+
   const requestViewLabels: Record<"requests" | "completed", string> = {
     requests: "Demandes",
     completed: "Terminées",
@@ -429,7 +435,7 @@ const firstUnreadRequest = requestsWithUnread[0];
   accessibilityRole="button"
   accessibilityLabel="Partager"
   accessibilityHint={`Partager l'application`}
-  style={{backgroundColor: "#347fe7", padding: 8, borderRadius: 40}}>
+  style={styles.button}>
     <Image source={share} style={{ height: 24, width: 24 }} />
   </TouchableOpacity>
         <TouchableOpacity
@@ -438,7 +444,7 @@ const firstUnreadRequest = requestsWithUnread[0];
           accessibilityRole="button"
           accessibilityLabel="Paramètres"
           accessibilityHint={`Accéder aux paramètres`}
-          style={{backgroundColor: "#347fe7", padding: 8, borderRadius: 40}} >
+          style={styles.button} >
           <Image source={settings} style={{ height: 24, width: 24 }} />
         </TouchableOpacity>
       </Animated.View>
@@ -449,6 +455,12 @@ const firstUnreadRequest = requestsWithUnread[0];
           { useNativeDriver: false }
         )}
         scrollEventThrottle={6}
+        refreshControl={
+    <RefreshControl
+      refreshing={refreshing}
+      onRefresh={onRefresh}
+    />
+  }
       >
 
         <Animated.View
@@ -1062,5 +1074,16 @@ adviceDescription:{
     fontFamily:"Mont",
     color:"#666",
     lineHeight:20
+},
+button: {
+  backgroundColor: "#2c95f0",
+   padding: 8,
+    borderRadius: 40,
+     shadowColor: "#063864",
+      shadowOpacity: 0.92,
+       shadowRadius: 2,
+        shadowOffset: { width: 0, height: 0,},
+
+  elevation: 6,
 }
 });

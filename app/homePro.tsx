@@ -21,8 +21,8 @@ import budget from "../assets/icons/dollar.png";
 import msg from "../assets/icons/enveloppe.png";
 import location from "../assets/icons/marker.png";
 import notifIcon from "../assets/icons/notif.png";
-import settings from "../assets/icons/settings.png";
-import share from "../assets/icons/share.png";
+import settings from "../assets/icons/settingss.png";
+import share from "../assets/icons/sharee.png";
 import star from "../assets/icons/star.png";
 import tool from "../assets/icons/wrench.png";
 import { useApi } from "../services/api";
@@ -448,15 +448,17 @@ const visibleRequests = filteredRequests.slice(0, visibleCount);
     accessible
   accessibilityRole="button"
   accessibilityLabel="Partager"
-  accessibilityHint={`Partager l'application`}>
-    <Image source={share} style={{ height: 26, width: 26 }} />
+  accessibilityHint={`Partager l'application`}
+  style={styles.button}>
+    <Image source={share} style={{ height: 24, width: 24 }} />
   </TouchableOpacity>
   <TouchableOpacity onPress={() => router.push({ pathname: "/settings" })}
     accessible
   accessibilityRole="button"
   accessibilityLabel="Paramètres"
-  accessibilityHint={`Accéder aux paramètres`}>
-    <Image source={settings} style={{ height: 40, width: 40 }} />
+  accessibilityHint={`Accéder aux paramètres`}
+  style={styles.button}>
+    <Image source={settings} style={{ height: 24, width: 24 }} />
   </TouchableOpacity>
 </Animated.View>
 <Animated.ScrollView
@@ -1087,4 +1089,15 @@ loadMoreButton: { width: "100%", alignItems: "center", marginTop: 8, marginBotto
  loadMoreGradient: { width: 280, borderRadius: 20, paddingVertical: 10, alignItems: "center", justifyContent: "center" },
   loadMoreText: { color: "#5c5c5c", fontFamily: "Londrinak", fontSize: 15, },
    loadMoreSubText: { color: "#1a5b4f", fontFamily: "Mont", fontSize: 12, marginTop: 2, },
+   button: {
+  backgroundColor: "#2c95f0",
+   padding: 8,
+    borderRadius: 40,
+     shadowColor: "#063864",
+      shadowOpacity: 0.92,
+       shadowRadius: 2,
+        shadowOffset: { width: 0, height: 0,},
+
+  elevation: 6,
+}
 });
