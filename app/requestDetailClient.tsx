@@ -276,7 +276,13 @@ const isPinned = userId ? conv.pinnedBy?.includes(userId) : false;
   : 0;
 
         const openConversation = async () => {
-  await apiFetch(`/conversations/${conv._id}/mark-read`, { method: "POST" });
+  try {
+    await apiFetch(`/conversations/${conv._id}/mark-read`, {
+      method: "POST",
+    });
+  } catch (error) {
+    console.error("Erreur lors du marquage comme lu :", error);
+  }
 
   // 🔥 force refresh
   setRequest(prev => {
@@ -362,7 +368,7 @@ paddingBottom: 140,
   height: 50,
   borderRadius: 25,
  },
-  conversationCard: { flexDirection: "row", alignItems: "center", gap: 10, padding: 12, borderWidth: 2, borderColor: "#1a5b4f", borderRadius: 35, marginTop: 10, backgroundColor: "#F3F3F3", width: "88%" },
+  conversationCard: { flexDirection: "row", alignItems: "center", gap: 10, padding: 12, borderWidth: 2, borderColor: "#1a5b4f", borderRadius: 35, marginTop: 10, backgroundColor: "#F3F3F3", width: "90%" },
   unreadBadge: { backgroundColor: "red", borderRadius: 10, width: 20, height: 20, justifyContent: "center", alignItems: "center", marginLeft: 8 },
   unreadText: { color: "white", fontSize: 12, fontFamily: "Montt" },
   heroSubtitle: {

@@ -527,13 +527,14 @@ const styles = StyleSheet.create({
   backgroundColor: "rgba(255,255,255,0.15)",
   borderWidth: 1,
   borderColor: "rgba(255,255,255,0.35)",
+  marginTop: 10
 },
 
 unreadMessageIcon: {
   width: 44,
   height: 44,
   borderRadius: 14,
-  backgroundColor: "#FFFFFF",
+  backgroundColor: "#ffffff",
   alignItems: "center",
   justifyContent: "center",
 },
@@ -564,12 +565,12 @@ unreadCount: {
   height: 28,
   paddingHorizontal: 7,
   borderRadius: 14,
-  backgroundColor: "#FFFFFF",
+  backgroundColor: "#ca3131",
   alignItems: "center",
   justifyContent: "center",
 },
 unreadCountText: {
-  color: "#1A5B4F",
+  color: "#ffffff",
   fontFamily: "Montt",
   fontSize: 13,
 },

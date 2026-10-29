@@ -333,41 +333,25 @@ if (isPro && !alreadyViewed) {
 }
 
     if (req.user.role === "client") {
-      let conversations = await Conversation.find(
-        { request: req.params.id, client: req.user.id }) 
-        .populate("pro", "name profileImage") 
-        .populate("messages.from", "name profileImage") 
-        .sort({ updatedAt: -1 });
-
-        // 🔹 Supprimer les conversations orphelines
-         conversations = conversations.filter(c => c.pro);
-
-         // 🔹 Marquer la conversation comme lue
-  await Conversation.updateMany(
-  {
+  let conversations = await Conversation.find({
     request: req.params.id,
     client: req.user.id,
-  },
-  {
-    $set: {
-      lastReadByClient: new Date(),
-    },
-    $addToSet: {
-      "messages.$[msg].readBy": req.user.id,
-    },
-  },
-  {
-    arrayFilters: [
-      {
-        "msg.readBy": { $ne: req.user.id },
-      },
-    ],
-  }
-);
+  })
+    .populate("pro", "name profileImage")
+    .populate("messages.from", "name profileImage")
+    .sort({ updatedAt: -1 });
 
+  // 🔹 Supprimer les conversations orphelines
+  conversations = conversations.filter(c => c.pro);
 
-      return res.json({ ...request.toObject(), conversations });
-    }
+  // ⚠️ Ne pas marquer les conversations comme lues ici.
+  // Elles seront marquées comme lues individuellement à leur ouverture.
+
+  return res.json({
+    ...request.toObject(),
+    conversations,
+  });
+}
 
     if (req.user.role === "pro") {
   const conversation = await Conversation.findOne({

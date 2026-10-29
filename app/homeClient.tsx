@@ -11,8 +11,8 @@ import location from "../assets/icons/markerr.png";
 import modifier from "../assets/icons/modifier.png";
 import notifIcon from "../assets/icons/notif.png";
 import budget from "../assets/icons/sack-dollar.png";
-import settings from "../assets/icons/settings.png";
-import share from "../assets/icons/share.png";
+import settings from "../assets/icons/settingss.png";
+import share from "../assets/icons/sharee.png";
 import star from "../assets/icons/star.png";
 import trash from "../assets/icons/trash3.png";
 import tool from "../assets/icons/wrench-alt.png";
@@ -428,16 +428,18 @@ const firstUnreadRequest = requestsWithUnread[0];
     accessible
   accessibilityRole="button"
   accessibilityLabel="Partager"
-  accessibilityHint={`Partager l'application`}>
-    <Image source={share} style={{ height: 26, width: 26 }} />
+  accessibilityHint={`Partager l'application`}
+  style={{backgroundColor: "#347fe7", padding: 8, borderRadius: 40}}>
+    <Image source={share} style={{ height: 24, width: 24 }} />
   </TouchableOpacity>
         <TouchableOpacity
           onPress={() => router.push({ pathname: "/settings" })}
           accessible
           accessibilityRole="button"
           accessibilityLabel="Paramètres"
-          accessibilityHint={`Accéder aux paramètres`} >
-          <Image source={settings} style={{ height: 40, width: 40 }} />
+          accessibilityHint={`Accéder aux paramètres`}
+          style={{backgroundColor: "#347fe7", padding: 8, borderRadius: 40}} >
+          <Image source={settings} style={{ height: 24, width: 24 }} />
         </TouchableOpacity>
       </Animated.View>
       <Animated.ScrollView
