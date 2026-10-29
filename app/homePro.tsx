@@ -377,32 +377,17 @@ const visibleRequests = filteredRequests.slice(0, visibleCount);
     }, {} as Record<string, boolean>);
   }, [requests]);
 
+  const unreadMessagesCount = requests.filter(
+  request => request.hasUnread && request.unreadType === "message"
+).length;
+
   // 🔹 Marquer conversation comme lue
-  const openRequest = async (request: RequestType) => {
-    router.push({ pathname: "/requestDetailPro", params: { id: request._id } });
-
-    setTimeout(() => {
-    fetchRequests();
-  }, 500);
-  
-    if (!request.hasUnread) return;
-
-    try {
-      const conversations = await apiFetch(`/conversations?requestId=${request._id}`);
-      const conversationId = conversations[0]?._id;
-      if (!conversationId) return;
-
-      await apiFetch(`/conversations/${conversationId}/mark-read`, {
-        method: "POST",
-      });
-
-      setRequests(prev =>
-        prev.map(r => (r._id === request._id ? { ...r, hasUnread: false } : r))
-      );
-    } catch (err) {
-      console.error("Erreur mark read:", err);
-    }
-  };
+  const openRequest = (request: RequestType) => {
+  router.push({
+    pathname: "/requestDetailPro",
+    params: { id: request._id },
+  });
+};
 
   const openProfile = () => {
 
@@ -491,6 +476,7 @@ const visibleRequests = filteredRequests.slice(0, visibleCount);
         coach={coach}
         firstName={profile?.name ?? ""}
         avatar={profile?.profileImage?.url ?? defaultAvatar}
+        unreadMessagesCount={unreadMessagesCount}
         onAction={(action) => {
             if (!action) return;
 
@@ -926,14 +912,9 @@ badge:{
     borderRadius:18,
     paddingHorizontal:10,
     paddingVertical:8,
-    shadowColor:"#000",
-    shadowOpacity:0.92,
-    shadowRadius:3,
-    shadowOffset:{
-        width:0,
-        height:0
-    },
-    elevation:6,
+    borderColor: "#1a5b4f36",
+    borderWidth: 1,
+    
     flexDirection: "row",
       alignItems: "center",
       gap: 7

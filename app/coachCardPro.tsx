@@ -52,6 +52,7 @@ type Props = {
     coach: Coach;
     firstName: string;
     avatar: string;
+    unreadMessagesCount: number;
 
     onAction?: (action: CoachAction) => void;
 };
@@ -61,6 +62,7 @@ export default function CoachCardPro({
     coach,
     firstName,
     avatar,
+    unreadMessagesCount,
     onAction
 
 }: Props) {
@@ -207,6 +209,36 @@ const strength =
                     <Image source={modifier} style={{ width: 20, height: 20 }} />
                 </TouchableOpacity>
             </View>
+
+            {unreadMessagesCount > 0 && (
+  <View
+    style={styles.unreadMessagesBanner}
+    accessibilityRole="summary"
+    accessibilityLabel={`${unreadMessagesCount} demandes avec des messages non lus`}
+  >
+    <View style={styles.unreadMessagesIcon}>
+      <Text style={styles.unreadMessagesIconText}>✉</Text>
+    </View>
+
+    <View style={{ flex: 1 }}>
+      <Text style={styles.unreadMessagesTitle}>
+        Nouveaux messages
+      </Text>
+
+      <Text style={styles.unreadMessagesSubtitle}>
+        {unreadMessagesCount === 1
+          ? "Un échange attend votre réponse."
+          : `${unreadMessagesCount} demandes attendent votre réponse.`}
+      </Text>
+    </View>
+
+    <View style={styles.unreadMessagesCount}>
+      <Text style={styles.unreadMessagesCountText}>
+        {unreadMessagesCount}
+      </Text>
+    </View>
+  </View>
+)}
 
             <View style={styles.scoreRow}>
 
@@ -538,5 +570,59 @@ const styles = StyleSheet.create({
     buttonPlaceholder: {
     height: 48,
     opacity: 0,
+},
+unreadMessagesBanner: {
+  flexDirection: "row",
+  alignItems: "center",
+  gap: 12,
+  backgroundColor: "#ffffff",
+  borderRadius: 18,
+  padding: 12,
+  marginBottom: 20,
+  borderWidth: 1,
+  borderColor: "#d8eee7",
+},
+
+unreadMessagesIcon: {
+  width: 42,
+  height: 42,
+  borderRadius: 21,
+  backgroundColor: "#e3f5ef",
+  alignItems: "center",
+  justifyContent: "center",
+},
+
+unreadMessagesIconText: {
+  color: "#1a5b4f",
+  fontSize: 23,
+},
+
+unreadMessagesTitle: {
+  fontFamily: "Montt",
+  fontSize: 15,
+  color: "#1a5b4f",
+},
+
+unreadMessagesSubtitle: {
+  fontFamily: "Mont",
+  fontSize: 12,
+  color: "#555",
+  marginTop: 3,
+},
+
+unreadMessagesCount: {
+  minWidth: 28,
+  height: 28,
+  paddingHorizontal: 7,
+  borderRadius: 14,
+  backgroundColor: "#d93030",
+  alignItems: "center",
+  justifyContent: "center",
+},
+
+unreadMessagesCountText: {
+  color: "#fff",
+  fontFamily: "Montt",
+  fontSize: 13,
 },
 });

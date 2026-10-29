@@ -716,13 +716,13 @@ const firstUnreadRequest = requestsWithUnread[0];
     <View style={styles.badge}>
                     <Image source={tool} style={styles.badgeIcon} />
 
-        <Text style={{fontFamily: "Montt"}}>{item.category}</Text>
+        <Text style={{fontFamily: "Montt", fontSize: 13}}>{item.category}</Text>
     </View>
 
     <View style={styles.badge}>
                     <Image source={budget} style={styles.badgeIcon} />
 
-        <Text style={{fontFamily: "Montt"}}>{item.budget} €</Text>
+        <Text style={{fontFamily: "Montt", fontSize: 13}}>{item.budget} €</Text>
     </View>
 
 
@@ -730,7 +730,7 @@ const firstUnreadRequest = requestsWithUnread[0];
     <View style={styles.badge}>
                     <Image source={location} style={styles.badgeIcon} />
 
-        <Text style={{fontFamily: "Montt"}}>{item.location}</Text>
+        <Text style={{fontFamily: "Montt", fontSize: 13}}>{item.location}</Text>
     </View>
 
 </View>
@@ -1012,7 +1012,9 @@ badge:{
     borderRadius:20,
     flexDirection: "row",
     gap: 8,
-    alignItems: "center"
+    alignItems: "center",
+    borderColor: "#1a5b4f36",
+    borderWidth: 1,
 },
 badgeIcon: {
   height: 19,

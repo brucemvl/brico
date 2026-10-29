@@ -31,7 +31,7 @@ import Reanimated, {
 } from "react-native-reanimated";
 import Svg, { Rect } from "react-native-svg";
 import fond from "../assets/convert_1.png";
-import camera from "../assets/icons/camera1.png";
+import camera from "../assets/icons/cameraa.png";
 import { useApi } from "../services/api";
 
 
@@ -873,7 +873,7 @@ const missionCompleted = clientHasReviewed;
                 source={{ uri: conversation.pro?.profileImage?.url }}
                 style={{ width: 50, height: 50, borderRadius: 25, marginRight: 10 }}
               />
-              <Text style={{ fontSize: 17.5, fontFamily: "Montt", color: "#1a5b4f" }}>{conversation.pro?.name}</Text>
+              <Text style={{ fontSize: 17.5, fontFamily: "Montt", color: "#1a5b4f" }}>{conversation.pro?.name.length > 17 ? conversation.pro?.name.slice(0,16) + "..." : conversation.pro?.name}</Text>
             </View>
             <View style={{ alignItems: "center", justifyContent: "center", marginTop: 20 }}>
               <TouchableWithoutFeedback
@@ -1056,7 +1056,7 @@ const missionCompleted = clientHasReviewed;
     onPress={pickMessageImages}
     disabled={sendingImages}
   >
-    <Image source={camera} />
+    <Image source={camera} style={styles.photoIcon}/>
   </TouchableOpacity>
   </View>
         </ScrollView>
@@ -1324,8 +1324,7 @@ photoButton: {
 },
 
 photoIcon: {
-  fontSize: 23,
-},
+height: 32, width: 32},
 
 sendImagesButton: {
   height: 70,

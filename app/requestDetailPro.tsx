@@ -1122,6 +1122,8 @@ heroBadge: {
   paddingHorizontal: 12,
   paddingVertical: 8,
   borderRadius: 20,
+  borderColor: "#ffffff48",
+    borderWidth: 1,
 },
 
 heroBadgeText: {

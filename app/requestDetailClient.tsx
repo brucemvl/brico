@@ -47,6 +47,13 @@ type ImageType = {
   public_id: string;
 };
 
+type OfferType = {
+  pro: string | UserType;
+  price?: number;
+  proposedDate?: string;
+  message?: string;
+};
+
 type RequestType = {
   _id: string;
   title: string;
@@ -58,6 +65,7 @@ type RequestType = {
   images?: ImageType[];
   client: UserType;
   conversations: ConversationType[];
+  offers?: OfferType[];
   createdAt?: string;
   views?: number
 
@@ -267,6 +275,26 @@ export default function RequestDetailClient() {
       sortedConversations?.map((conv) => {
         if (!conv.pro) return null;
 const isPinned = userId ? conv.pinnedBy?.includes(userId) : false;
+
+const offerExists = request.offers?.some((offer) => {
+  const offerProId =
+    typeof offer.pro === "string"
+      ? offer.pro
+      : offer.pro?._id;
+
+  return (
+    offerProId === conv.pro._id &&
+    // L'offre doit encore être en attente
+    !request.assignedPros?.some(
+      (assignment) =>
+        (typeof assignment.pro === "string"
+          ? assignment.pro
+          : assignment.pro?._id) === conv.pro._id &&
+        assignment.status === "active"
+    )
+  );
+}) ?? false;
+
         const unread = userId
   ? conv.messages?.filter(
       (m) =>
@@ -319,21 +347,31 @@ const isPinned = userId ? conv.pinnedBy?.includes(userId) : false;
             </View>
            
             <View style={{ alignItems: "center", gap: 8 }}>
-    <TouchableOpacity
-        onPress={() => togglePin(conv)}
-        hitSlop={10}
-    >
-      <Image source={isPinned ? pin2 : pin1} style={{width: 20, height: 20}} />
-        
-    </TouchableOpacity>
+  <TouchableOpacity
+    onPress={() => togglePin(conv)}
+    hitSlop={10}
+  >
+    <Image
+      source={isPinned ? pin2 : pin1}
+      style={{ width: 20, height: 20 }}
+    />
+  </TouchableOpacity>
 
-    {unread > 0 && (
-        <View style={styles.unreadBadge} accessible accessibilityLabel={`${unread} messages non lus`}>
-            <Text style={styles.unreadText}>
-                {unread}
-            </Text>
-        </View>
-    )}
+  {unread > 0 && (
+    <View
+      style={styles.unreadBadge}
+      accessible
+      accessibilityLabel={`${unread} messages non lus`}
+    >
+      <Text style={styles.unreadText}>{unread}</Text>
+    </View>
+  )}
+
+  {offerExists && (
+    <View style={styles.offerBadge}>
+      <Text style={styles.offerBadgeText}>Offre</Text>
+    </View>
+  )}
 </View>
           </TouchableOpacity>
         );
@@ -384,7 +422,9 @@ heroBadge: {
   paddingVertical: 8,
   borderRadius: 20,
   alignItems: "center",
-  justifyContent: "center"
+  justifyContent: "center",
+  borderColor: "#ffffff48",
+    borderWidth: 1,
 },
 
 heroBadgeText: {
@@ -431,5 +471,20 @@ descriptionText: {
   color: "#444",
   lineHeight: 26,
   textAlign: "justify",
+},
+
+offerBadge: {
+  backgroundColor: "#1a5b4f",
+  borderRadius: 12,
+  paddingHorizontal: 9,
+  paddingVertical: 5,
+  alignItems: "center",
+  justifyContent: "center",
+},
+
+offerBadgeText: {
+  color: "#fff",
+  fontSize: 11,
+  fontFamily: "Montt",
 },
 });

@@ -206,10 +206,14 @@ res.json({
 router.get("/pro", auth, async (req, res) => {
   try {
     const proId = req.user.id || req.user._id;
+    const proIdString = proId.toString();
 
     const user = await User.findById(proId);
+
     if (!user) {
-      return res.status(404).json({ message: "Utilisateur introuvable" });
+      return res.status(404).json({
+        message: "Utilisateur introuvable",
+      });
     }
 
     const requests = await Request.find({
@@ -222,46 +226,81 @@ router.get("/pro", auth, async (req, res) => {
             $elemMatch: {
               pro: proId,
               status: "completed",
-            }
-          }
-        }
-      ]
+            },
+          },
+        },
+      ],
     });
 
-    const conversations = await Conversation.find({ pro: proId });
+    // Seulement les conversations de ce pro
+    const conversations = await Conversation.find({
+      pro: proId,
+    });
 
-    const requestsWithUnread = requests.map(r => {
-      const conv = conversations.find(
-        c => c.request.toString() === r._id.toString()
-      );
+    // Regrouper les conversations par demande
+    const conversationsByRequest = new Map();
+
+    for (const conv of conversations) {
+      const requestId = conv.request.toString();
+
+      if (!conversationsByRequest.has(requestId)) {
+        conversationsByRequest.set(requestId, []);
+      }
+
+      conversationsByRequest.get(requestId).push(conv);
+    }
+
+    const requestsWithUnread = requests.map((r) => {
+      const requestId = r._id.toString();
+
+      const requestConversations =
+        conversationsByRequest.get(requestId) || [];
 
       let unreadType = null;
 
-      if (conv) {
-        const isUnread =
-          conv.lastClientUpdateAt &&
-          (!conv.lastReadByPro ||
-            new Date(conv.lastClientUpdateAt) > new Date(conv.lastReadByPro));
+      // Vérifier toutes les conversations de CE pro
+      for (const conv of requestConversations) {
+  const hasUnreadMessage = (conv.messages || []).some((msg) => {
+    const senderId = msg.from?._id
+      ? msg.from._id.toString()
+      : msg.from?.toString();
 
-        if (isUnread) {
-          if (conv.dealProposedByClient && !conv.dealAcceptedByPro) {
-            unreadType = "deal";
-          } else if (
-            conv.messages?.some(
-              msg =>
-                msg.from.toString() !== proId.toString() &&
-                !msg.readBy.includes(proId)
-            )
-          ) {
-            unreadType = "message";
-          } else {
-            unreadType = "update";
-          }
-        }
-      }
+    const readBy = (msg.readBy || []).map((id) =>
+      id.toString()
+    );
+
+    return (
+      senderId !== proIdString &&
+      !readBy.includes(proIdString)
+    );
+  });
+
+  const hasUnreadUpdate = Boolean(
+    conv.lastClientUpdateAt &&
+      (!conv.lastReadByPro ||
+        new Date(conv.lastClientUpdateAt).getTime() >
+          new Date(conv.lastReadByPro).getTime())
+  );
+
+  const hasPendingDeal =
+    conv.dealProposedByClient === true &&
+    conv.dealAcceptedByPro !== true;
+
+  if (hasUnreadMessage) {
+    unreadType = "message";
+  } else if (hasUnreadUpdate && hasPendingDeal) {
+    unreadType = "deal";
+  } else if (hasUnreadUpdate) {
+    unreadType = "update";
+  } else if (hasPendingDeal) {
+    unreadType = "deal";
+  }
+
+  if (unreadType === "deal") break;
+}
 
       const myAssignment = r.assignedPros?.find(
-        ap => ap.pro.toString() === proId.toString()
+        (ap) => ap.pro.toString() === proIdString
       );
 
       return {
@@ -272,12 +311,12 @@ router.get("/pro", auth, async (req, res) => {
         budget: r.budget,
         views: r.views,
         status: r.status,
-        hasUnread: !!unreadType,
+        hasUnread: Boolean(unreadType),
         unreadType,
         createdAt: r.createdAt,
         images: r.images || [],
         assignedPros:
-          r.assignedPros?.map(ap => ({
+          r.assignedPros?.map((ap) => ({
             pro: ap.pro.toString(),
             status: ap.status,
             agreedAt: ap.agreedAt,
@@ -296,7 +335,10 @@ router.get("/pro", auth, async (req, res) => {
     });
   } catch (err) {
     console.error("GET /requests/pro error:", err);
-    res.status(500).json({ message: "Erreur serveur" });
+
+    res.status(500).json({
+      message: "Erreur serveur",
+    });
   }
 });
 
