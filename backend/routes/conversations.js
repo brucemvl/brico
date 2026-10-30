@@ -199,112 +199,70 @@ router.post("/:id/mark-read", auth, async (req, res) => {
     const conversation = await Conversation.findById(req.params.id);
 
     if (!conversation) {
-      return res.status(404).json({ error: "Conversation introuvable" });
+      return res.status(404).json({
+        error: "Conversation introuvable"
+      });
     }
 
-    // 🔒 Vérifier que l'utilisateur appartient à la conversation
-    const isClient = conversation.client.toString() === req.user.id.toString();
-    const isPro = conversation.pro.toString() === req.user.id.toString();
+    // Vérifier que l'utilisateur appartient à la conversation
+    const userId = req.user.id.toString();
+
+    const isClient = conversation.client.toString() === userId;
+    const isPro = conversation.pro.toString() === userId;
 
     if (!isClient && !isPro) {
-      return res.status(403).json({ error: "Non autorisé" });
+      return res.status(403).json({
+        error: "Non autorisé"
+      });
     }
 
-    // 🧠 Mettre à jour le bon champ selon le rôle
+    // Mettre à jour le bon champ selon le rôle
     const updateFields = {};
 
-if (isPro) {
-  updateFields.lastReadByPro = new Date();
-}
+    if (isPro) {
+      updateFields.lastReadByPro = new Date();
+    }
 
-if (isClient) {
-  updateFields.lastReadByClient = new Date();
-}
+    if (isClient) {
+      updateFields.lastReadByClient = new Date();
+    }
 
-const updateQuery = {
-  $addToSet: {
-    "messages.$[msg].readBy": req.user.id
-  }
-};
+    const updateQuery = {
+      $addToSet: {
+        "messages.$[msg].readBy": userId
+      },
+      $set: updateFields
+    };
 
-if (Object.keys(updateFields).length > 0) {
-  updateQuery.$set = updateFields;
-}
+    await Conversation.updateOne(
+      { _id: conversation._id },
+      updateQuery,
+      {
+        arrayFilters: [
+          { "msg.readBy": { $ne: userId } }
+        ]
+      }
+    );
 
-await Conversation.updateOne(
-  { _id: conversation._id },
-  updateQuery,
-  {
-    arrayFilters: [{ "msg.readBy": { $ne: req.user.id } }]
-  }
-);
+    console.log("MARK-READ", {
+      conversationId: conversation._id.toString(),
+      requestId: conversation.request.toString(),
+      userId,
+      role: isPro ? "pro" : "client"
+    });
 
-    res.json({ success: true });
+    return res.json({ success: true });
 
   } catch (err) {
     console.error("POST /conversations/:id/mark-read error:", err);
-    res.status(500).json({ error: err.message });
-  }
 
-  console.log("MARK-READ", {
-  conversationId: conversation._id.toString(),
-  requestId: conversation.request.toString(),
-  userId: req.user.id.toString(),
-  role: req.user.role,
-});
-});
-
-// =======================
-// 🔹 Proposer un deal (client ou pro)
-// =======================
-router.post("/:id/propose-deal", auth, async (req, res) => {
-  try {
-    const conversation = await Conversation.findById(req.params.id);
-    if (!conversation) return res.status(404).json({ error: "Conversation introuvable" });
-
-    if (req.user.id === conversation.client.toString()) {
-  conversation.dealProposedByClient = true;
-  conversation.lastInteractionAt = new Date();
-  conversation.lastInteractionBy = req.user.id;
-  conversation.lastClientUpdateAt = new Date();
-
-  await conversation.save();
-
-  await createNotification({
-  userId: conversation.pro === req.user.id ? conversation.client : conversation.pro,
-  type: "deal",
-  requestId: conversation.request,
-  conversationId: conversation._id
-});
-
-  return res.json({ message: "Proposition envoyée au pro" });
-}
-
-    if (req.user.id === conversation.pro.toString()) {
-      // 🔹 Propose un deal
-      conversation.dealProposedByPro = true;
-
-      conversation.lastInteractionAt = new Date();
-conversation.lastInteractionBy = req.user.id;
-conversation.lastProUpdateAt = new Date(); // <-- AJOUTER
-
-
-      await conversation.save();
-
-      await createNotification({
-        userId: conversation.client,
-        type: "deal",
-requestId: conversation.request,
-        conversationId: conversation._id
-      });
-
-      return res.json({ message: "Proposition envoyée au client" });
+    if (res.headersSent) {
+      return;
     }
 
-    return res.status(403).json({ error: "Non autorisé" });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Erreur serveur" });
+    return res.status(500).json({
+      error: err.message
+    });
   }
 });
 

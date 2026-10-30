@@ -1,6 +1,6 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from 'expo-router';
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
     Animated,
     Image,
@@ -135,6 +135,25 @@ const strength =
     : null;
 
 
+    const badgeBlink = React.useRef(new Animated.Value(1)).current;
+        
+          useEffect(() => {
+            Animated.loop(
+              Animated.sequence([
+                Animated.timing(badgeBlink, {
+                  toValue: 0,
+                  duration: 200,
+                  useNativeDriver: true,
+                }),
+                Animated.timing(badgeBlink, {
+                  toValue: 1,
+                  duration: 1300,
+                  useNativeDriver: true,
+                }),
+              ])
+            ).start();
+          }, [badgeBlink]);
+
 
 
     useEffect(() => {
@@ -232,11 +251,11 @@ const strength =
       </Text>
     </View>
 
-    <View style={styles.unreadMessagesCount}>
+    <Animated.View style={[styles.unreadMessagesCount, {opacity: badgeBlink}]}>
       <Text style={styles.unreadMessagesCountText}>
         {unreadMessagesCount}
       </Text>
-    </View>
+    </Animated.View>
   </View>
 )}
 
@@ -472,7 +491,7 @@ const styles = StyleSheet.create({
         color: "#fff",
         fontFamily: "Montt",
         fontSize: 16,
-        marginBottom: 10,
+        marginBottom: 5,
     },
 
     goodItem: {
@@ -578,9 +597,10 @@ unreadMessagesBanner: {
   backgroundColor: "#ffffff",
   borderRadius: 18,
   padding: 12,
-  marginBottom: 20,
+  marginBlock: 10,
   borderWidth: 1,
   borderColor: "#d8eee7",
+
 },
 
 unreadMessagesIcon: {
