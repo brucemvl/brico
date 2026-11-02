@@ -60,6 +60,51 @@ const calculateDistanceKm = (point1, point2) => {
   return Math.round(earthRadius * c * 10) / 10;
 };
 
+const parseLocationCoordinates = (value) => {
+  if (value === undefined) return undefined;
+
+  let coordinates = value;
+
+  if (typeof coordinates === "string") {
+    if (!coordinates.trim()) {
+      throw new Error("Coordonnées géographiques invalides");
+    }
+
+    coordinates = JSON.parse(coordinates);
+  }
+
+  if (coordinates === null) return null;
+
+  if (
+    !coordinates ||
+    typeof coordinates !== "object" ||
+    coordinates.latitude === undefined ||
+    coordinates.latitude === null ||
+    coordinates.latitude === "" ||
+    coordinates.longitude === undefined ||
+    coordinates.longitude === null ||
+    coordinates.longitude === ""
+  ) {
+    throw new Error("Coordonnées géographiques invalides");
+  }
+
+  const latitude = Number(coordinates.latitude);
+  const longitude = Number(coordinates.longitude);
+
+  if (
+    !Number.isFinite(latitude) ||
+    !Number.isFinite(longitude) ||
+    latitude < -90 ||
+    latitude > 90 ||
+    longitude < -180 ||
+    longitude > 180
+  ) {
+    throw new Error("Coordonnées géographiques invalides");
+  }
+
+  return { latitude, longitude };
+};
+
 // =======================
 // 🔹 GET demandes du client connecté
 // =======================
@@ -266,6 +311,19 @@ if (
       });
     }
 
+    if (
+  radiusKm !== null &&
+  (
+    !user.locationCoordinates ||
+    !Number.isFinite(user.locationCoordinates.latitude) ||
+    !Number.isFinite(user.locationCoordinates.longitude)
+  )
+) {
+  return res.status(400).json({
+    message: "Veuillez renseigner votre localisation pour utiliser le filtre par distance.",
+  });
+}
+
     const requests = await Request.find({
       $or: [
         { status: "open" },
@@ -386,13 +444,16 @@ if (
     });
 
     const filteredRequests =
-  radiusKm !== null
-    ? requestsWithUnread.filter(
-        (request) =>
-          request.distanceKm !== null &&
-          request.distanceKm <= radiusKm
-      )
-    : requestsWithUnread;
+  radiusKm === null
+    ? requestsWithUnread
+    : requestsWithUnread.filter(
+        request =>
+          request.myAssignmentStatus !== null ||
+          (
+            request.distanceKm !== null &&
+            request.distanceKm <= radiusKm
+          )
+      );
 
     res.json({
       requests: filteredRequests,
@@ -559,9 +620,7 @@ router.post("/", auth, upload.uploadImages, async (req, res) => {
       description,
       category,
       location,
-      locationCoordinates: locationCoordinates
-  ? JSON.parse(locationCoordinates)
-  : undefined,
+      locationCoordinates: parseLocationCoordinates(locationCoordinates),
       budget,
       images: [],
       offers: [],
@@ -682,6 +741,13 @@ router.post("/", auth, upload.uploadImages, async (req, res) => {
       durationMs: Date.now() - startedAt,
     });
 
+    if (err.message === "Coordonnées géographiques invalides" ||
+    err instanceof SyntaxError) {
+  return res.status(400).json({
+    error: "Coordonnées géographiques invalides",
+  });
+}
+
     return res.status(500).json({
       error: "Erreur serveur"
     });
@@ -714,8 +780,9 @@ router.put("/:id", auth, async (req, res) => {
     request.location = location;
     request.budget = budget;
 
-   if (locationCoordinates !== undefined) {
-  request.locationCoordinates = locationCoordinates;
+  if (locationCoordinates !== undefined) {
+  request.locationCoordinates =
+    parseLocationCoordinates(locationCoordinates);
 }
 
     await request.save();
@@ -723,6 +790,12 @@ router.put("/:id", auth, async (req, res) => {
     res.json(request);
 
   } catch (err) {
+    if (err.message === "Coordonnées géographiques invalides" ||
+    err instanceof SyntaxError) {
+  return res.status(400).json({
+    error: "Coordonnées géographiques invalides",
+  });
+}
     console.error("PUT /requests/:id", err);
     res.status(500).json({ error: err.message });
   }

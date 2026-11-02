@@ -37,6 +37,7 @@ type RequestType = {
   title: string;
   category: string;
   location: string;
+  distanceKm?: number | null;
   budget: number;
   status: "open" | "in_progress" | "completed";
   hasUnread?: boolean;
@@ -113,6 +114,8 @@ const [pickerOpen, setPickerOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState<"skills" | "all" | string>("all");
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+
+  const [radiusKm, setRadiusKm] = useState<number | null>(null);
 
   const ITEMS_PER_PAGE = 10;
    const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
@@ -258,7 +261,12 @@ useEffect(() => {
   setLoading(true);
 
   try {
-    const data = await apiFetch("/requests/pro");
+    const endpoint =
+  radiusKm !== null
+    ? `/requests/pro?radiusKm=${radiusKm}`
+    : "/requests/pro";
+
+const data = await apiFetch(endpoint);
 
     if (!data) {
       console.log("API response vide");
@@ -295,7 +303,7 @@ console.log(finish.length)
   useFocusEffect(
     useCallback(() => {
       fetchRequests();
-    }, [])
+    }, [radiusKm])
   );
 
   const onRefresh = async () => {
@@ -549,6 +557,33 @@ const visibleRequests = filteredRequests.slice(0, visibleCount);
     : "Demandes terminées"}
 </Text>
 
+{requestView === "requests" && (
+  <View style={styles.filtersContainer}>
+    {[null, 5, 10, 20, 50].map((radius) => (
+      <TouchableOpacity
+        key={radius ?? "all"}
+        style={[
+          styles.filterButton,
+          radiusKm === radius && styles.activeFilter,
+        ]}
+        onPress={() => setRadiusKm(radius)}
+      >
+        <Text
+          style={[
+            styles.filterText,
+            radiusKm === radius && {
+              fontFamily: "Montt",
+              color: "#fff",
+            },
+          ]}
+        >
+          {radius === null ? "Toutes distances" : `${radius} km`}
+        </Text>
+      </TouchableOpacity>
+    ))}
+  </View>
+)}
+
       {/* 🔹 Boutons filtres */}
       {requestView === "requests" &&
       <View style={styles.filtersContainer} accessible accessibilityRole="tablist">
@@ -683,6 +718,15 @@ const images = item.images ?? [];
                     {item.budget <= 0 ? "À définir" : item.budget + " €"}
                 </Text>
             </View>
+
+            {item.distanceKm != null && (
+  <View style={styles.badge}>
+    <Image source={location} style={styles.badgeIcon} />
+    <Text style={styles.badgeText}>
+      {item.distanceKm.toFixed(1)} km
+    </Text>
+  </View>
+)}
 
         </View>
 
