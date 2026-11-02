@@ -85,6 +85,60 @@ router.put(
       user.phone = req.body.phone ?? user.phone;
       user.siret = req.body.siret ?? user.siret;
       user.location = req.body.location ?? user.location;
+      // Coordonnées géographiques
+if (req.body.locationCoordinates !== undefined) {
+  try {
+    const coordinates =
+      typeof req.body.locationCoordinates === "string"
+        ? JSON.parse(req.body.locationCoordinates)
+        : req.body.locationCoordinates;
+
+    // Suppression des anciennes coordonnées
+    if (coordinates === null) {
+      user.locationCoordinates = undefined;
+    } else {
+      if (
+        !coordinates ||
+        typeof coordinates !== "object" ||
+        coordinates.latitude === undefined ||
+        coordinates.latitude === null ||
+        coordinates.longitude === undefined ||
+        coordinates.longitude === null ||
+        coordinates.latitude === "" ||
+        coordinates.longitude === ""
+      ) {
+        return res.status(400).json({
+          error: "Coordonnées géographiques invalides"
+        });
+      }
+
+      const latitude = Number(coordinates.latitude);
+      const longitude = Number(coordinates.longitude);
+
+      if (
+        !Number.isFinite(latitude) ||
+        !Number.isFinite(longitude) ||
+        latitude < -90 ||
+        latitude > 90 ||
+        longitude < -180 ||
+        longitude > 180
+      ) {
+        return res.status(400).json({
+          error: "Coordonnées géographiques invalides"
+        });
+      }
+
+      user.locationCoordinates = {
+        latitude,
+        longitude
+      };
+    }
+  } catch (e) {
+    return res.status(400).json({
+      error: "Format des coordonnées invalide"
+    });
+  }
+}
       user.description = req.body.description ?? user.description;
 
       // Skills
@@ -275,6 +329,41 @@ if (req.body.description) {
       user.name = req.body.name ?? user.name;
       user.phone = req.body.phone ?? user.phone;
       user.location = req.body.location ?? user.location;
+      // Coordonnées géographiques
+if (req.body.locationCoordinates !== undefined) {
+  try {
+    const coordinates =
+      typeof req.body.locationCoordinates === "string"
+        ? JSON.parse(req.body.locationCoordinates)
+        : req.body.locationCoordinates;
+
+    if (coordinates === null) {
+      user.locationCoordinates = undefined;
+    } else {
+      const latitude = Number(coordinates.latitude);
+      const longitude = Number(coordinates.longitude);
+
+      if (
+        Number.isFinite(latitude) &&
+        Number.isFinite(longitude) &&
+        latitude >= -90 &&
+        latitude <= 90 &&
+        longitude >= -180 &&
+        longitude <= 180
+      ) {
+        user.locationCoordinates = { latitude, longitude };
+      } else {
+        return res.status(400).json({
+          error: "Coordonnées géographiques invalides"
+        });
+      }
+    }
+  } catch (e) {
+    return res.status(400).json({
+      error: "Format des coordonnées invalide"
+    });
+  }
+};
       user.description = req.body.description ?? user.description;
 
       // 🔹 Image profil

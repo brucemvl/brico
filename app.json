@@ -35,6 +35,14 @@
       "expo-notifications",
       "expo-router",
       [
+    "expo-build-properties",
+    {
+      "android": {
+        "extraProguardRules": "-keep class * extends androidx.room.RoomDatabase { <init>(); }\n-keep class * extends androidx.work.InputMerger { <init>(); }"
+      }
+    }
+  ],
+      [
         "expo-splash-screen",
         {
           "image": "./assets/images/briconnectICON2.png",
@@ -47,10 +55,10 @@
         }
       ],
       "expo-font",
-      
       "expo-image",
       "expo-status-bar",
-      "expo-web-browser"
+      "expo-web-browser",
+      "expo-build-properties"
     ],
     "experiments": {
       "typedRoutes": true,

@@ -427,7 +427,7 @@ const firstUnreadRequest = requestsWithUnread[0];
             opacity: settingsOpacity,
             flexDirection: "row",
             alignItems: "center",
-            gap: 6
+            gap: 10
           }}
         >
           <TouchableOpacity onPress={shareApp}

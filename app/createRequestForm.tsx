@@ -30,6 +30,10 @@ type City = {
   departement: {
     code: string;
   };
+   centre?: {
+    type: string;
+    coordinates: [number, number];
+  };
 };
 
 
@@ -49,6 +53,10 @@ export default function CreateRequestForm() {
   const [cities, setCities] = useState<City[]>([]);
   const [location, setLocation] = useState("");
   const [showCityOverlay, setShowCityOverlay] = useState(false);
+  const [locationCoordinates, setLocationCoordinates] = useState<{
+  latitude: number;
+  longitude: number;
+} | null>(null);
 
   const params = useLocalSearchParams();
 
@@ -71,6 +79,7 @@ export default function CreateRequestForm() {
         setLocation(data.location || "");
         setLocationQuery(data.location || "");
         setImages(data.images || []);
+        setLocationCoordinates(data.locationCoordinates || null);
     } catch (e) {
         Alert.alert("Erreur", "Impossible de charger cette demande.");
         router.back();
@@ -144,6 +153,32 @@ export default function CreateRequestForm() {
     "Paris 19e",
     "Paris 20e",
   ];
+
+  const PARIS_ARRONDISSEMENT_COORDINATES: Record<
+  string,
+  { latitude: number; longitude: number }
+> = {
+  "Paris 1er": { latitude: 48.8626, longitude: 2.3363 },
+  "Paris 2e": { latitude: 48.8685, longitude: 2.3427 },
+  "Paris 3e": { latitude: 48.8637, longitude: 2.3615 },
+  "Paris 4e": { latitude: 48.8543, longitude: 2.3574 },
+  "Paris 5e": { latitude: 48.8448, longitude: 2.3471 },
+  "Paris 6e": { latitude: 48.8499, longitude: 2.3329 },
+  "Paris 7e": { latitude: 48.8561, longitude: 2.3126 },
+  "Paris 8e": { latitude: 48.8770, longitude: 2.3174 },
+  "Paris 9e": { latitude: 48.8760, longitude: 2.3375 },
+  "Paris 10e": { latitude: 48.8761, longitude: 2.3601 },
+  "Paris 11e": { latitude: 48.8594, longitude: 2.3787 },
+  "Paris 12e": { latitude: 48.8402, longitude: 2.3876 },
+  "Paris 13e": { latitude: 48.8322, longitude: 2.3556 },
+  "Paris 14e": { latitude: 48.8331, longitude: 2.3264 },
+  "Paris 15e": { latitude: 48.8421, longitude: 2.2987 },
+  "Paris 16e": { latitude: 48.8638, longitude: 2.2769 },
+  "Paris 17e": { latitude: 48.8845, longitude: 2.3224 },
+  "Paris 18e": { latitude: 48.8925, longitude: 2.3444 },
+  "Paris 19e": { latitude: 48.8875, longitude: 2.3848 },
+  "Paris 20e": { latitude: 48.8632, longitude: 2.3986 },
+};
 
   const searchCities = async (text: string) => {
     setLocationQuery(text);
@@ -255,6 +290,7 @@ export default function CreateRequestForm() {
           category,
           location,
           budget,
+          locationCoordinates,
         }),
         headers: {
           "Content-Type": "application/json",
@@ -297,7 +333,15 @@ export default function CreateRequestForm() {
       formData.append("description", description);
       formData.append("category", category);
       formData.append("location", location);
+      
+      if (locationCoordinates) {
+  formData.append(
+    "locationCoordinates",
+    JSON.stringify(locationCoordinates)
+  );
+}
       formData.append("budget", budget);
+
 
       images.forEach((img) => {
         const file = new File(img.uri);
@@ -338,7 +382,7 @@ export default function CreateRequestForm() {
         keyboardVerticalOffset={10}
       >
 
-        <ScrollView style={{ padding: 20, paddingTop: 120}}>
+        <ScrollView style={{ paddingInline: 20, paddingTop: 120, paddingBottom: 50}}>
           <LinearGradient
             colors={["#30a590", "#1a5b4f"]}
             style={styles.heroCard}
@@ -500,12 +544,33 @@ export default function CreateRequestForm() {
                   renderItem={({ item }) => (
                     <TouchableOpacity
                       onPress={() => {
-                        const selected = `${item.nom} (${item.departement.code})`;
-                        setLocation(selected);
-                        setLocationQuery(selected);
-                        setCities([]);
-                        setShowCityOverlay(false);
-                      }}
+  const selected = `${item.nom} (${item.departement.code})`;
+
+  setLocation(selected);
+  setLocationQuery(selected);
+
+  if (item.centre?.coordinates) {
+    const [longitude, latitude] = item.centre.coordinates;
+
+    const parisCoordinates =
+  PARIS_ARRONDISSEMENT_COORDINATES[item.nom];
+
+if (parisCoordinates) {
+  setLocationCoordinates(parisCoordinates);
+} else if (item.centre?.coordinates) {
+  const [longitude, latitude] = item.centre.coordinates;
+
+  setLocationCoordinates({
+    latitude,
+    longitude,
+  });
+} else {
+  setLocationCoordinates(null);
+}
+  }
+  setCities([]);
+  setShowCityOverlay(false);
+}}
                       style={styles.cityItem}
                     >
                       <Text style={styles.cityText}>

@@ -24,9 +24,12 @@ type City = {
    nom: string;
     code: string;
      departement: { code: string; };
-      centre?: { coordinates: [number, number];
+      centre?: {
+    type?: string;
+    coordinates: [number, number];
+  };
 
-       }; };
+        };
 
 
 const { width } = Dimensions.get("window");
@@ -77,6 +80,32 @@ export default function OnboardingPro() {
   "Paris 20e",
 ];
 
+const PARIS_ARRONDISSEMENT_COORDINATES: Record<
+  string,
+  { latitude: number; longitude: number }
+> = {
+  "Paris 1er": { latitude: 48.8626, longitude: 2.3363 },
+  "Paris 2e": { latitude: 48.8685, longitude: 2.3427 },
+  "Paris 3e": { latitude: 48.8637, longitude: 2.3615 },
+  "Paris 4e": { latitude: 48.8543, longitude: 2.3574 },
+  "Paris 5e": { latitude: 48.8448, longitude: 2.3471 },
+  "Paris 6e": { latitude: 48.8499, longitude: 2.3329 },
+  "Paris 7e": { latitude: 48.8561, longitude: 2.3126 },
+  "Paris 8e": { latitude: 48.8770, longitude: 2.3174 },
+  "Paris 9e": { latitude: 48.8760, longitude: 2.3375 },
+  "Paris 10e": { latitude: 48.8761, longitude: 2.3601 },
+  "Paris 11e": { latitude: 48.8594, longitude: 2.3787 },
+  "Paris 12e": { latitude: 48.8402, longitude: 2.3876 },
+  "Paris 13e": { latitude: 48.8322, longitude: 2.3556 },
+  "Paris 14e": { latitude: 48.8331, longitude: 2.3264 },
+  "Paris 15e": { latitude: 48.8421, longitude: 2.2987 },
+  "Paris 16e": { latitude: 48.8638, longitude: 2.2769 },
+  "Paris 17e": { latitude: 48.8845, longitude: 2.3224 },
+  "Paris 18e": { latitude: 48.8925, longitude: 2.3444 },
+  "Paris 19e": { latitude: 48.8875, longitude: 2.3848 },
+  "Paris 20e": { latitude: 48.8632, longitude: 2.3986 },
+};
+
   const router = useRouter();
   const { apiFetch } = useApi();
 
@@ -90,6 +119,10 @@ const { user, updateUser } = context;
   // 🔹 states
   const [phone, setPhone] = useState("");
   const [location, setLocation] = useState("");
+  const [locationCoordinates, setLocationCoordinates] = useState<{
+  latitude: number;
+  longitude: number;
+} | null>(null);
   const [skills, setSkills] = useState<string[]>([]);
   const [equipment, setEquipment] = useState<string[]>([]);
   const [description, setDescription] = useState("");
@@ -200,6 +233,8 @@ setPortfolio((prev) => [...prev, ...result.assets]);
         departement: { code: "75" },
       }))
     );
+
+    setShowCityOverlay(true);
     return; // 🔥 stop API ici
   }
 
@@ -246,6 +281,14 @@ setPortfolio((prev) => [...prev, ...result.assets]);
 
     formData.append("phone", phone);
     formData.append("location", location);
+
+    if (locationCoordinates) {
+  formData.append(
+    "locationCoordinates",
+    JSON.stringify(locationCoordinates)
+  );
+}
+
     formData.append("description", description);
     formData.append("skills", JSON.stringify(skills));
     formData.append("equipment", JSON.stringify(equipment));
@@ -287,7 +330,7 @@ setPortfolio((prev) => [...prev, ...result.assets]);
   method: "PUT",
 });
 
-updateUser({ onboardingCompleted: true });
+
 await updateUser({ onboardingCompleted: true });
 
 router.replace("/homePro");
@@ -381,9 +424,13 @@ router.replace("/homePro");
   ]}
   disabled={!location}
   onPress={async () => {
-    await saveStep({ location });
-    nextStep();
-  }}
+  await saveStep({
+    location,
+    locationCoordinates,
+  });
+
+  nextStep();
+}}
 >
   <Text style={styles.buttonText}>Continuer</Text>
 </TouchableOpacity>
@@ -560,12 +607,34 @@ router.replace("/homePro");
             renderItem={({ item }) => (
               <TouchableOpacity
                 onPress={() => {
-                  const selected = `${item.nom} (${item.departement.code})`;
-                  setLocation(selected);
-                  setLocationQuery(selected);
-                  setCities([]);
-                  setShowCityOverlay(false);
-                }}
+  const selected = `${item.nom} (${item.departement.code})`;
+
+  setLocation(selected);
+  setLocationQuery(selected);
+
+  // Coordonnées des arrondissements de Paris
+  const parisCoordinates =
+    PARIS_ARRONDISSEMENT_COORDINATES[item.nom];
+
+  if (parisCoordinates) {
+    setLocationCoordinates(parisCoordinates);
+  } 
+  // Coordonnées des autres communes
+  else if (item.centre?.coordinates) {
+    const [longitude, latitude] = item.centre.coordinates;
+
+    setLocationCoordinates({
+      latitude,
+      longitude,
+    });
+  } 
+  else {
+    setLocationCoordinates(null);
+  }
+
+  setCities([]);
+  setShowCityOverlay(false);
+}}
                 style={styles.cityItem}
               >
                 <Text style={styles.cityText}>

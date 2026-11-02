@@ -31,6 +31,10 @@ type City = {
   departement: {
     code: string;
   };
+  centre?: {
+    type?: string;
+    coordinates: [number, number];
+  };
 };
 
 type Improvement = {
@@ -122,6 +126,11 @@ const [equipment, setEquipment] = useState<string[]>([]);
   const [locationQuery, setLocationQuery] = useState("");
 const [cities, setCities] = useState<City[]>([]);
 
+const [locationCoordinates, setLocationCoordinates] = useState<{
+  latitude: number;
+  longitude: number;
+} | null>(null);
+
   const scaleAnim = useRef(new Animated.Value(1)).current;
 
   
@@ -164,6 +173,7 @@ setCoach(coachData);
       setSiret(data.siret || "");
       setLocation(data.location || "");
       setLocationQuery(data.location || "");
+      setLocationCoordinates(data.locationCoordinates || null);
       setDescription(data.description || "");
 setEquipment(Array.isArray(data.equipment) ? data.equipment : []);
 setSkills(Array.isArray(data.skills) ? data.skills : []);
@@ -341,15 +351,45 @@ const completion = React.useMemo(() => {
   "Paris 20e",
 ];
 
+const PARIS_ARRONDISSEMENT_COORDINATES: Record<
+  string,
+  { latitude: number; longitude: number }
+> = {
+  "Paris 1er": { latitude: 48.8626, longitude: 2.3363 },
+  "Paris 2e": { latitude: 48.8685, longitude: 2.3427 },
+  "Paris 3e": { latitude: 48.8637, longitude: 2.3615 },
+  "Paris 4e": { latitude: 48.8543, longitude: 2.3574 },
+  "Paris 5e": { latitude: 48.8448, longitude: 2.3471 },
+  "Paris 6e": { latitude: 48.8499, longitude: 2.3329 },
+  "Paris 7e": { latitude: 48.8561, longitude: 2.3126 },
+  "Paris 8e": { latitude: 48.8770, longitude: 2.3174 },
+  "Paris 9e": { latitude: 48.8760, longitude: 2.3375 },
+  "Paris 10e": { latitude: 48.8761, longitude: 2.3601 },
+  "Paris 11e": { latitude: 48.8594, longitude: 2.3787 },
+  "Paris 12e": { latitude: 48.8402, longitude: 2.3876 },
+  "Paris 13e": { latitude: 48.8322, longitude: 2.3556 },
+  "Paris 14e": { latitude: 48.8331, longitude: 2.3264 },
+  "Paris 15e": { latitude: 48.8421, longitude: 2.2987 },
+  "Paris 16e": { latitude: 48.8638, longitude: 2.2769 },
+  "Paris 17e": { latitude: 48.8845, longitude: 2.3224 },
+  "Paris 18e": { latitude: 48.8925, longitude: 2.3444 },
+  "Paris 19e": { latitude: 48.8875, longitude: 2.3848 },
+  "Paris 20e": { latitude: 48.8632, longitude: 2.3986 },
+};
+
   const searchCities = async (text: string) => {
   setLocationQuery(text);
 
+  // Dès que l'utilisateur modifie sa recherche,
+  // on invalide l'ancienne sélection géographique.
+  setLocation("");
+  setLocationCoordinates(null);
 
   if (text.length < 2) {
-  setCities([]);
-  setShowCityOverlay(false);
-  return;
-}
+    setCities([]);
+    setShowCityOverlay(false);
+    return;
+  }
 
   if (text.toLowerCase().includes("paris")) {
     setCities(
@@ -359,12 +399,13 @@ const completion = React.useMemo(() => {
         departement: { code: "75" },
       }))
     );
-    return; // 🔥 stop API ici
+    setShowCityOverlay(true);
+    return;
   }
 
   try {
     const res = await fetch(
-      `https://geo.api.gouv.fr/communes?nom=${text}&fields=departement,code,centre&limit=20`
+      `https://geo.api.gouv.fr/communes?nom=${encodeURIComponent(text)}&fields=departement,code,centre&limit=20`
     );
 
     const data = await res.json();
@@ -376,20 +417,14 @@ const completion = React.useMemo(() => {
       if (aIsIDF && !bIsIDF) return -1;
       if (!aIsIDF && bIsIDF) return 1;
 
-      
-
-      // ensuite priorité 92
       if (a.departement.code === "92") return -1;
       if (b.departement.code === "92") return 1;
 
       return 0;
     });
 
-   
-
     setCities(sorted);
     setShowCityOverlay(true);
-
   } catch (err) {
     console.log("Erreur villes:", err);
   }
@@ -413,6 +448,11 @@ const completion = React.useMemo(() => {
       formData.append("phone", phone);
       formData.append("siret", siret);
       formData.append("location", location);
+
+      formData.append(
+  "locationCoordinates",
+  JSON.stringify(locationCoordinates)
+);
       formData.append("description", description);
       formData.append("equipment", JSON.stringify(equipment));
       formData.append("skills", JSON.stringify(skills));
@@ -757,6 +797,26 @@ Ajouter
                       const selected = `${item.nom} (${item.departement.code})`;
                       setLocation(selected);
                       setLocationQuery(selected);
+                      // Coordonnées des arrondissements de Paris
+  const parisCoordinates =
+    PARIS_ARRONDISSEMENT_COORDINATES[item.nom];
+
+  if (parisCoordinates) {
+    setLocationCoordinates(parisCoordinates);
+  } 
+  // Coordonnées des autres communes
+  else if (item.centre?.coordinates) {
+    const [longitude, latitude] = item.centre.coordinates;
+
+    setLocationCoordinates({
+      latitude,
+      longitude,
+    });
+  } 
+  else {
+    setLocationCoordinates(null);
+  }
+
                       setCities([]);
                       setShowCityOverlay(false);
                     }}

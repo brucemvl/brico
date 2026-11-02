@@ -48,6 +48,10 @@ const requestSchema = new mongoose.Schema({
     required: true
   },
   location: { type: String, required: true },
+  locationCoordinates: {
+  latitude: { type: Number },
+  longitude: { type: Number },
+},
   budget: Number,
   images: [{ url: String, public_id: String }],
 views: {

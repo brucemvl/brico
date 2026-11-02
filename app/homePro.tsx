@@ -423,7 +423,7 @@ const visibleRequests = filteredRequests.slice(0, visibleCount);
     top: 70,
     right: 15,
     zIndex: 99,
-    gap: 6,
+    gap: 10,
     flexDirection: "row",
     alignItems: "center",
     opacity: settingsOpacity,

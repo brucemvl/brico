@@ -25,6 +25,41 @@ const containsContactInfo = (text) => {
   return emailRegex.test(text) || phoneRegex.test(text);
 };
 
+const calculateDistanceKm = (point1, point2) => {
+  if (!point1 || !point2) return null;
+
+  const toRadians = (degrees) => (degrees * Math.PI) / 180;
+
+  const lat1 = Number(point1.latitude);
+  const lon1 = Number(point1.longitude);
+  const lat2 = Number(point2.latitude);
+  const lon2 = Number(point2.longitude);
+
+  if (
+    !Number.isFinite(lat1) ||
+    !Number.isFinite(lon1) ||
+    !Number.isFinite(lat2) ||
+    !Number.isFinite(lon2)
+  ) {
+    return null;
+  }
+
+  const earthRadius = 6371;
+
+  const dLat = toRadians(lat2 - lat1);
+  const dLon = toRadians(lon2 - lon1);
+
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRadians(lat1)) *
+      Math.cos(toRadians(lat2)) *
+      Math.sin(dLon / 2) ** 2;
+
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+  return Math.round(earthRadius * c * 10) / 10;
+};
+
 // =======================
 // 🔹 GET demandes du client connecté
 // =======================
@@ -210,6 +245,21 @@ router.get("/pro", auth, async (req, res) => {
 
     const user = await User.findById(proId);
 
+    // Rayon de recherche facultatif, transmis par le frontend
+const radiusKm =
+  req.query.radiusKm !== undefined
+    ? Number(req.query.radiusKm)
+    : null;
+
+if (
+  radiusKm !== null &&
+  (!Number.isFinite(radiusKm) || radiusKm <= 0 || radiusKm > 500)
+) {
+  return res.status(400).json({
+    message: "Rayon de recherche invalide",
+  });
+}
+
     if (!user) {
       return res.status(404).json({
         message: "Utilisateur introuvable",
@@ -252,6 +302,11 @@ router.get("/pro", auth, async (req, res) => {
 
     const requestsWithUnread = requests.map((r) => {
       const requestId = r._id.toString();
+
+      const distanceKm = calculateDistanceKm(
+  user.locationCoordinates,
+  r.locationCoordinates
+);
 
       const requestConversations =
         conversationsByRequest.get(requestId) || [];
@@ -308,6 +363,7 @@ router.get("/pro", auth, async (req, res) => {
         title: r.title,
         category: r.category,
         location: r.location,
+        distanceKm,
         budget: r.budget,
         views: r.views,
         status: r.status,
@@ -329,8 +385,17 @@ router.get("/pro", auth, async (req, res) => {
       };
     });
 
+    const filteredRequests =
+  radiusKm !== null
+    ? requestsWithUnread.filter(
+        (request) =>
+          request.distanceKm !== null &&
+          request.distanceKm <= radiusKm
+      )
+    : requestsWithUnread;
+
     res.json({
-      requests: requestsWithUnread,
+      requests: filteredRequests,
       skills: user.skills || [],
     });
   } catch (err) {
@@ -482,7 +547,8 @@ router.post("/", auth, upload.uploadImages, async (req, res) => {
       description,
       category,
       location,
-      budget
+      budget,
+      locationCoordinates
     } = req.body;
 
     console.log("💾 REQUEST_BUILD_OBJECT");
@@ -493,6 +559,9 @@ router.post("/", auth, upload.uploadImages, async (req, res) => {
       description,
       category,
       location,
+      locationCoordinates: locationCoordinates
+  ? JSON.parse(locationCoordinates)
+  : undefined,
       budget,
       images: [],
       offers: [],
@@ -636,6 +705,7 @@ router.put("/:id", auth, async (req, res) => {
       category,
       location,
       budget,
+      locationCoordinates
     } = req.body;
 
     request.title = title;
@@ -643,6 +713,10 @@ router.put("/:id", auth, async (req, res) => {
     request.category = category;
     request.location = location;
     request.budget = budget;
+
+   if (locationCoordinates !== undefined) {
+  request.locationCoordinates = locationCoordinates;
+}
 
     await request.save();
 
