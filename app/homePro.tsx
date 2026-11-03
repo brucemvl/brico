@@ -2,12 +2,13 @@ import { useFonts } from "expo-font";
 import { LinearGradient } from "expo-linear-gradient";
 import * as Notifications from 'expo-notifications';
 import { useFocusEffect, useRouter } from 'expo-router';
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Animated,
   Image,
   ImageBackground,
+  PanResponder,
   RefreshControl,
   Share,
   StyleSheet,
@@ -115,7 +116,77 @@ const [pickerOpen, setPickerOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
+
   const [radiusKm, setRadiusKm] = useState<number | null>(null);
+const [draftRadiusKm, setDraftRadiusKm] = useState(25);
+
+
+const [sliderWidth, setSliderWidth] = useState(0);
+
+const sliderPosition = useRef(new Animated.Value(0)).current;
+const sliderStartX = useRef(0);
+const radiusRef = useRef(draftRadiusKm);
+const sliderWidthRef = useRef(0);
+
+const updateSlider = (value: number) => {
+  const radius = Math.max(1, Math.min(100, Math.round(value)));
+
+  radiusRef.current = radius;
+  setDraftRadiusKm(radius);
+
+  const position = sliderWidthRef.current * ((radius - 1) / 99);
+  sliderPosition.setValue(position);
+};
+
+useEffect(() => {
+  radiusRef.current = draftRadiusKm;
+}, [draftRadiusKm]);
+
+const sliderPanResponder = useRef(
+  PanResponder.create({
+    onStartShouldSetPanResponder: () => true,
+    onMoveShouldSetPanResponder: () => true,
+
+    onPanResponderGrant: (event) => {
+      const x = Math.max(
+        0,
+        Math.min(sliderWidthRef.current, event.nativeEvent.locationX - 12)
+      );
+
+      sliderStartX.current = x;
+
+      const radius =
+        1 + (x / Math.max(sliderWidthRef.current, 1)) * 99;
+
+      updateSlider(radius);
+    },
+
+    onPanResponderMove: (_, gestureState) => {
+      const x = Math.max(
+        0,
+        Math.min(
+          sliderWidthRef.current,
+          sliderStartX.current + gestureState.dx
+        )
+      );
+
+      const radius =
+        1 + (x / Math.max(sliderWidthRef.current, 1)) * 99;
+
+      updateSlider(radius);
+    },
+
+    onPanResponderRelease: () => {
+  setRadiusKm(radiusRef.current);
+},
+
+    onPanResponderTerminate: () => {
+  setRadiusKm(radiusRef.current);
+},
+  })
+).current;
+
+
 
   const ITEMS_PER_PAGE = 10;
    const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
@@ -258,13 +329,9 @@ useEffect(() => {
 
   // 🔹 Fetch demandes + compétences
   const fetchRequests = async () => {
-  setLoading(true);
 
   try {
-    const endpoint =
-  radiusKm !== null
-    ? `/requests/pro?radiusKm=${radiusKm}`
-    : "/requests/pro";
+    const endpoint = "/requests/pro";
 
 const data = await apiFetch(endpoint);
 
@@ -277,7 +344,7 @@ const data = await apiFetch(endpoint);
     console.log("REQUESTS API:", data);
 
     setRequests(data.requests || []);
-    setSkills(data.skills || []);
+setSkills(data.skills || []);
 
   } catch (err) {
     console.error("Erreur fetch pro:", err);
@@ -303,7 +370,7 @@ console.log(finish.length)
   useFocusEffect(
     useCallback(() => {
       fetchRequests();
-    }, [radiusKm])
+    }, [])
   );
 
   const onRefresh = async () => {
@@ -355,6 +422,16 @@ const filteredRequests = (() => {
     default:
       baseFiltered = requests;
   }
+
+  if (radiusKm !== null) {
+  baseFiltered = baseFiltered.filter((r) => {
+    if (r.myAssignmentStatus != null) return true;
+
+    if (r.distanceKm == null) return false;
+
+    return r.distanceKm <= radiusKm;
+  });
+}
 
   // 🔹 filtre catégorie
   let finalFiltered =
@@ -558,29 +635,65 @@ const visibleRequests = filteredRequests.slice(0, visibleCount);
 </Text>
 
 {requestView === "requests" && (
-  <View style={styles.filtersContainer}>
-    {[null, 5, 10, 20, 50].map((radius) => (
-      <TouchableOpacity
-        key={radius ?? "all"}
+  <View style={styles.radiusContainer}>
+    <View style={styles.radiusHeader}>
+      <Text style={styles.radiusTitle}>Rayon de recherche</Text>
+      <Text style={styles.radiusValue}>{draftRadiusKm} km</Text>
+    </View>
+
+    <View
+      style={styles.customSlider}
+      onLayout={(event) => {
+        const width = event.nativeEvent.layout.width - 24;
+
+        sliderWidthRef.current = Math.max(0, width);
+        setSliderWidth(width);
+
+        const position = width * ((radiusRef.current - 1) / 99);
+        sliderPosition.setValue(position);
+      }}
+      {...sliderPanResponder.panHandlers}
+    >
+      <View style={styles.sliderTrack} />
+
+      <Animated.View
         style={[
-          styles.filterButton,
-          radiusKm === radius && styles.activeFilter,
+          styles.sliderActiveTrack,
+          {
+            width: sliderPosition,
+          },
         ]}
-        onPress={() => setRadiusKm(radius)}
+      />
+
+      <Animated.View
+        pointerEvents="none"
+        style={[
+          styles.sliderThumb,
+          {
+            transform: [
+              {
+                translateX: sliderPosition,
+              },
+            ],
+          },
+        ]}
+      />
+    </View>
+
+    <View style={styles.radiusLabels}>
+      <Text style={styles.radiusLimit}>1 km</Text>
+
+      <TouchableOpacity
+        onPress={() => {
+  setRadiusKm(null);
+  setDraftRadiusKm(25);
+}}
       >
-        <Text
-          style={[
-            styles.filterText,
-            radiusKm === radius && {
-              fontFamily: "Montt",
-              color: "#fff",
-            },
-          ]}
-        >
-          {radius === null ? "Toutes distances" : `${radius} km`}
-        </Text>
+        <Text style={styles.radiusReset}>Toutes distances</Text>
       </TouchableOpacity>
-    ))}
+
+      <Text style={styles.radiusLimit}>100 km</Text>
+    </View>
   </View>
 )}
 
@@ -1124,5 +1237,89 @@ loadMoreButton: { width: "100%", alignItems: "center", marginTop: 8, marginBotto
         shadowOffset: { width: 0, height: 0,},
 
   elevation: 6,
-}
+},
+radiusContainer: {
+  backgroundColor: "#FFFFFF",
+  padding: 16,
+  borderRadius: 14,
+  marginHorizontal: 16,
+  marginVertical: 12,
+  width: "96%"
+},
+
+radiusHeader: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center",
+},
+
+radiusTitle: {
+  fontSize: 15,
+  fontFamily: "Montt",
+  color: "#222",
+},
+
+radiusValue: {
+  fontSize: 15,
+  fontFamily: "Montt",
+  color: "#F28C28",
+},
+
+
+
+radiusLabels: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center",
+},
+
+radiusLimit: {
+  fontSize: 12,
+  color: "#888",
+},
+
+radiusReset: {
+  fontSize: 12,
+  color: "#F28C28",
+  fontFamily: "Montt",
+},
+customSlider: {
+  height: 40,
+  justifyContent: "center",
+  marginTop: 15,
+  marginBottom: 5,
+},
+
+sliderTrack: {
+  position: "absolute",
+  left: 12,
+  right: 12,
+  height: 6,
+  borderRadius: 10,
+  backgroundColor: "#D9D9D9",
+},
+
+sliderActiveTrack: {
+  position: "absolute",
+  left: 12,
+  height: 6,
+  borderRadius: 10,
+  backgroundColor: "#F28C28",
+},
+
+sliderThumb: {
+  position: "absolute",
+  left: 0,
+  width: 24,
+  height: 24,
+  borderRadius: 12,
+  backgroundColor: "#F28C28",
+  borderWidth: 3,
+  borderColor: "#FFFFFF",
+  elevation: 3,
+  shadowColor: "#000",
+  shadowOpacity: 0.2,
+  shadowRadius: 3,
+  shadowOffset: { width: 0, height: 2 },
+},
 });
