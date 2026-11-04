@@ -20,6 +20,7 @@ import logo from "../assets/briconnect33.png";
 import fond from "../assets/convert_1.png";
 import budget from "../assets/icons/dollar.png";
 import msg from "../assets/icons/enveloppe.png";
+import map from "../assets/icons/map.png";
 import location from "../assets/icons/marker.png";
 import notifIcon from "../assets/icons/notif.png";
 import settings from "../assets/icons/settingss.png";
@@ -688,6 +689,7 @@ const visibleRequests = filteredRequests.slice(0, visibleCount);
   setRadiusKm(null);
   setDraftRadiusKm(25);
 }}
+style={{backgroundColor: "#F28C28", borderRadius: 8, paddingInline: 8, paddingBlock: 4 }}
       >
         <Text style={styles.radiusReset}>Toutes distances</Text>
       </TouchableOpacity>
@@ -834,7 +836,7 @@ const images = item.images ?? [];
 
             {item.distanceKm != null && (
   <View style={styles.badge}>
-    <Image source={location} style={styles.badgeIcon} />
+    <Image source={map} style={styles.badgeIcon} />
     <Text style={styles.badgeText}>
       {item.distanceKm.toFixed(1)} km
     </Text>
@@ -982,7 +984,7 @@ const images = item.images ?? [];
 const styles = StyleSheet.create({
   container: { paddingTop: 40, alignItems: "center", paddingBottom: 160},
   center: { flex: 1, justifyContent: "center", alignItems: "center" },
-  title: { fontSize: 24, fontFamily: "Montt", marginBottom: 15 },
+  title: { fontSize: 24, fontFamily: "Montt", marginBottom: 8 },
   avatar: { height: 90, width: 90, resizeMode: "cover", borderRadius: 45, borderWidth: 2, borderColor: "#fcfcfc" },
   profileButton: { padding: 5, borderRadius: 50, backgroundColor: "#999999", position: "absolute", bottom: 5, right: 8, borderColor: "#f5f5f5", borderWidth: 1 },
 header: {
@@ -1006,7 +1008,7 @@ header: {
     backgroundColor: "#f3f3f3"
 
   },
-  filterText: {fontFamily: "Mont"},
+  filterText: {fontFamily: "Montmed"},
   activeFilter: { backgroundColor: "#1a5b4f" },
 
   requestsContainer: { width: "100%", paddingHorizontal: 16, alignItems: "center" },
@@ -1240,11 +1242,13 @@ loadMoreButton: { width: "100%", alignItems: "center", marginTop: 8, marginBotto
 },
 radiusContainer: {
   backgroundColor: "#FFFFFF",
-  padding: 16,
+  padding: 12,
   borderRadius: 14,
   marginHorizontal: 16,
-  marginVertical: 12,
-  width: "96%"
+  marginVertical: 8,
+  width: "96%",
+  borderColor: "#1a5b4f84",
+  borderWidth: 1
 },
 
 radiusHeader: {
@@ -1276,11 +1280,12 @@ radiusLabels: {
 radiusLimit: {
   fontSize: 12,
   color: "#888",
+  fontFamily: "Mont"
 },
 
 radiusReset: {
   fontSize: 12,
-  color: "#F28C28",
+  color: "#fff",
   fontFamily: "Montt",
 },
 customSlider: {

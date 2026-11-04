@@ -333,7 +333,7 @@ export default function CreateRequestForm() {
       formData.append("description", description);
       formData.append("category", category);
       formData.append("location", location);
-      
+
       if (locationCoordinates) {
   formData.append(
     "locationCoordinates",
@@ -549,25 +549,22 @@ export default function CreateRequestForm() {
   setLocation(selected);
   setLocationQuery(selected);
 
-  if (item.centre?.coordinates) {
+  const parisCoordinates =
+    PARIS_ARRONDISSEMENT_COORDINATES[item.nom];
+
+  if (parisCoordinates) {
+    setLocationCoordinates(parisCoordinates);
+  } else if (item.centre?.coordinates) {
     const [longitude, latitude] = item.centre.coordinates;
 
-    const parisCoordinates =
-  PARIS_ARRONDISSEMENT_COORDINATES[item.nom];
-
-if (parisCoordinates) {
-  setLocationCoordinates(parisCoordinates);
-} else if (item.centre?.coordinates) {
-  const [longitude, latitude] = item.centre.coordinates;
-
-  setLocationCoordinates({
-    latitude,
-    longitude,
-  });
-} else {
-  setLocationCoordinates(null);
-}
+    setLocationCoordinates({
+      latitude,
+      longitude,
+    });
+  } else {
+    setLocationCoordinates(null);
   }
+
   setCities([]);
   setShowCityOverlay(false);
 }}

@@ -1088,14 +1088,14 @@ messageBubble:{
   borderTopRightRadius: 22,
   borderTopLeftRadius: 22,
   borderBottomLeftRadius: 22,
-  borderBottomRightRadius: 8,
+  borderBottomRightRadius: 4,
   padding: 14
 },
   otherMessage: {
   backgroundColor: "#eee",
   borderTopLeftRadius: 22,
   borderTopRightRadius: 22,
-  borderBottomLeftRadius: 8,
+  borderBottomLeftRadius: 4,
   borderBottomRightRadius: 22,
   padding: 14,
 },

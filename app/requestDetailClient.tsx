@@ -341,8 +341,8 @@ const offerExists = request.offers?.some((offer) => {
   >
             {conv.pro.profileImage?.url && <Image source={{ uri: conv.pro.profileImage.url }} style={styles.avatar} accessible={false} />}
             <View style={{ flex: 1 }}>
-              <Text style={{ fontFamily: "Londrinak", fontSize: 17 }}>{conv.pro?.name ?? "Professionnel"}</Text>
-              {conv.messages?.length > 0 && <Text numberOfLines={1} style={{fontFamily: "Kanit"}} accessible
+              <Text style={{ fontFamily: "Londrinak", fontSize: 17, color: "#fff" }}>{conv.pro?.name ?? "Professionnel"}</Text>
+              {conv.messages?.length > 0 && <Text numberOfLines={1} style={{fontFamily: "Kanit", color: "#fff"}} accessible
   accessibilityLabel={`Dernier message : ${conv.messages?.at(-1)?.content || "Aucun message"}`}>{conv.messages[conv.messages.length - 1].content}</Text>}
             </View>
            
@@ -400,12 +400,12 @@ paddingBottom: 140,
   height: 50,
   borderRadius: 25,
  },
-  conversationCard: { flexDirection: "row", alignItems: "center", gap: 10, padding: 12, borderWidth: 2, borderColor: "#1a5b4f", borderRadius: 35, marginTop: 10, backgroundColor: "#F3F3F3", width: "90%" },
+  conversationCard: { flexDirection: "row", alignItems: "center", gap: 10, paddingInline: 12, paddingBlock: 16, borderWidth: 2, borderColor: "#1a5b4f60", borderRadius: 30, borderBottomLeftRadius: 4, marginTop: 10, backgroundColor: "#2b927f", width: "90%" },
   unreadBadge: { backgroundColor: "red", borderRadius: 10, width: 20, height: 20, justifyContent: "center", alignItems: "center", marginLeft: 8 },
   unreadText: { color: "white", fontSize: 12, fontFamily: "Montt" },
   heroSubtitle: {
   color: "rgba(255,255,255,0.92)",
-  fontFamily: "Mont",
+  fontFamily: "Montmed",
   marginTop: 2,
   paddingInlineStart: 2
 },

@@ -12,7 +12,7 @@ export default function StackNavigator() {
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="Login" component={LoginScreen} />
       <Stack.Screen name="Register" component={RegisterScreen} />
-      <Stack.Screen name="Home" component={HomeScreen} />
+      <Stack.Screen name="Home" component={HomeScreen} options={{ gestureEnabled: false }} />
       <Stack.Screen name="Requests" component={RequestsScreen} />
       <Stack.Screen name="RequestDetail" component={RequestDetailScreen} />
     </Stack.Navigator>

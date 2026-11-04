@@ -560,7 +560,7 @@ paddingVertical:10,
 
 borderRadius:30,
 borderWidth: 1,
-    borderColor: "#3535351a",
+    borderColor: "#c47c461a",
 
 margin:3
   },
