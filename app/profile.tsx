@@ -1,7 +1,7 @@
 import BackButton from "@/components/BackButton";
 import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import {
   Animated,
   Image,
@@ -16,10 +16,34 @@ import {
 import MapView, { Marker } from "react-native-maps";
 import logo from "../assets/briconnect33.png";
 import fond from "../assets/convert_1.png";
+import { AuthContext } from "../context/AuthContext";
 import { useApi } from "../services/api";
 
 
+const calculateDistanceKm = (
+  point1: { latitude: number; longitude: number },
+  point2: { latitude: number; longitude: number }
+) => {
+  const toRad = (value: number) => (value * Math.PI) / 180;
 
+  const R = 6371;
+
+  const dLat = toRad(point2.latitude - point1.latitude);
+  const dLon = toRad(point2.longitude - point1.longitude);
+
+  const lat1 = toRad(point1.latitude);
+  const lat2 = toRad(point2.latitude);
+
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(lat1) *
+      Math.cos(lat2) *
+      Math.sin(dLon / 2) ** 2;
+
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+  return R * c;
+};
 
 const defaultAvatar =
   "https://res.cloudinary.com/dwjssp2pd/image/upload/v1773074497/default_pro.jpg";
@@ -28,6 +52,14 @@ export default function Profile() {
   const { apiFetch } = useApi();
   const params = useLocalSearchParams();
   const userId = params.id as string;
+
+  const authContext = useContext(AuthContext);
+const authUser = authContext?.user;
+
+const [clientCoords, setClientCoords] = useState<{
+  latitude: number;
+  longitude: number;
+} | null>(null);
 
   const [user, setUser] = useState<any>(null);
 
@@ -74,6 +106,50 @@ const openProfileImage = () => {
   setReviewImagesModal([{ url: profileImage }]);
   setSelectedImageIndex(0);
 };
+
+const [coords, setCoords] = useState<{
+  latitude: number;
+  longitude: number;
+} | null>(null);
+
+useEffect(() => {
+  const loadClientLocation = async () => {
+    if (!authUser?.userId || authUser.role !== "client") {
+      setClientCoords(null);
+      return;
+    }
+
+    try {
+      const client = await apiFetch(`/users/${authUser.userId}`);
+
+      const latitude = Number(client?.locationCoordinates?.latitude);
+      const longitude = Number(client?.locationCoordinates?.longitude);
+
+      if (
+        Number.isFinite(latitude) &&
+        Number.isFinite(longitude) &&
+        latitude >= -90 &&
+        latitude <= 90 &&
+        longitude >= -180 &&
+        longitude <= 180
+      ) {
+        setClientCoords({ latitude, longitude });
+      } else {
+        setClientCoords(null);
+      }
+    } catch (err) {
+      console.log("Erreur récupération localisation client :", err);
+      setClientCoords(null);
+    }
+  };
+
+  loadClientLocation();
+}, [authUser?.userId, authUser?.role]);
+
+const distanceKm =
+  clientCoords && coords
+    ? calculateDistanceKm(clientCoords, coords)
+    : null;
 
 const skillIcons = {
    Plomberie: require("../assets/icons/plomberie.png"),
@@ -151,10 +227,7 @@ const panResponder = React.useRef(
   return new Date(dateString).toLocaleDateString("fr-FR");
 };
 
-  const [coords, setCoords] = useState<{
-  latitude: number;
-  longitude: number;
-} | null>(null);
+  
 
 useEffect(() => {
   const geocode = async () => {
@@ -270,18 +343,8 @@ useEffect(() => {
     style={styles.avatar}
   />
 </Pressable>
-              <LinearGradient colors={["#1a5b4f", "#30a590"]} style={{width: "85%", alignItems: "center", paddingInline: 20, paddingTop: 54, paddingBottom: 24, borderRadius: 20, gap: 4, left: 25}}>
-        
-<View style={{alignItems: "center"}}>
-        <Text style={styles.name}>{user.name}</Text>
-
-         {user.location && (
-          <Text style={styles.location}>📍 {user.location}</Text>
-        )}
-
-        </View>
-
-        <View style={styles.badges}>
+              <LinearGradient colors={["#1a5b4f", "#30a590"]} style={{width: "85%", alignItems: "center", padding: 20, borderRadius: 20, gap: 4, left: 25, justifyContent: "space-between"}}>
+                <View style={styles.badges}>
   {user.proBadge && (
     <View style={styles.badge}>
       <Text style={styles.badgeText}>✔️ SIRET vérifié</Text>
@@ -299,7 +362,29 @@ useEffect(() => {
       <Text style={styles.badgeText}>🛡 Assuré</Text>
     </View>
   )}
+
+  {distanceKm !== null && (
+  <View style={styles.badgeLoc}>
+  <Text style={styles.badgeLocationText}>
+    📍 À {distanceKm < 10
+      ? distanceKm.toFixed(1).replace(".", ",")
+      : Math.round(distanceKm)} km de vous
+  </Text>
+  </View>
+)}
 </View>
+        
+<View style={{alignItems: "center"}}>
+        <Text style={styles.name}>{user.name}</Text>
+
+         {user.location && (
+          <Text style={styles.location}>📍 {user.location}</Text>
+        )}
+
+
+        </View>
+
+        
 
         {user.averageRating > 0 && (
           <Text style={styles.rating}>
@@ -594,19 +679,24 @@ margin:3
     borderWidth: 2
   },
   badges:{
-flexDirection:"row",
-marginTop:10,
-position:"absolute",
-right: 5,
-top: 1
+flexDirection:"column",
+alignSelf: "flex-end",
+gap: 2,
+marginBottom: 10
+
 },
 
 badge:{
 backgroundColor:"#cfe817",
-paddingHorizontal:10,
-paddingVertical:5,
-borderRadius:8,
-marginRight:6
+
+borderRadius:18,
+
+paddingInline: 8,
+   paddingBlock: 5,
+   alignItems: "center",
+   justifyContent: "center",
+   borderColor: "#ffffff3e",
+   borderWidth: 1
 },
 
 badgeText:{
@@ -712,5 +802,21 @@ imageCounter: {
   color: "#fff",
   fontSize: 16,
   fontFamily: "Mont",
-}
+},
+badgeLoc: {
+  borderRadius: 18,
+   backgroundColor: "#ffffff52",
+   paddingInline: 8,
+   paddingBlock: 5,
+   alignItems: "center",
+   justifyContent: "center",
+   borderColor: "#ffffff3e",
+   borderWidth: 1
+},
+ badgeLocationText: {
+    color: "#000000",
+    fontFamily: "Mont",
+    padding: 1,
+    fontSize: 12
+  },
 });
