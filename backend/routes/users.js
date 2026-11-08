@@ -392,6 +392,135 @@ if (req.body.locationCoordinates !== undefined) {
   }
 );
 
+// 🔹 GET /users/pros → liste des professionnels à proximité
+router.get("/pros", auth, async (req, res) => {
+  try {
+    // Réservé aux clients
+    if (req.user.role !== "client") {
+      return res.status(403).json({
+        error: "Accès réservé aux clients"
+      });
+    }
+
+    const client = await User.findById(req.user.id);
+
+    if (!client) {
+      return res.status(404).json({
+        error: "Client introuvable"
+      });
+    }
+
+    const { latitude, longitude } = client.locationCoordinates || {};
+
+    // Rayon : nombre entre 1 et 100, ou "all"
+    const radiusParam = req.query.radiusKm;
+    const allDistances = radiusParam === "all";
+
+    let radiusKm = null;
+
+    if (!allDistances) {
+      radiusKm = Number(radiusParam ?? 25);
+
+      if (
+        !Number.isFinite(radiusKm) ||
+        radiusKm < 1 ||
+        radiusKm > 100
+      ) {
+        return res.status(400).json({
+          error: "Le rayon doit être compris entre 1 et 100 km"
+        });
+      }
+    }
+
+    const hasClientCoordinates =
+      Number.isFinite(latitude) &&
+      Number.isFinite(longitude);
+
+    if (!allDistances && !hasClientCoordinates) {
+      return res.status(400).json({
+        error: "Les coordonnées de votre profil sont nécessaires pour filtrer par distance"
+      });
+    }
+
+    const pros = await User.find({ role: "pro" })
+      .select(
+        "name location locationCoordinates description skills equipment profileImage averageRating ratings proBadge insured verified portfolio"
+      )
+      .lean();
+
+    // Calcul de la distance entre deux coordonnées
+    const calculateDistance = (lat1, lon1, lat2, lon2) => {
+      const toRad = (value) => (value * Math.PI) / 180;
+
+      const R = 6371;
+
+      const dLat = toRad(lat2 - lat1);
+      const dLon = toRad(lon2 - lon1);
+
+      const a =
+        Math.sin(dLat / 2) ** 2 +
+        Math.cos(toRad(lat1)) *
+          Math.cos(toRad(lat2)) *
+          Math.sin(dLon / 2) ** 2;
+
+      return R * 2 * Math.atan2(
+        Math.sqrt(a),
+        Math.sqrt(1 - a)
+      );
+    };
+
+    const results = pros.map((pro) => {
+      const proLat = pro.locationCoordinates?.latitude;
+      const proLon = pro.locationCoordinates?.longitude;
+
+      const hasProCoordinates =
+        Number.isFinite(proLat) &&
+        Number.isFinite(proLon);
+
+      const distanceKm =
+        hasClientCoordinates && hasProCoordinates
+          ? calculateDistance(
+              latitude,
+              longitude,
+              proLat,
+              proLon
+            )
+          : null;
+
+      return {
+        ...pro,
+        distanceKm:
+          distanceKm !== null
+            ? Math.round(distanceKm * 10) / 10
+            : null
+      };
+    });
+
+    const filteredPros = allDistances
+      ? results
+      : results.filter(
+          (pro) =>
+            pro.distanceKm !== null &&
+            pro.distanceKm <= radiusKm
+        );
+
+    filteredPros.sort((a, b) => {
+      if (a.distanceKm === null) return 1;
+      if (b.distanceKm === null) return -1;
+      return a.distanceKm - b.distanceKm;
+    });
+
+    res.json(filteredPros);
+
+  } catch (err) {
+    console.error("Erreur récupération professionnels :", err);
+
+    res.status(500).json({
+      error: "Erreur serveur"
+    });
+  }
+});
+
 // 🔹 GET /users/:id → profil public d'un pro
 router.get("/:id", auth, async (req, res) => {
   try {

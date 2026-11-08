@@ -3,7 +3,7 @@ import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect, useRouter } from 'expo-router';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, Animated, Image, ImageBackground, RefreshControl, Share, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Animated, Image, ImageBackground, PanResponder, RefreshControl, Share, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import logo from "../assets/briconnect33.png";
 import fond from "../assets/convert_1.png";
 import msg from "../assets/icons/enveloppe.png";
@@ -45,6 +45,20 @@ type ProfileType = {
   location?: string;
   profileImage?: { url?: string };
   averageRating?: number;
+};
+
+type ProType = {
+  _id: string;
+  name: string;
+  location?: string;
+  profileImage?: { url?: string };
+  averageRating?: number;
+  description?: string;
+  skills?: string[];
+  proBadge?: boolean;
+  verified?: boolean;
+  insured?: boolean;
+  distanceKm: number | null;
 };
 
  type CoachAction = {
@@ -106,6 +120,84 @@ const [refreshing, setRefreshing] = useState(false);
     const [coach, setCoach] = useState<Coach | null>(null);
 const [firstName, setFirstName] = useState("");
 const [avatar, setAvatar] = useState("");
+
+const [pros, setPros] = useState<ProType[]>([]);
+const [prosLoading, setProsLoading] = useState(false);
+
+const [radiusKm, setRadiusKm] = useState<number | null>(25);
+const [draftRadiusKm, setDraftRadiusKm] = useState(25);
+
+const sliderWidthRef = useRef(0);
+const draftRadiusRef = useRef(25);
+const sliderStartValue = useRef(25);
+
+const updateDraftRadius = (value: number) => {
+  const newValue = Math.max(1, Math.min(100, Math.round(value)));
+  draftRadiusRef.current = newValue;
+  setDraftRadiusKm(newValue);
+};
+
+const fetchPros = useCallback(async () => {
+  setProsLoading(true);
+
+  try {
+    const endpoint =
+      radiusKm === null
+        ? "/users/pros?radiusKm=all"
+        : `/users/pros?radiusKm=${radiusKm}`;
+
+    const data = await apiFetch(endpoint);
+    setPros(Array.isArray(data) ? data : []);
+  } catch (err) {
+    console.log("Erreur récupération professionnels :", err);
+    setPros([]);
+  } finally {
+    setProsLoading(false);
+  }
+}, [radiusKm]);
+
+useFocusEffect(
+  useCallback(() => {
+    fetchPros();
+  }, [fetchPros])
+);
+
+const radiusPanResponder = useRef(
+  PanResponder.create({
+    onStartShouldSetPanResponder: () => true,
+    onMoveShouldSetPanResponder: () => true,
+
+    onPanResponderGrant: (event) => {
+      sliderStartValue.current = draftRadiusRef.current;
+
+      const width = sliderWidthRef.current;
+      if (!width) return;
+
+      const x = event.nativeEvent.locationX;
+      const value = 1 + (x / width) * 99;
+
+      updateDraftRadius(value);
+      sliderStartValue.current = draftRadiusRef.current;
+    },
+
+    onPanResponderMove: (_, gestureState) => {
+      const width = sliderWidthRef.current;
+      if (!width) return;
+
+      const delta = (gestureState.dx / width) * 99;
+
+      updateDraftRadius(sliderStartValue.current + delta);
+    },
+
+    onPanResponderRelease: () => {
+      setRadiusKm(draftRadiusRef.current);
+    },
+
+    onPanResponderTerminate: () => {
+      setRadiusKm(draftRadiusRef.current);
+    },
+  })
+).current;
     
 
 
@@ -356,6 +448,7 @@ setAvatar(data.user.avatar);
   const onRefresh = async () => {
   setRefreshing(true);
   await fetchRequests();
+  await fetchPros();
   setRefreshing(false);
 };
 
@@ -602,6 +695,172 @@ const firstUnreadRequest = requestsWithUnread[0];
     </LinearGradient>
   </Animated.View>
 </TouchableOpacity>
+
+<View style={styles.prosSection}>
+
+  <Text style={styles.prosTitle}>
+    Trouvez votre professionnel
+  </Text>
+
+  <Text style={styles.prosSubtitle}>
+    Découvrez les artisans autour de vous
+  </Text>
+
+  {/* FILTRE DE DISTANCE */}
+  <View style={styles.radiusContainer}>
+
+    <View style={styles.radiusHeader}>
+      <Text style={styles.radiusLabel}>
+        Rayon de recherche
+      </Text>
+
+      <Text style={styles.radiusValue}>
+        {radiusKm === null
+          ? "Toutes distances"
+          : `${draftRadiusKm} km`}
+      </Text>
+    </View>
+
+    <View
+      style={styles.sliderTouchArea}
+      onLayout={(event) => {
+        sliderWidthRef.current = event.nativeEvent.layout.width;
+      }}
+      {...radiusPanResponder.panHandlers}
+    >
+      <View style={styles.sliderTrack}>
+        <View
+          style={[
+            styles.sliderProgress,
+            {
+              width: `${((draftRadiusKm - 1) / 99) * 100}%`
+            }
+          ]}
+        />
+      </View>
+
+      <View
+        style={[
+          styles.sliderThumb,
+          {
+            left: `${((draftRadiusKm - 1) / 99) * 100}%`
+          }
+        ]}
+      />
+    </View>
+
+    <View style={styles.sliderLabels}>
+      <Text style={styles.sliderLabel}>1 km</Text>
+      <Text style={styles.sliderLabel}>100 km</Text>
+    </View>
+
+    <TouchableOpacity
+      style={[
+        styles.allDistancesButton,
+        radiusKm === null && styles.allDistancesButtonActive
+      ]}
+      onPress={() => setRadiusKm(null)}
+    >
+      <Text
+        style={[
+          styles.allDistancesText,
+          radiusKm === null && styles.allDistancesTextActive
+        ]}
+      >
+        Toutes distances
+      </Text>
+    </TouchableOpacity>
+
+  </View>
+
+  {/* LISTE DES PROFESSIONNELS */}
+  {prosLoading ? (
+    <ActivityIndicator
+      size="large"
+      color="#1a5b4f"
+      style={{ marginVertical: 25 }}
+    />
+  ) : pros.length === 0 ? (
+    <Text style={styles.noProsText}>
+      Aucun professionnel trouvé dans ce rayon.
+    </Text>
+  ) : (
+    <View style={styles.prosList}>
+
+      {pros.map((pro) => (
+        <TouchableOpacity
+          key={pro._id}
+          activeOpacity={0.85}
+          style={styles.proCard}
+          onPress={() =>
+            router.push({
+              pathname: "/profile",
+              params: { id: pro._id }
+            })
+          }
+        >
+
+          <Image
+            source={{
+              uri:
+                pro.profileImage?.url ||
+                "https://res.cloudinary.com/dwjssp2pd/image/upload/v1773074497/default_pro.jpg"
+            }}
+            style={styles.proAvatar}
+          />
+
+          <View style={styles.proInfo}>
+
+            <View style={styles.proNameRow}>
+              <Text style={styles.proName} numberOfLines={1}>
+                {pro.name}
+              </Text>
+
+              {pro.proBadge && (
+                <Text style={styles.proBadge}>
+                  ✔
+                </Text>
+              )}
+            </View>
+
+            {pro.location && (
+              <Text style={styles.proLocation} numberOfLines={1}>
+                📍 {pro.location}
+              </Text>
+            )}
+
+            {pro.averageRating !== undefined &&
+              pro.averageRating > 0 && (
+                <Text style={styles.proRating}>
+                  ⭐ {formatRating(pro.averageRating)}/5
+                </Text>
+              )}
+
+            {pro.skills && pro.skills.length > 0 && (
+              <Text style={styles.proSkills} numberOfLines={2}>
+                {pro.skills.slice(0, 3).join(" · ")}
+              </Text>
+            )}
+
+            {pro.distanceKm !== null && (
+              <Text style={styles.proDistance}>
+                À {pro.distanceKm < 10
+                  ? pro.distanceKm.toFixed(1).replace(".", ",")
+                  : Math.round(pro.distanceKm)} km de vous
+              </Text>
+            )}
+
+          </View>
+
+          <Text style={styles.proArrow}>›</Text>
+
+        </TouchableOpacity>
+      ))}
+
+    </View>
+  )}
+
+</View>
 
         <View style={styles.pickerWrapper}>
           <TouchableOpacity
@@ -1087,5 +1346,210 @@ button: {
         shadowOffset: { width: 0, height: 0,},
 
   elevation: 6,
+},
+prosTitle: {
+  fontFamily: "Montt",
+  fontSize: 20,
+  color: "#1a5b4f",
+  textAlign: "center",
+},
+
+prosSubtitle: {
+  fontFamily: "Mont",
+  fontSize: 12,
+  color: "#666",
+  textAlign: "center",
+  marginTop: 5,
+  marginBottom: 18,
+},
+
+radiusContainer: {
+  backgroundColor: "#f1f7f5",
+  padding: 14,
+  borderRadius: 16,
+  marginBottom: 18,
+},
+
+radiusHeader: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center",
+},
+
+radiusLabel: {
+  fontFamily: "Montt",
+  fontSize: 13,
+  color: "#333",
+},
+
+radiusValue: {
+  fontFamily: "Montt",
+  fontSize: 14,
+  color: "#1a5b4f",
+},
+
+sliderTouchArea: {
+  height: 35,
+  justifyContent: "center",
+  marginTop: 8,
+},
+
+sliderTrack: {
+  height: 7,
+  backgroundColor: "#cbd9d5",
+  borderRadius: 10,
+  overflow: "hidden",
+},
+
+sliderProgress: {
+  height: 7,
+  backgroundColor: "#1a5b4f",
+  borderRadius: 10,
+},
+
+sliderThumb: {
+  position: "absolute",
+  width: 21,
+  height: 21,
+  borderRadius: 11,
+  backgroundColor: "#ffffff",
+  borderWidth: 3,
+  borderColor: "#1a5b4f",
+  top: 7,
+  marginLeft: -10,
+  elevation: 3,
+},
+
+sliderLabels: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+},
+
+sliderLabel: {
+  fontFamily: "Mont",
+  fontSize: 11,
+  color: "#777",
+},
+
+allDistancesButton: {
+  alignSelf: "center",
+  marginTop: 14,
+  paddingHorizontal: 18,
+  paddingVertical: 9,
+  borderRadius: 20,
+  borderWidth: 1,
+  borderColor: "#1a5b4f",
+  backgroundColor: "#fff",
+},
+
+allDistancesButtonActive: {
+  backgroundColor: "#1a5b4f",
+},
+
+allDistancesText: {
+  fontFamily: "Montt",
+  color: "#1a5b4f",
+  fontSize: 12,
+},
+
+allDistancesTextActive: {
+  color: "#fff",
+},
+prosSection: {
+  width: "92%",
+  marginBottom: 25,
+  padding: 16,
+  borderRadius: 22,
+  backgroundColor: "#ffffffd9",
+  borderWidth: 1,
+  borderColor: "#1a5b4f",
+},
+
+prosList: {
+  gap: 12,
+},
+
+proCard: {
+  flexDirection: "row",
+  alignItems: "center",
+  backgroundColor: "#fff",
+  borderRadius: 16,
+  padding: 12,
+  borderWidth: 1,
+  borderColor: "#dce8e4",
+  elevation: 3,
+  shadowColor: "#000",
+  shadowOpacity: 0.12,
+  shadowRadius: 5,
+  shadowOffset: { width: 0, height: 2 },
+},
+
+proAvatar: {
+  width: 70,
+  height: 70,
+  borderRadius: 16,
+  borderWidth: 1,
+  borderColor: "#1a5b4f",
+},
+
+proInfo: {
+  flex: 1,
+  marginLeft: 12,
+  gap: 4,
+},
+
+proNameRow: {
+  flexDirection: "row",
+  alignItems: "center",
+  gap: 5,
+},
+
+proName: {
+  fontFamily: "Montt",
+  fontSize: 15,
+  color: "#1a5b4f",
+  flexShrink: 1,
+},
+
+proBadge: {
+  color: "#1a5b4f",
+  fontSize: 14,
+},
+
+proLocation: {
+  fontFamily: "Mont",
+  fontSize: 11,
+  color: "#666",
+},
+
+proRating: {
+  fontFamily: "Montt",
+  fontSize: 12,
+},
+
+proSkills: {
+  fontFamily: "Mont",
+  fontSize: 11,
+  color: "#555",
+},
+
+proDistance: {
+  fontFamily: "Montt",
+  fontSize: 11,
+  color: "#1a5b4f",
+},
+
+proArrow: {
+  fontSize: 30,
+  color: "#1a5b4f",
+  marginLeft: 5,
+},
+
+noProsText: {
+  fontFamily: "Mont",
+  fontSize: 13,
+  color: "#666",
+  textAlign: "center",
+  padding: 15,
 }
 });

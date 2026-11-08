@@ -3,6 +3,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import {
+  ActivityIndicator,
   Animated,
   Image,
   ImageBackground,
@@ -172,7 +173,10 @@ export default function RequestDetailClient() {
   return aPinned ? -1 : 1;
 });
 
-  if (loading) return <Text>Chargement...</Text>;
+  if (loading) return <View style={[styles.container, {marginTop: 300, gap: 10}]}>
+        <Image source={logo} style={{width: 160, height: 160}}/>
+        <ActivityIndicator color={"#1a5b4f"} />
+      </View>;
   if (!request) return <Text>Demande introuvable</Text>;
 
   return (

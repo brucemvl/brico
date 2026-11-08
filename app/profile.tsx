@@ -16,6 +16,7 @@ import {
 import MapView, { Marker } from "react-native-maps";
 import logo from "../assets/briconnect33.png";
 import fond from "../assets/convert_1.png";
+import distance from "../assets/icons/distance.png";
 import { AuthContext } from "../context/AuthContext";
 import { useApi } from "../services/api";
 
@@ -343,7 +344,7 @@ useEffect(() => {
     style={styles.avatar}
   />
 </Pressable>
-              <LinearGradient colors={["#1a5b4f", "#30a590"]} style={{width: "85%", alignItems: "center", padding: 20, borderRadius: 20, gap: 4, left: 25, justifyContent: "space-between"}}>
+              <LinearGradient colors={["#1a5b4f", "#30a590"]} style={{width: "85%", alignItems: "center", paddingBlock: 16, paddingInline: 10, borderRadius: 20, gap: 4, left: 25, justifyContent: "space-between"}}>
                 <View style={styles.badges}>
   {user.proBadge && (
     <View style={styles.badge}>
@@ -365,8 +366,9 @@ useEffect(() => {
 
   {distanceKm !== null && (
   <View style={styles.badgeLoc}>
+    <Image source={distance} />
   <Text style={styles.badgeLocationText}>
-    📍 À {distanceKm < 10
+    À {distanceKm < 10
       ? distanceKm.toFixed(1).replace(".", ",")
       : Math.round(distanceKm)} km de vous
   </Text>
@@ -811,12 +813,15 @@ badgeLoc: {
    alignItems: "center",
    justifyContent: "center",
    borderColor: "#ffffff3e",
-   borderWidth: 1
+   borderWidth: 1,
+       flexDirection: "row",
+       gap: 4
+
 },
  badgeLocationText: {
     color: "#000000",
-    fontFamily: "Mont",
+    fontFamily: "Montmed",
     padding: 1,
-    fontSize: 12
+    fontSize: 12,
   },
 });
