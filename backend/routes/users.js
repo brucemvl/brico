@@ -442,7 +442,21 @@ router.get("/pros", auth, async (req, res) => {
       });
     }
 
-    const pros = await User.find({ role: "pro" })
+    const { skill, proBadge } = req.query;
+
+const proQuery = {
+  role: "pro"
+};
+
+if (skill) {
+  proQuery.skills = skill;
+}
+
+if (proBadge === "true") {
+  proQuery.proBadge = true;
+}
+
+const pros = await User.find(proQuery)
       .select(
         "name location locationCoordinates description skills equipment profileImage averageRating ratings proBadge insured verified portfolio"
       )

@@ -3,7 +3,7 @@ import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect, useRouter } from 'expo-router';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, Animated, Image, ImageBackground, PanResponder, RefreshControl, Share, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Animated, Image, ImageBackground, PanResponder, RefreshControl, ScrollView, Share, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import logo from "../assets/briconnect33.png";
 import fond from "../assets/convert_1.png";
 import msg from "../assets/icons/enveloppe.png";
@@ -785,7 +785,7 @@ const firstUnreadRequest = requestsWithUnread[0];
       Aucun professionnel trouvé dans ce rayon.
     </Text>
   ) : (
-    <View style={styles.prosList}>
+    <ScrollView contentContainerStyle={styles.prosList} horizontal>
 
       {pros.map((pro) => (
         <TouchableOpacity
@@ -821,20 +821,16 @@ const firstUnreadRequest = requestsWithUnread[0];
                   ✔
                 </Text>
               )}
+              
             </View>
 
             {pro.location && (
               <Text style={styles.proLocation} numberOfLines={1}>
-                📍 {pro.location}
+              📍 {pro.location}
               </Text>
             )}
 
-            {pro.averageRating !== undefined &&
-              pro.averageRating > 0 && (
-                <Text style={styles.proRating}>
-                  ⭐ {formatRating(pro.averageRating)}/5
-                </Text>
-              )}
+            
 
             {pro.skills && pro.skills.length > 0 && (
               <Text style={styles.proSkills} numberOfLines={2}>
@@ -852,12 +848,17 @@ const firstUnreadRequest = requestsWithUnread[0];
 
           </View>
 
-          <Text style={styles.proArrow}>›</Text>
+          {pro.averageRating !== undefined &&
+              pro.averageRating > 0 && (
+                <Text style={styles.proRating}>
+                  ⭐ {formatRating(pro.averageRating)}/5
+                </Text>
+              )}
 
         </TouchableOpacity>
       ))}
 
-    </View>
+    </ScrollView>
   )}
 
 </View>
@@ -1467,14 +1468,14 @@ prosSection: {
 
 prosList: {
   gap: 12,
+  paddingBlock: 10
 },
 
 proCard: {
-  flexDirection: "row",
-  alignItems: "center",
+  flexDirection: "column",
   backgroundColor: "#fff",
   borderRadius: 16,
-  padding: 12,
+  padding: 10,
   borderWidth: 1,
   borderColor: "#dce8e4",
   elevation: 3,
@@ -1482,19 +1483,21 @@ proCard: {
   shadowOpacity: 0.12,
   shadowRadius: 5,
   shadowOffset: { width: 0, height: 2 },
+  width: 170
 },
 
 proAvatar: {
-  width: 70,
-  height: 70,
+  width: "100%",
+  height: 110,
   borderRadius: 16,
   borderWidth: 1,
   borderColor: "#1a5b4f",
+  objectFit: "cover"
 },
 
 proInfo: {
   flex: 1,
-  marginLeft: 12,
+  marginLeft: 8,
   gap: 4,
 },
 
@@ -1502,6 +1505,7 @@ proNameRow: {
   flexDirection: "row",
   alignItems: "center",
   gap: 5,
+  marginTop: 5
 },
 
 proName: {

@@ -366,7 +366,7 @@ useEffect(() => {
 
   {distanceKm !== null && (
   <View style={styles.badgeLoc}>
-    <Image source={distance} />
+    <Image source={distance} style={{height: 20, width: 20}} />
   <Text style={styles.badgeLocationText}>
     À {distanceKm < 10
       ? distanceKm.toFixed(1).replace(".", ",")
@@ -683,7 +683,7 @@ margin:3
   badges:{
 flexDirection:"column",
 alignSelf: "flex-end",
-gap: 2,
+gap: 4,
 marginBottom: 10
 
 },
@@ -702,7 +702,7 @@ paddingInline: 8,
 },
 
 badgeText:{
-fontSize:11,
+fontSize:10,
 fontFamily: "Montt",
 padding: 1
 },
@@ -822,6 +822,6 @@ badgeLoc: {
     color: "#000000",
     fontFamily: "Montmed",
     padding: 1,
-    fontSize: 12,
+    fontSize: 10,
   },
 });
