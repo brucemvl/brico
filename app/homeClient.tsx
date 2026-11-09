@@ -131,6 +131,20 @@ const sliderWidthRef = useRef(0);
 const draftRadiusRef = useRef(25);
 const sliderStartValue = useRef(25);
 
+const [selectedSkill, setSelectedSkill] = useState<string | null>(null);
+const [proBadgeOnly, setProBadgeOnly] = useState(false);
+
+const skillsList = [
+  "Plomberie",
+  "Electricité",
+  "Peinture",
+  "Carrelage",
+  "Agencement",
+  "Jardinage",
+  "Divers",
+  "Demenagement"
+];
+
 const updateDraftRadius = (value: number) => {
   const newValue = Math.max(1, Math.min(100, Math.round(value)));
   draftRadiusRef.current = newValue;
@@ -141,20 +155,34 @@ const fetchPros = useCallback(async () => {
   setProsLoading(true);
 
   try {
-    const endpoint =
-      radiusKm === null
-        ? "/users/pros?radiusKm=all"
-        : `/users/pros?radiusKm=${radiusKm}`;
+    const params = new URLSearchParams();
 
-    const data = await apiFetch(endpoint);
+    params.append(
+      "radiusKm",
+      radiusKm === null ? "all" : String(radiusKm)
+    );
+
+    if (selectedSkill) {
+      params.append("skill", selectedSkill);
+    }
+
+    if (proBadgeOnly) {
+      params.append("proBadge", "true");
+    }
+
+    const data = await apiFetch(
+      `/users/pros?${params.toString()}`
+    );
+
     setPros(Array.isArray(data) ? data : []);
+
   } catch (err) {
     console.log("Erreur récupération professionnels :", err);
     setPros([]);
   } finally {
     setProsLoading(false);
   }
-}, [radiusKm]);
+}, [radiusKm, selectedSkill, proBadgeOnly]);
 
 useFocusEffect(
   useCallback(() => {
@@ -773,6 +801,89 @@ const firstUnreadRequest = requestsWithUnread[0];
 
   </View>
 
+  {/* FILTRE COMPÉTENCES */}
+<View style={styles.extraFilters}>
+
+  <Text style={styles.filterTitle}>
+    Quel professionnel recherchez-vous ?
+  </Text>
+
+  <View style={styles.skillsFilters}>
+    {skillsList.map((skill) => {
+      const active = selectedSkill === skill;
+
+      return (
+        <TouchableOpacity
+          key={skill}
+          onPress={() =>
+            setSelectedSkill(active ? null : skill)
+          }
+          style={[
+            styles.skillFilter,
+            active && styles.skillFilterActive
+          ]}
+        >
+          <Text
+            style={[
+              styles.skillFilterText,
+              active && styles.skillFilterTextActive
+            ]}
+          >
+            {skill}
+          </Text>
+        </TouchableOpacity>
+      );
+    })}
+  </View>
+
+  {/* FILTRE BADGE SIRET */}
+  <TouchableOpacity
+    style={[
+      styles.badgeFilter,
+      proBadgeOnly && styles.badgeFilterActive
+    ]}
+    onPress={() => setProBadgeOnly((previous) => !previous)}
+  >
+    <Text style={styles.badgeFilterIcon}>✔️</Text>
+
+    <Text
+      style={[
+        styles.badgeFilterText,
+        proBadgeOnly && styles.badgeFilterTextActive
+      ]}
+    >
+      Professionnels avec badge SIRET uniquement
+    </Text>
+
+    <View
+      style={[
+        styles.filterCheckbox,
+        proBadgeOnly && styles.filterCheckboxActive
+      ]}
+    >
+      {proBadgeOnly && (
+        <Text style={styles.filterCheck}>✓</Text>
+      )}
+    </View>
+  </TouchableOpacity>
+
+  {/* RÉINITIALISER */}
+  {(selectedSkill !== null || proBadgeOnly) && (
+    <TouchableOpacity
+      onPress={() => {
+        setSelectedSkill(null);
+        setProBadgeOnly(false);
+      }}
+      style={styles.resetFilters}
+    >
+      <Text style={styles.resetFiltersText}>
+        Réinitialiser les filtres
+      </Text>
+    </TouchableOpacity>
+  )}
+
+</View>
+
   {/* LISTE DES PROFESSIONNELS */}
   {prosLoading ? (
     <ActivityIndicator
@@ -817,9 +928,9 @@ const firstUnreadRequest = requestsWithUnread[0];
               </Text>
 
               {pro.proBadge && (
-                <Text style={styles.proBadge}>
-                  ✔
-                </Text>
+                <View style={{backgroundColor: "#e7da1e", borderRadius: 60, padding: 4, height: 32, width: 32, alignItems: "center", justifyContent: "center"}}>
+                <Text style={styles.proBadge}>PRO</Text>
+                </View>
               )}
               
             </View>
@@ -1457,9 +1568,9 @@ allDistancesTextActive: {
   color: "#fff",
 },
 prosSection: {
-  width: "92%",
+  width: "94%",
   marginBottom: 25,
-  padding: 16,
+  padding: 12,
   borderRadius: 22,
   backgroundColor: "#ffffffd9",
   borderWidth: 1,
@@ -1473,7 +1584,7 @@ prosList: {
 
 proCard: {
   flexDirection: "column",
-  backgroundColor: "#fff",
+  backgroundColor: "#ffffff",
   borderRadius: 16,
   padding: 10,
   borderWidth: 1,
@@ -1517,7 +1628,8 @@ proName: {
 
 proBadge: {
   color: "#1a5b4f",
-  fontSize: 14,
+  fontSize: 11,
+  fontFamily: "Kanitt"
 },
 
 proLocation: {
@@ -1555,5 +1667,110 @@ noProsText: {
   color: "#666",
   textAlign: "center",
   padding: 15,
+},
+extraFilters: {
+  marginBottom: 18,
+},
+
+filterTitle: {
+  fontFamily: "Montt",
+  fontSize: 14,
+  color: "#1a5b4f",
+  marginBottom: 10,
+},
+
+skillsFilters: {
+  flexDirection: "row",
+  flexWrap: "wrap",
+  gap: 8,
+  alignItems: "center",
+  justifyContent: "center"
+},
+
+skillFilter: {
+  paddingHorizontal: 12,
+  paddingVertical: 9,
+  borderRadius: 20,
+  borderWidth: 1,
+  borderColor: "#1a5b4f",
+  backgroundColor: "#fff",
+},
+
+skillFilterActive: {
+  backgroundColor: "#1a5b4f",
+},
+
+skillFilterText: {
+  fontFamily: "Montmed",
+  fontSize: 12,
+  color: "#1a5b4f",
+},
+
+skillFilterTextActive: {
+  color: "#fff",
+},
+
+badgeFilter: {
+  flexDirection: "row",
+  alignItems: "center",
+  padding: 12,
+  borderRadius: 14,
+  borderWidth: 1,
+  borderColor: "#cbd9d5",
+  marginTop: 15,
+  backgroundColor: "#fff",
+  gap: 8,
+},
+
+badgeFilterActive: {
+  backgroundColor: "#e4f3ed",
+  borderColor: "#1a5b4f",
+},
+
+badgeFilterIcon: {
+  fontSize: 16,
+},
+
+badgeFilterText: {
+  flex: 1,
+  fontFamily: "Montmed",
+  fontSize: 12,
+  color: "#333",
+},
+
+badgeFilterTextActive: {
+  color: "#1a5b4f",
+},
+
+filterCheckbox: {
+  width: 21,
+  height: 21,
+  borderRadius: 5,
+  borderWidth: 1,
+  borderColor: "#1a5b4f",
+  alignItems: "center",
+  justifyContent: "center",
+},
+
+filterCheckboxActive: {
+  backgroundColor: "#1a5b4f",
+},
+
+filterCheck: {
+  color: "#fff",
+  fontSize: 14,
+  fontWeight: "bold",
+},
+
+resetFilters: {
+  alignSelf: "flex-end",
+  marginTop: 10,
+},
+
+resetFiltersText: {
+  fontFamily: "Montmed",
+  fontSize: 12,
+  color: "#a34d35",
+  textDecorationLine: "underline",
 }
 });
