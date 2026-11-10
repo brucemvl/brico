@@ -208,9 +208,11 @@ const reviewScale = useRef(new RNAnimated.Value(1)).current;
   }, [conversation?._id]);
 
   // Récupérer les coordonnées automatiquement après accord
-  const dealAccepted =
-    (conversation?.dealProposedByPro && conversation?.dealAcceptedByClient) ||
-    (conversation?.dealProposedByClient && conversation?.dealAcceptedByPro);
+  const isProViewing = conversation?.pro?._id === currentUserId;
+
+const dealAccepted =
+  (conversation?.dealProposedByPro && conversation?.dealAcceptedByClient) ||
+  (conversation?.dealProposedByClient && conversation?.dealAcceptedByPro);
 
   useEffect(() => {
     if (dealAccepted && conversation?._id) {
@@ -593,6 +595,18 @@ const sendImages = async () => {
   if (!conversation) return <Text>Conversation introuvable</Text>;
 
 
+const dealProposedByMe = isProViewing
+  ? conversation?.dealProposedByPro
+  : conversation?.dealProposedByClient;
+
+const dealProposedByOther = isProViewing
+  ? conversation?.dealProposedByClient
+  : conversation?.dealProposedByPro;
+
+const displayedUser = isProViewing
+  ? conversation.client
+  : conversation.pro;
+
   const getProId = (pro: string | { _id: string } | undefined) => {
     if (!pro) return "";
     return typeof pro === "string" ? pro : pro._id;
@@ -634,7 +648,9 @@ const missionCompleted = clientHasReviewed;
         <ScrollView style={{ flexGrow: 1, paddingInline: 12 }} contentContainerStyle={{ paddingBottom: 40, paddingTop: 100 }}>
           <View style={styles.actions}>
 
-            {!clientProposed && !proProposed && !dealAccepted && (
+            {!conversation?.dealProposedByClient &&
+  !conversation?.dealProposedByPro &&
+  !dealAccepted && (
                <View style={styles.glowButtonWrapper}>
               
                 {/* Halo lumineux qui tourne */}
@@ -703,7 +719,7 @@ const missionCompleted = clientHasReviewed;
               </View>
             )}
 
-            {proProposed && !dealAccepted && (
+            {dealProposedByOther && !dealAccepted && (
               <TouchableOpacity style={styles.button}
                onPress={acceptDeal}
                accessible
@@ -736,7 +752,7 @@ const missionCompleted = clientHasReviewed;
           </View>
 
           {/* STATUT ACCORD */}
-          {!dealAccepted && <Text style={styles.dealStatus}>Accord non validé — coordonnées bloquées</Text>}
+          {dealProposedByMe && !dealAccepted  && <Text style={styles.dealStatus}>Accord non validé — coordonnées bloquées</Text>}
           {dealAccepted && <Text style={styles.dealAccepted}>Accord validé 🤝</Text>}
 
           {/* COORDONNÉES */}
@@ -867,33 +883,69 @@ const missionCompleted = clientHasReviewed;
           </Modal>
 
 
-          <View style={{ flexDirection: "row", alignItems: "center", paddingBlock: 10, paddingInline: 10, justifyContent: "space-between" }}>
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <Image
-                source={{ uri: conversation.pro?.profileImage?.url }}
-                style={{ width: 50, height: 50, borderRadius: 25, marginRight: 10 }}
-              />
-              <Text style={{ fontSize: 17.5, fontFamily: "Montt", color: "#1a5b4f" }}>{conversation.pro?.name.length > 17 ? conversation.pro?.name.slice(0,16) + "..." : conversation.pro?.name}</Text>
-            </View>
-            <View style={{ alignItems: "center", justifyContent: "center", marginTop: 20 }}>
-              <TouchableWithoutFeedback
-                accessible
-                accessibilityRole="button"
-                accessibilityLabel="Profil"
-                accessibilityHint={`Voir le profil de ${conversation?.pro?.name}`}
-                onPress={openProfile}
-                onPressIn={onPressIn}
-                onPressOut={onPressOut}
+          <View style={{
+  flexDirection: "row",
+  alignItems: "center",
+  paddingBlock: 10,
+  paddingInline: 10,
+  justifyContent: "space-between"
+}}>
+  <View style={{ flexDirection: "row", alignItems: "center" }}>
+    {displayedUser?.profileImage?.url && (
+      <Image
+        source={{ uri: displayedUser.profileImage.url }}
+        style={{
+          width: 50,
+          height: 50,
+          borderRadius: 25,
+          marginRight: 10
+        }}
+      />
+    )}
 
-              >
-                <RNAnimated.View style={{ transform: [{ scale: scaleAnim }], alignItems: "center", justifyContent: "center" }}>
-                  <LinearGradient colors={["#30a590", "#1a5b4f"]} style={{ padding: 12, marginBottom: 20, backgroundColor: "#1a5b4f", borderRadius: 18 }}>
-                    <Text style={styles.buttonText}>Voir profil</Text>
-                  </LinearGradient>
-                </RNAnimated.View>
-              </TouchableWithoutFeedback>
-            </View>
-          </View>
+    <Text style={{
+      fontSize: 17.5,
+      fontFamily: "Montt",
+      color: "#1a5b4f"
+    }}>
+      {displayedUser?.name || "Utilisateur"}
+    </Text>
+  </View>
+
+  {!isProViewing && (
+    <View style={{
+      alignItems: "center",
+      justifyContent: "center",
+      marginTop: 20
+    }}>
+      <TouchableWithoutFeedback
+        accessible
+        accessibilityRole="button"
+        accessibilityLabel={`Voir le profil de ${displayedUser?.name}`}
+        onPress={openProfile}
+        onPressIn={onPressIn}
+        onPressOut={onPressOut}
+      >
+        <RNAnimated.View style={{
+          transform: [{ scale: scaleAnim }],
+          alignItems: "center",
+          justifyContent: "center"
+        }}>
+          <LinearGradient
+            colors={["#30a590", "#1a5b4f"]}
+            style={{
+              padding: 12,
+              marginBottom: 20,
+              borderRadius: 18
+            }}
+          >
+            <Text style={styles.buttonText}>Voir profil</Text>
+          </LinearGradient>
+        </RNAnimated.View>
+      </TouchableWithoutFeedback>
+    </View>
+  )}
+</View>
 
           {/* MESSAGES */}
           {conversation.messages.length > 0 &&

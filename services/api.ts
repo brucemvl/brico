@@ -27,7 +27,7 @@ const router = useRouter()
   }
 
     try {
-      const res = await fetch(API_BASE_URL, {
+      const res = await fetch(`https://brico-8fih.onrender.com/api${url}`, {
         
         ...options,
         headers: {

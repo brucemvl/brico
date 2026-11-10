@@ -19,7 +19,7 @@ type UserType = {
   _id: string;
   name?: string;
   profileImage?: { url?: string } | string;
-};
+} | null;
 
 type ConversationType = {
   _id: string;
@@ -153,12 +153,14 @@ export default function MessagesPro() {
   };
 
   const getProfileImage = (user: UserType) => {
-    if (typeof user.profileImage === "string") {
-      return user.profileImage;
-    }
+  if (!user?.profileImage) return null;
 
-    return user.profileImage?.url;
-  };
+  if (typeof user.profileImage === "string") {
+    return user.profileImage;
+  }
+
+  return user.profileImage.url || null;
+};
 
   const openConversation = (conversation: ConversationType) => {
     const request = getRequest(conversation);
@@ -263,9 +265,15 @@ export default function MessagesPro() {
                     </Text>
                   </View>
 
-                  <Text style={styles.context} numberOfLines={1}>
-                    {request?.title || "Conversation directe"}
-                  </Text>
+                  <Text
+  style={[
+    styles.context,
+    request ? styles.requestContext : styles.directContext,
+  ]}
+  numberOfLines={1}
+>
+  {request?.title || "Conversation directe"}
+</Text>
 
                   <Text
                     style={[
@@ -411,4 +419,11 @@ const styles = StyleSheet.create({
     marginTop: 8,
     lineHeight: 20,
   },
+  requestContext: {
+  color: "#3db64b", // Bleu pour les demandes
+},
+
+directContext: {
+  color: "#4b66e1", // Orange pour les conversations directes
+},
 });

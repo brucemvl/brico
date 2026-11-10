@@ -19,6 +19,7 @@ import {
 import logo from "../assets/briconnect33.png";
 import fond from "../assets/convert_1.png";
 import budget from "../assets/icons/dollar.png";
+import enveloppe from "../assets/icons/envelope.png";
 import msg from "../assets/icons/enveloppe.png";
 import map from "../assets/icons/map.png";
 import location from "../assets/icons/marker.png";
@@ -552,6 +553,7 @@ const visibleRequests = filteredRequests.slice(0, visibleCount);
   style={styles.button}>
     <Image source={share} style={{ height: 24, width: 24 }} />
   </TouchableOpacity>
+
   <TouchableOpacity onPress={() => router.push({ pathname: "/settings" })}
     accessible
   accessibilityRole="button"
@@ -560,6 +562,24 @@ const visibleRequests = filteredRequests.slice(0, visibleCount);
   style={styles.button}>
     <Image source={settings} style={{ height: 24, width: 24 }} />
   </TouchableOpacity>
+
+  <TouchableOpacity onPress={() => router.push({ pathname: "/messagesPro" })}
+    accessible
+  accessibilityRole="button"
+  accessibilityLabel="Messages"
+  accessibilityHint={`Accéder aux messages`}
+  style={styles.button}>
+    <Image source={enveloppe} style={{ height: 24, width: 24 }} />
+  </TouchableOpacity>
+
+  {unreadConversationsCount > 0 && (
+    <View style={styles.inboxBadge}>
+      <Text style={styles.inboxBadgeText}>
+        {unreadConversationsCount}
+      </Text>
+    </View>
+  )}
+
 </Animated.View>
 <Animated.ScrollView
   contentContainerStyle={styles.container}
@@ -617,13 +637,7 @@ const visibleRequests = filteredRequests.slice(0, visibleCount);
     </Text>
   </View>
 
-  {unreadConversationsCount > 0 && (
-    <View style={styles.inboxBadge}>
-      <Text style={styles.inboxBadgeText}>
-        {unreadConversationsCount}
-      </Text>
-    </View>
-  )}
+  
 
   <Text style={styles.inboxArrow}>→</Text>
 </TouchableOpacity>
@@ -1405,11 +1419,14 @@ inboxSubtitle: {
 inboxBadge: {
   backgroundColor: "red",
   borderRadius: 15,
-  minWidth: 25,
-  height: 25,
+  minWidth: 20,
+  height: 20,
   alignItems: "center",
   justifyContent: "center",
   paddingHorizontal: 6,
+  position: "absolute",
+  right: 20,
+  top: 24
 },
 
 inboxBadgeText: {
