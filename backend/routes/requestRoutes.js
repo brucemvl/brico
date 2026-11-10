@@ -128,8 +128,8 @@ const formatted = requests.map((r) => {
 
   // Toutes les conversations liées à cette demande
   const convs = conversations.filter(
-    (c) => c.request.toString() === requestId
-  );
+  (c) => c.request?.toString() === requestId
+);
 
   // Messages non lus envoyés par les professionnels
   const unreadMessages = convs.reduce((total, conv) => {
@@ -349,7 +349,9 @@ if (
     const conversationsByRequest = new Map();
 
     for (const conv of conversations) {
-      const requestId = conv.request.toString();
+      if (!conv.request) continue;
+
+const requestId = conv.request.toString();
 
       if (!conversationsByRequest.has(requestId)) {
         conversationsByRequest.set(requestId, []);

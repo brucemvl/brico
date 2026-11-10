@@ -117,6 +117,7 @@ const [pickerOpen, setPickerOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
+  const [conversations, setConversations] = useState<any[]>([]);
 
   const [radiusKm, setRadiusKm] = useState<number | null>(null);
 const [draftRadiusKm, setDraftRadiusKm] = useState(25);
@@ -206,6 +207,7 @@ const sliderPanResponder = useRef(
     }
   };
 
+
   const scrollY = new Animated.Value(0);
 
   const headerOpacity = scrollY.interpolate({
@@ -237,6 +239,16 @@ const scale = scrollY.interpolate({
   outputRange: [1, 0.90],
   extrapolate: "clamp",
 });
+
+
+const fetchConversations = async () => {
+  try {
+    const data = await apiFetch("/conversations");
+    setConversations(Array.isArray(data) ? data : []);
+  } catch (err) {
+    console.error("Erreur chargement conversations pro :", err);
+  }
+};
 
 const updateBadge = async () => {
   const res = await apiFetch("/notifications/unread-count");
@@ -371,8 +383,25 @@ console.log(finish.length)
   useFocusEffect(
     useCallback(() => {
       fetchRequests();
+      fetchConversations();
     }, [])
   );
+
+
+  const unreadConversationsCount = conversations.reduce(
+  (total, conv) => {
+    const unread = conv.messages?.filter(
+      (message: any) =>
+        !message.readBy?.some(
+          (id: any) => id.toString() === profile?._id
+        ) &&
+        message.from?._id?.toString() !== profile?._id
+    ).length ?? 0;
+
+    return total + unread;
+  },
+  0
+);
 
   const onRefresh = async () => {
   setRefreshing(true);
@@ -576,6 +605,28 @@ const visibleRequests = filteredRequests.slice(0, visibleCount);
         }}
     />
 )}
+
+<TouchableOpacity
+  style={styles.inboxButton}
+  onPress={() => router.push("/messagesPro")}
+>
+  <View>
+    <Text style={styles.inboxTitle}>Mes messages</Text>
+    <Text style={styles.inboxSubtitle}>
+      Retrouvez vos conversations avec les clients
+    </Text>
+  </View>
+
+  {unreadConversationsCount > 0 && (
+    <View style={styles.inboxBadge}>
+      <Text style={styles.inboxBadgeText}>
+        {unreadConversationsCount}
+      </Text>
+    </View>
+  )}
+
+  <Text style={styles.inboxArrow}>→</Text>
+</TouchableOpacity>
 
 </Animated.View>
 
@@ -1326,5 +1377,49 @@ sliderThumb: {
   shadowOpacity: 0.2,
   shadowRadius: 3,
   shadowOffset: { width: 0, height: 2 },
+},
+inboxButton: {
+  width: "94%",
+  backgroundColor: "#1a5b4f",
+  borderRadius: 18,
+  padding: 16,
+  marginBottom: 20,
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "space-between",
+},
+
+inboxTitle: {
+  color: "#fff",
+  fontFamily: "Montt",
+  fontSize: 17,
+},
+
+inboxSubtitle: {
+  color: "#e0efeb",
+  fontFamily: "Mont",
+  fontSize: 11,
+  marginTop: 4,
+},
+
+inboxBadge: {
+  backgroundColor: "red",
+  borderRadius: 15,
+  minWidth: 25,
+  height: 25,
+  alignItems: "center",
+  justifyContent: "center",
+  paddingHorizontal: 6,
+},
+
+inboxBadgeText: {
+  color: "#fff",
+  fontFamily: "Montt",
+},
+
+inboxArrow: {
+  color: "#fff",
+  fontSize: 25,
+  fontFamily: "Montt",
 },
 });

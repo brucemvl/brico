@@ -1585,7 +1585,7 @@ prosList: {
 proCard: {
   flexDirection: "column",
   backgroundColor: "#ffffff",
-  borderRadius: 16,
+  borderRadius: 18,
   padding: 10,
   borderWidth: 1,
   borderColor: "#dce8e4",
@@ -1602,7 +1602,7 @@ proAvatar: {
   height: 110,
   borderRadius: 16,
   borderWidth: 1,
-  borderColor: "#1a5b4f",
+  borderColor: "#1a5b4f47",
   objectFit: "cover"
 },
 
@@ -1620,7 +1620,7 @@ proNameRow: {
 },
 
 proName: {
-  fontFamily: "Montt",
+  fontFamily: "Londrinak",
   fontSize: 15,
   color: "#1a5b4f",
   flexShrink: 1,
@@ -1633,7 +1633,7 @@ proBadge: {
 },
 
 proLocation: {
-  fontFamily: "Mont",
+  fontFamily: "Montmed",
   fontSize: 11,
   color: "#666",
 },
@@ -1708,6 +1708,7 @@ skillFilterText: {
 
 skillFilterTextActive: {
   color: "#fff",
+  fontFamily: "Montt"
 },
 
 badgeFilter: {

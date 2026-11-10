@@ -11,7 +11,7 @@ const router = useRouter()
   const token = user?.token ?? null;
   const API_BASE_URL = "http://192.168.1.11:5000/api";
   const MAMAN = "http://192.168.1.74:5000/api";
-
+ // const RENDER = `https://brico-8fih.onrender.com/api${url}`
 
 
   const apiFetch = async (url: string, options: RequestInit = {}) => {
@@ -27,7 +27,7 @@ const router = useRouter()
   }
 
     try {
-      const res = await fetch(`https://brico-8fih.onrender.com/api${url}`, {
+      const res = await fetch(API_BASE_URL, {
         
         ...options,
         headers: {

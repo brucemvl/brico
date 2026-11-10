@@ -1,16 +1,19 @@
 import BackButton from "@/components/BackButton";
 import { LinearGradient } from "expo-linear-gradient";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useContext, useEffect, useState } from "react";
 import {
+  Alert,
   Animated,
   Image,
   ImageBackground,
+  Keyboard,
   Modal,
   PanResponder,
   Pressable,
   StyleSheet,
   Text,
+  TextInput,
   View
 } from "react-native";
 import MapView, { Marker } from "react-native-maps";
@@ -53,6 +56,7 @@ export default function Profile() {
   const { apiFetch } = useApi();
   const params = useLocalSearchParams();
   const userId = params.id as string;
+  const router = useRouter();
 
   const authContext = useContext(AuthContext);
 const authUser = authContext?.user;
@@ -63,6 +67,12 @@ const [clientCoords, setClientCoords] = useState<{
 } | null>(null);
 
   const [user, setUser] = useState<any>(null);
+
+  const [messageModalVisible, setMessageModalVisible] = useState(false);
+const [firstMessage, setFirstMessage] = useState("");
+const [clientRequests, setClientRequests] = useState<any[]>([]);
+const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null);
+const [sendingMessage, setSendingMessage] = useState(false);
 
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
 
@@ -151,6 +161,21 @@ const distanceKm =
   clientCoords && coords
     ? calculateDistanceKm(clientCoords, coords)
     : null;
+
+    useEffect(() => {
+  const loadClientRequests = async () => {
+    if (authUser?.role !== "client") return;
+
+    try {
+      const data = await apiFetch("/requests/client");
+      setClientRequests(data?.requests || []);
+    } catch (err) {
+      console.log("Erreur chargement demandes client :", err);
+    }
+  };
+
+  loadClientRequests();
+}, [authUser?.userId, authUser?.role]);
 
 const skillIcons = {
    Plomberie: require("../assets/icons/plomberie.png"),
@@ -306,6 +331,55 @@ useEffect(() => {
     ? JSON.parse(user.equipment)
     : user.equipment;
 
+
+    const sendFirstMessage = async () => {
+  if (!firstMessage.trim() || sendingMessage) return;
+
+  try {
+    setSendingMessage(true);
+
+    const payload: {
+      proId: string;
+      content: string;
+      requestId?: string;
+    } = {
+      proId: user._id,
+      content: firstMessage.trim(),
+    };
+
+    if (selectedRequestId) {
+      payload.requestId = selectedRequestId;
+    }
+
+    const conversation = await apiFetch("/conversations/direct", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    setMessageModalVisible(false);
+    setFirstMessage("");
+    setSelectedRequestId(null);
+
+    // Navigation vers l'écran de conversation à adapter à ta route Expo Router.
+    router.push({
+      pathname: "/conversation/[id]",
+      params: { id: conversation._id },
+    } as any);
+
+  } catch (err: any) {
+    console.log("Erreur envoi premier message :", err);
+    Alert.alert(
+      "Erreur",
+      err?.message || "Impossible d'envoyer le message."
+    );
+  } finally {
+    setSendingMessage(false);
+  }
+};
+
   return (
 <ImageBackground source={fond} style={{flex: 1}}>
 <Animated.View style={{opacity: headerOpacity,  flexDirection: "row", alignItems: "center", position: "relative", top: 30, paddingBottom: 15 }}>
@@ -397,6 +471,17 @@ useEffect(() => {
        
       </Animated.View>
 
+      {authUser?.role === "client" && user.role === "pro" && (
+  <Pressable
+    style={styles.messageButton}
+    onPress={() => setMessageModalVisible(true)}
+  >
+    <Text style={styles.messageButtonText}>
+      ✉️ Envoyer un message
+    </Text>
+  </Pressable>
+)}
+
       {/* DESCRIPTION */}
       {user.description && (
         <View style={styles.section}>
@@ -406,29 +491,41 @@ useEffect(() => {
       )}
 
       {/* COMPÉTENCES */}
-      {user.skills?.length > 0 && (
-        <View style={styles.section}>
-          <Text style={styles.title}>Compétences</Text>
+{user.skills?.length > 0 && (
+  <View style={styles.section}>
+    <Text style={styles.title}>Mes compétences</Text>
 
-          <View style={[styles.skillsContainer, {gap: 14}]}>
-            {user.skills.map((skill, i) => (
-               <LinearGradient key={i} style={styles.skill} colors={["#cbffef", "#217163"]}>
-                 <Image source={skillIcons[skill] || skillIcons.Divers} style={styles.skillIcon} />
-                  <Text style={styles.skillText}>{skill}</Text>
-                   </LinearGradient>
-                   ))}
+    <View style={styles.skillsContainer}>
+      {user.skills.map((skill, i) => (
+        <LinearGradient
+          key={`${skill}-${i}`}
+          colors={["#F0FFF9", "#59c39a"]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.skill}
+        >
+          <View style={styles.skillIconContainer}>
+            <Image
+              source={skillIcons[skill] || skillIcons.Divers}
+              style={styles.skillIcon}
+            />
           </View>
-        </View>
-      )}
+
+          <Text style={styles.skillText}>{skill}</Text>
+        </LinearGradient>
+      ))}
+    </View>
+  </View>
+)}
 
       {/* ÉQUIPEMENT */}
       {user.equipment?.length > 0 && (
   <View style={styles.section}>
     <Text style={styles.title}>Équipement</Text>
 
-    <View style={styles.skillsContainer}>
+    <View style={[styles.skillsContainer, {gap: 6}]}>
       {parsedEquipment?.map((item: string, i: number) => (
-        <LinearGradient key={i} style={styles.equipment} colors={["#cbffef", "#217163"]}>
+        <LinearGradient key={i} style={styles.equipment} colors={["#F0FFF9", "#59c39a"]}>
           <Text style={styles.equipmentText}>{item}</Text>
         </LinearGradient>
       ))}
@@ -568,6 +665,92 @@ title={user.name}
     </Pressable>
   </Pressable>
 </Modal>
+
+<Modal
+  visible={messageModalVisible}
+  transparent
+  animationType="slide"
+  onRequestClose={() => setMessageModalVisible(false)}
+>
+  <View style={styles.messageOverlay}>
+    <View style={styles.messageModal}>
+      <Text style={styles.messageTitle}>
+        Contacter {user.name}
+      </Text>
+
+      <Text style={styles.messageLabel}>
+        Cette conversation concerne :
+      </Text>
+
+      <Pressable
+        style={[
+          styles.requestOption,
+          selectedRequestId === null && styles.requestOptionSelected,
+        ]}
+        onPress={() => setSelectedRequestId(null)}
+      >
+        <Text style={styles.requestOptionText}>
+          Sans demande particulière
+        </Text>
+        {selectedRequestId === null && <Text>✓</Text>}
+      </Pressable>
+
+      {clientRequests.map((request) => (
+        <Pressable
+          key={request._id}
+          style={[
+            styles.requestOption,
+            selectedRequestId === request._id &&
+              styles.requestOptionSelected,
+          ]}
+          onPress={() => setSelectedRequestId(request._id)}
+        >
+          <Text style={styles.requestOptionText}>
+            {request.title}
+          </Text>
+          {selectedRequestId === request._id && <Text>✓</Text>}
+        </Pressable>
+      ))}
+
+      <Text style={styles.messageLabel}>
+        Votre premier message :
+      </Text>
+
+      <TextInput
+        style={styles.messageInput}
+        placeholder="Bonjour, je souhaiterais vous contacter..."
+        value={firstMessage}
+        onChangeText={setFirstMessage}
+        multiline
+        textAlignVertical="top"
+        blurOnSubmit={true}
+  returnKeyType="done"
+  onSubmitEditing={() => Keyboard.dismiss()}
+      />
+
+      <Pressable
+        style={[
+          styles.sendButton,
+          (!firstMessage.trim() || sendingMessage) && { opacity: 0.5 },
+        ]}
+        onPress={sendFirstMessage}
+        disabled={!firstMessage.trim() || sendingMessage}
+      >
+        <Text style={styles.sendButtonText}>
+          {sendingMessage ? "Envoi..." : "Envoyer"}
+        </Text>
+      </Pressable>
+
+      <Pressable
+        onPress={() => setMessageModalVisible(false)}
+        style={styles.cancelButton}
+      >
+        <Text style={styles.cancelButtonText}>Annuler</Text>
+      </Pressable>
+    </View>
+  </View>
+</Modal>
+
     </ImageBackground>
   );
 }
@@ -627,18 +810,11 @@ avatarPressable: {
 
   text: {
     fontSize: 16,
-    color: "#353535",
+    color: "#4e4e4e",
     fontFamily: "Londrina"
   },
 
-  skillsContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: 10,
-    gap: 3
-  },
+  
 
   equipment: {
 
@@ -647,19 +823,64 @@ paddingVertical:10,
 
 borderRadius:30,
 borderWidth: 1,
-    borderColor: "#c47c461a",
+    borderColor: "#8dbfad",
 
-margin:3
+margin:2
   },
   equipmentText: {
-    fontSize: 13,
+    fontSize: 12,
     fontFamily: "Montmed",
     color:"#353535",
     
   },
-  skill: { flexDirection: "column", alignItems: "center", gap: 8, paddingHorizontal: 12, paddingVertical: 14, borderRadius: 16, borderWidth: 1, borderColor: "#3535351a", },
-   skillIcon: { width: 18, height: 18, resizeMode: "contain", },
-   skillText: { fontFamily: "Montmed", color: "#000", fontSize: 13, },
+  skillsContainer: {
+  flexDirection: "row",
+  flexWrap: "wrap",
+  gap: 12,
+  marginTop: 14,
+  alignItems: "center",
+  justifyContent: "center"
+},
+
+skill: {
+  width: "30%",
+  minHeight: 105,
+  alignItems: "center",
+  justifyContent: "center",
+  paddingVertical: 14,
+  paddingHorizontal: 8,
+  borderRadius: 18,
+  borderWidth: 1,
+  borderColor: "#B9E8D7",
+  shadowColor: "#1A5B4F",
+  shadowOffset: { width: 0, height: 3 },
+  shadowOpacity: 0.08,
+  shadowRadius: 6,
+  elevation: 2,
+},
+
+skillIconContainer: {
+  width: 43,
+  height: 43,
+  borderRadius: 14,
+  backgroundColor: "#FFFFFF",
+  alignItems: "center",
+  justifyContent: "center",
+  marginBottom: 9,
+},
+
+skillIcon: {
+  width: 23,
+  height: 23,
+  resizeMode: "contain",
+},
+
+skillText: {
+  fontFamily: "Montmed",
+  color: "#1A5B4F",
+  fontSize: 12,
+  textAlign: "center",
+},
 
   
 
@@ -707,8 +928,8 @@ fontFamily: "Montt",
 padding: 1
 },
 review:{
-marginBlock:12,
-paddingBottom:10,
+marginBlock:16,
+paddingBottom:14,
 borderBottomWidth:1,
 borderColor:"#e1e1e1",
 flexDirection: "column",
@@ -824,4 +1045,103 @@ badgeLoc: {
     padding: 1,
     fontSize: 10,
   },
+
+  messageButton: {
+  backgroundColor: "#007AFF",
+  padding: 12,
+  borderRadius: 20,
+  alignItems: "center",
+  marginHorizontal: 40,
+  marginVertical: 15,
+},
+
+messageButtonText: {
+  color: "#fff",
+  fontFamily: "Montt",
+  fontSize: 14,
+},
+
+messageOverlay: {
+  flex: 1,
+  backgroundColor: "rgba(0,0,0,0.6)",
+  justifyContent: "center",
+  padding: 20,
+},
+
+messageModal: {
+  backgroundColor: "#fff",
+  borderRadius: 20,
+  padding: 20,
+  maxHeight: "85%",
+},
+
+messageTitle: {
+  fontFamily: "Montt",
+  fontSize: 21,
+  color: "#1a5b4f",
+  marginBottom: 20,
+},
+
+messageLabel: {
+  fontFamily: "Montmed",
+  fontSize: 14,
+  marginTop: 10,
+  marginBottom: 8,
+},
+
+requestOption: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center",
+  padding: 12,
+  borderWidth: 1,
+  borderColor: "#ddd",
+  borderRadius: 10,
+  marginBottom: 7,
+},
+
+requestOptionSelected: {
+  borderColor: "#1a5b4f",
+  backgroundColor: "#e8f5f0",
+},
+
+requestOptionText: {
+  fontFamily: "Mont",
+  fontSize: 13,
+  flex: 1,
+},
+
+messageInput: {
+  borderWidth: 1,
+  borderColor: "#ccc",
+  borderRadius: 12,
+  padding: 12,
+  minHeight: 110,
+  fontFamily: "Mont",
+  fontSize: 14,
+  marginBottom: 15,
+},
+
+sendButton: {
+  backgroundColor: "#007AFF",
+  borderRadius: 12,
+  padding: 14,
+  alignItems: "center",
+},
+
+sendButtonText: {
+  color: "#fff",
+  fontFamily: "Montt",
+  fontSize: 16,
+},
+
+cancelButton: {
+  padding: 12,
+  alignItems: "center",
+},
+
+cancelButtonText: {
+  color: "#666",
+  fontFamily: "Mont",
+},
 });

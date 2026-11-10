@@ -22,12 +22,14 @@ if (senderId) {
 
   let notif;
 
-  const existing = await Notification.findOne({
-    userId,
-    type: "message",
-    isRead: false,
-    "data.conversationId": conversationId
-  });
+  const existing = type === "message" && conversationId
+  ? await Notification.findOne({
+      userId,
+      type: "message",
+      isRead: false,
+      "data.conversationId": conversationId
+    })
+  : null;
 
   if (existing) {
     existing.updatedAt = new Date();

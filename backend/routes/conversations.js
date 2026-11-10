@@ -8,6 +8,19 @@ const User = require("../models/User");
 const Notification = require("../models/Notification");
 const {createNotification} = require("../services/notificationService")
 
+
+const containsContactInfo = (text) => {
+  if (!text) return false;
+
+  const emailRegex =
+    /\b[A-Z0-9._%+-]+(@|\(at\)|\[at\]|\sat\s)[A-Z0-9.-]+(\.|\(dot\)|\[dot\]|\sdot\s)[A-Z]{2,}\b/i;
+
+  const phoneRegex =
+    /(\+?\d{1,3}[\s.-]?)?(\(?\d{1,3}\)?[\s.-]?)?(\d[\s.-]?){6,}/;
+
+  return emailRegex.test(text) || phoneRegex.test(text);
+};
+
 // =======================
 // 🔹 GET toutes les conversations ou par requestId
 // =======================
@@ -18,13 +31,134 @@ router.get("/", auth, async (req, res) => {
     if (requestId) filter.request = requestId;
 
     const conversations = await Conversation.find(filter)
-      .populate("client", "name profileImage")
-      .populate("pro", "name profileImage")
-      .populate("messages.from", "name profileImage");
+  .populate("client", "name profileImage")
+  .populate("pro", "name profileImage")
+  .populate("request", "title category")
+  .populate("messages.from", "name profileImage")
+  .sort({ lastInteractionAt: -1 });
 
     res.json(conversations);
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+});
+
+// CONVERSATION DIRECT
+
+router.post("/direct", auth, async (req, res) => {
+  try {
+    if (!req.user || req.user.role !== "client") {
+      return res.status(403).json({
+        error: "Seuls les clients peuvent démarrer une conversation directe"
+      });
+    }
+
+    const { proId, content, requestId } = req.body;
+
+    if (!proId) {
+      return res.status(400).json({ error: "proId requis" });
+    }
+
+    if (!content || !content.trim()) {
+      return res.status(400).json({ error: "Message vide" });
+    }
+
+    const pro = await User.findOne({
+      _id: proId,
+      role: "pro"
+    });
+
+    if (!pro) {
+      return res.status(404).json({
+        error: "Professionnel introuvable"
+      });
+    }
+
+    // Vérifier la demande si le client en a sélectionné une
+    let request = null;
+
+    if (requestId) {
+      request = await Request.findById(requestId);
+
+      if (!request) {
+        return res.status(404).json({
+          error: "Demande introuvable"
+        });
+      }
+
+      if (request.client.toString() !== req.user.id.toString()) {
+        return res.status(403).json({
+          error: "Cette demande ne vous appartient pas"
+        });
+      }
+    }
+
+    // Chercher une conversation existante avec ce professionnel
+    const filter = {
+      client: req.user.id,
+      pro: proId,
+      request: request ? request._id : null
+    };
+
+    let conversation = request
+      ? await Conversation.findOne(filter)
+      : await Conversation.findOne({
+          ...filter,
+          type: "direct"
+        });
+
+    if (!conversation) {
+  conversation = new Conversation({
+    type: request ? "request" : "direct",
+    request: request ? request._id : null,
+    client: req.user.id,
+    pro: proId,
+    messages: []
+  });
+}
+
+    // Même règle de blocage des coordonnées que les autres conversations
+    const dealAccepted =
+      (conversation.dealProposedByPro && conversation.dealAcceptedByClient) ||
+      (conversation.dealProposedByClient && conversation.dealAcceptedByPro);
+
+    if (containsContactInfo(content) && !dealAccepted) {
+      return res.status(403).json({
+        error: "Les coordonnées sont bloquées tant que l'accord n'est pas validé."
+      });
+    }
+
+    conversation.messages.push({
+      from: req.user.id,
+      content: content.trim(),
+      images: [],
+      readBy: [req.user.id],
+      createdAt: new Date()
+    });
+
+    conversation.lastInteractionAt = new Date();
+    conversation.lastInteractionBy = req.user.id;
+    conversation.lastClientUpdateAt = new Date();
+
+    await conversation.save();
+
+    await createNotification({
+      userId: proId,
+      type: "message",
+      requestId: conversation.request || null,
+      conversationId: conversation._id,
+      senderId: req.user.id
+    });
+
+    await conversation.populate("client", "name profileImage");
+    await conversation.populate("pro", "name profileImage");
+    await conversation.populate("messages.from", "name profileImage");
+
+    return res.status(201).json(conversation);
+
+  } catch (err) {
+    console.error("POST /conversations/direct error:", err);
+    return res.status(500).json({ error: err.message });
   }
 });
 
@@ -89,7 +223,6 @@ router.get("/:id", auth, async (req, res) => {
     );
 
     // 🔥 IMPORTANT : marquer les notifications comme lues
-    const Notification = require("../models/Notification");
 
     await Notification.updateMany(
       {
@@ -129,10 +262,21 @@ router.post("/:id/message", auth, async (req, res) => {
       return res.status(404).json({ error: "Conversation introuvable" });
     }
 
-    const request = await Request.findById(conversation.request);
-    if (!request) {
-      return res.status(404).json({ error: "Demande introuvable" });
-    }
+    let request = null;
+
+if (conversation.request) {
+  request = await Request.findById(conversation.request);
+
+  if (!request) {
+    return res.status(404).json({
+      error: "Demande introuvable"
+    });
+  }
+} else if (conversation.type !== "direct") {
+  return res.status(400).json({
+    error: "Conversation invalide"
+  });
+}
 
     const isClient = conversation.client.toString() === req.user.id.toString();
     const isPro = conversation.pro.toString() === req.user.id.toString();
@@ -141,19 +285,15 @@ router.post("/:id/message", auth, async (req, res) => {
       return res.status(403).json({ error: "Non autorisé" });
     }
 
-    const text = content;
-    const emailRegex = /\b[A-Z0-9._%+-]+(@|\(at\)|\[at\]|\sat\s)[A-Z0-9.-]+(\.|\(dot\)|\[dot\]|\sdot\s)[A-Z]{2,}\b/i;
-    const phoneRegex = /(\+?\d{1,3}[\s.-]?)?(\(?\d{1,3}\)?[\s.-]?)?(\d[\s.-]?){6,}/;
-
     const dealAccepted =
-      (conversation.dealProposedByPro && conversation.dealAcceptedByClient) ||
-      (conversation.dealProposedByClient && conversation.dealAcceptedByPro);
+  (conversation.dealProposedByPro && conversation.dealAcceptedByClient) ||
+  (conversation.dealProposedByClient && conversation.dealAcceptedByPro);
 
-    if ((emailRegex.test(text) || phoneRegex.test(text)) && !dealAccepted) {
-      return res.status(403).json({
-        error: "Les coordonnées sont bloquées tant que l'accord n'est pas validé.",
-      });
-    }
+if (containsContactInfo(content) && !dealAccepted) {
+  return res.status(403).json({
+    error: "Les coordonnées sont bloquées tant que l'accord n'est pas validé."
+  });
+}
 
     conversation.messages.push({
   from: req.user.id,
@@ -246,7 +386,9 @@ router.post("/:id/mark-read", auth, async (req, res) => {
 
     console.log("MARK-READ", {
       conversationId: conversation._id.toString(),
-      requestId: conversation.request.toString(),
+      requestId: conversation.request
+  ? conversation.request.toString()
+  : null,
       userId,
       role: isPro ? "pro" : "client"
     });
@@ -266,6 +408,67 @@ router.post("/:id/mark-read", auth, async (req, res) => {
   }
 });
 
+// =======================
+// 🔹 Proposer un accord dans une conversation
+// =======================
+router.post("/:id/propose-deal", auth, async (req, res) => {
+  try {
+    const conversation = await Conversation.findById(req.params.id);
+
+    if (!conversation) {
+      return res.status(404).json({
+        error: "Conversation introuvable"
+      });
+    }
+
+    const userId = req.user.id.toString();
+
+    const isClient = conversation.client.toString() === userId;
+    const isPro = conversation.pro.toString() === userId;
+
+    if (!isClient && !isPro) {
+      return res.status(403).json({ error: "Non autorisé" });
+    }
+
+    if (isClient) {
+      conversation.dealProposedByClient = true;
+      conversation.lastClientUpdateAt = new Date();
+    }
+
+    if (isPro) {
+      conversation.dealProposedByPro = true;
+      conversation.lastProUpdateAt = new Date();
+    }
+
+    conversation.lastInteractionAt = new Date();
+    conversation.lastInteractionBy = req.user.id;
+
+    await conversation.save();
+
+    const receiverId = isClient
+      ? conversation.pro
+      : conversation.client;
+
+    await createNotification({
+      userId: receiverId,
+      type: "deal",
+      content: "Une proposition d'accord a été envoyée",
+      requestId: conversation.request || null,
+      conversationId: conversation._id,
+      senderId: req.user.id
+    });
+
+    return res.json({
+      message: "Proposition d'accord envoyée",
+      conversation
+    });
+
+  } catch (err) {
+    console.error("POST /conversations/:id/propose-deal error:", err);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
 //ACCEPTER DEAL
 router.post("/:id/accept-deal", auth, async (req, res) => {
   try {
@@ -275,13 +478,34 @@ router.post("/:id/accept-deal", auth, async (req, res) => {
       return res.status(404).json({ error: "Conversation introuvable" });
     }
 
-    if (req.user.id === conversation.client.toString()) {
-      conversation.dealAcceptedByClient = true;
-    }
+    const userId = req.user.id.toString();
 
-    if (req.user.id === conversation.pro.toString()) {
-      conversation.dealAcceptedByPro = true;
-    }
+const isClient = conversation.client.toString() === userId;
+const isPro = conversation.pro.toString() === userId;
+
+if (!isClient && !isPro) {
+  return res.status(403).json({ error: "Non autorisé" });
+}
+
+if (isClient && !conversation.dealProposedByPro) {
+  return res.status(400).json({
+    error: "Aucune proposition du professionnel à accepter"
+  });
+}
+
+if (isPro && !conversation.dealProposedByClient) {
+  return res.status(400).json({
+    error: "Aucune proposition du client à accepter"
+  });
+}
+
+    if (isClient) {
+  conversation.dealAcceptedByClient = true;
+}
+
+if (isPro) {
+  conversation.dealAcceptedByPro = true;
+}
 
     const dealAccepted =
       (conversation.dealProposedByPro && conversation.dealAcceptedByClient) ||
@@ -299,10 +523,9 @@ if (req.user.role === "pro") {
 }
     await conversation.save();
 
-    const receiverId =
-  req.user.id === conversation.client.toString()
-    ? conversation.pro
-    : conversation.client;
+    const receiverId = isClient
+  ? conversation.pro
+  : conversation.client;
 
 await createNotification({
   userId: receiverId,
@@ -311,8 +534,8 @@ await createNotification({
   conversationId: conversation._id,
 });
 
-    if (dealAccepted) {
-      const request = await Request.findById(conversation.request);
+    if (dealAccepted && conversation.request) {
+  const request = await Request.findById(conversation.request);
 
       if (request) {
         request.status = "in_progress";
@@ -358,6 +581,15 @@ router.get("/:id/contact", auth, async (req, res) => {
 
     if (!conversation) return res.status(404).json({ error: "Conversation introuvable" });
 
+    const userId = req.user.id.toString();
+
+const isClient = conversation.client._id.toString() === userId;
+const isPro = conversation.pro._id.toString() === userId;
+
+if (!isClient && !isPro) {
+  return res.status(403).json({ error: "Non autorisé" });
+}
+
     if (!(
       (conversation.dealProposedByPro && conversation.dealAcceptedByClient) ||
       (conversation.dealProposedByClient && conversation.dealAcceptedByPro)
@@ -365,9 +597,9 @@ router.get("/:id/contact", auth, async (req, res) => {
       return res.status(403).json({ error: "Le deal n'a pas encore été accepté" });
     }
 
-    const otherUser = req.user.id === conversation.client._id.toString()
-      ? conversation.pro
-      : conversation.client;
+    const otherUser = isClient
+  ? conversation.pro
+  : conversation.client;
 
     res.json({ phone: otherUser.phone, email: otherUser.email });
 
@@ -386,7 +618,17 @@ router.post("/:id/pin", auth, async (req, res) => {
       return res.status(404).json({ message: "Conversation introuvable" });
     }
 
-    const userId = req.user.id;
+    const userId = req.user.id.toString();
+
+const isParticipant =
+  conversation.client.toString() === userId ||
+  conversation.pro.toString() === userId;
+
+if (!isParticipant) {
+  return res.status(403).json({ message: "Non autorisé" });
+}
+
+   
 
     if (!conversation.pinnedBy.some(id => id.toString() === userId)) {
       conversation.pinnedBy.push(userId);
@@ -414,6 +656,14 @@ router.delete("/:id/pin", auth, async (req, res) => {
     }
 
     const userId = req.user.id;
+
+    const isParticipant =
+  conversation.client.toString() === userId ||
+  conversation.pro.toString() === userId;
+
+if (!isParticipant) {
+  return res.status(403).json({ message: "Non autorisé" });
+}
 
     conversation.pinnedBy = conversation.pinnedBy.filter(
       id => id.toString() !== userId

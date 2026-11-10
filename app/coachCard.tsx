@@ -375,7 +375,7 @@ const firstUnreadRequest = unreadRequests[0];
 const styles = StyleSheet.create({
 
     container: {
-        width: "94%",
+        width: "96%",
         borderRadius: 30,
         padding: 16,
         shadowColor: "#000",

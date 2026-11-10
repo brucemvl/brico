@@ -29,11 +29,20 @@ images: [
 
 const conversationSchema = new mongoose.Schema({
 
-  request: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Request",
-    required: true
+  type: {
+  type: String,
+  enum: ["request", "direct"],
+  default: "request",
+},
+
+request: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: "Request",
+  default: null,
+  required: function () {
+    return this.type === "request";
   },
+},
 
   client: {
     type: mongoose.Schema.Types.ObjectId,
