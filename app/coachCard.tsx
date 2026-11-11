@@ -172,7 +172,7 @@ const firstUnreadRequest = unreadRequests[0];
 
         >
 
-            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 5 }}>
                 <Text style={styles.header}>
                     Bonjour {firstName}
                 </Text>
@@ -541,7 +541,7 @@ const styles = StyleSheet.create({
   alignItems: "center",
   gap: 12,
   padding: 13,
-  marginBottom: 22,
+  marginBottom: 16,
   borderRadius: 18,
   backgroundColor: "rgba(255,255,255,0.15)",
   borderWidth: 1,

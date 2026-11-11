@@ -3,9 +3,10 @@ import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect, useRouter } from 'expo-router';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, Animated, Image, ImageBackground, PanResponder, RefreshControl, ScrollView, Share, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Animated, Image, PanResponder, RefreshControl, ScrollView, Share, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import logo from "../assets/briconnect33.png";
 import fond from "../assets/convert_1.png";
+import enveloppe from "../assets/icons/envelope.png";
 import msg from "../assets/icons/enveloppe.png";
 import location from "../assets/icons/markerr.png";
 import modifier from "../assets/icons/modifier.png";
@@ -19,6 +20,7 @@ import tool from "../assets/icons/wrench-alt.png";
 import { AuthContext } from '../context/AuthContext';
 import { useApi } from "../services/api";
 import CoachCard from './coachCard';
+
 
 
 
@@ -533,7 +535,8 @@ const firstUnreadRequest = requestsWithUnread[0];
   if (!fontsLoaded) return null;
 
   return (
-    <ImageBackground source={fond} style={{ flex: 1 }}>
+    <View  style={{ flex: 1 }}>
+      <Image source={fond} style={styles.backgroundImage} />
       <Animated.View style={{ opacity: headerOpacity, flexDirection: "row", alignItems: "center", position: "relative", top: 30, paddingBottom: 15 }}>
         <Image source={logo} style={{ height: 60, width: 60 }} />
         <Text style={{ fontFamily: "Montt", fontSize: 16 }}>Accueil</Text>
@@ -559,6 +562,7 @@ const firstUnreadRequest = requestsWithUnread[0];
   style={styles.button}>
     <Image source={share} style={{ height: 24, width: 24 }} />
   </TouchableOpacity>
+
         <TouchableOpacity
           onPress={() => router.push({ pathname: "/settings" })}
           accessible
@@ -568,6 +572,16 @@ const firstUnreadRequest = requestsWithUnread[0];
           style={styles.button} >
           <Image source={settings} style={{ height: 24, width: 24 }} />
         </TouchableOpacity>
+
+        <TouchableOpacity onPress={() => router.push({ pathname: "/messagesClient" })}
+    accessible
+  accessibilityRole="button"
+  accessibilityLabel="Messages"
+  accessibilityHint={`Accéder aux messages`}
+  style={styles.button}>
+    <Image source={enveloppe} style={{ height: 24, width: 24 }} />
+  </TouchableOpacity>
+
       </Animated.View>
       <Animated.ScrollView
         contentContainerStyle={styles.container}
@@ -1242,12 +1256,22 @@ accessible
           <Text style={{ fontFamily: "Kanito", color: "red", fontSize: 15 }}>Deconnexion</Text>
         </TouchableOpacity>
       </Animated.ScrollView>
-    </ImageBackground>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { justifyContent: 'center', alignItems: 'center', paddingTop: 25, paddingBottom: 160, gap: 10 },
+  backgroundImage: {
+  position: "absolute",
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  width: "100%",
+  height: "100%",
+  resizeMode: "cover",
+},
   avatarr: { height: 90, width: 90, borderRadius: 45, borderWidth: 2, borderColor: "#fcfcfc" },
   profileButton: { padding: 5, borderRadius: 50, backgroundColor: "#999999", position: "absolute", bottom: 5, right: 8, borderColor: "#f5f5f5", borderWidth: 1 },
   title: { fontSize: 24, fontFamily: 'Montt', marginBottom: 20, textAlign: 'center' },
@@ -1452,9 +1476,9 @@ button: {
   backgroundColor: "#2c95f0",
    padding: 8,
     borderRadius: 40,
-     shadowColor: "#063864",
-      shadowOpacity: 0.92,
-       shadowRadius: 2,
+     shadowColor: "#000000",
+      shadowOpacity: 0.72,
+       shadowRadius: 3,
         shadowOffset: { width: 0, height: 0,},
 
   elevation: 6,
@@ -1594,7 +1618,7 @@ proCard: {
   shadowOpacity: 0.12,
   shadowRadius: 5,
   shadowOffset: { width: 0, height: 2 },
-  width: 170
+  width: 175
 },
 
 proAvatar: {

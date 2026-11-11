@@ -2,15 +2,15 @@ import BackButton from "@/components/BackButton";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import {
-    ActivityIndicator,
-    Image,
-    ImageBackground,
-    RefreshControl,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Image,
+  ImageBackground,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import fond from "../assets/convert_1.png";
 import { useApi } from "../services/api";
@@ -69,21 +69,44 @@ export default function MessagesPro() {
       const list: ConversationType[] = Array.isArray(data) ? data : [];
 
       list.sort((a, b) => {
-        const aPinned = a.pinnedBy?.some(
-          (id) => getId(id) === me._id
-        ) ? 1 : 0;
+  // 1. Priorité aux conversations avec des messages non lus
+  const aUnread = a.messages?.some((message) => {
+    const isMine = getId(message.from) === me._id;
+    const alreadyRead = message.readBy?.some(
+      (id) => getId(id) === me._id
+    );
 
-        const bPinned = b.pinnedBy?.some(
-          (id) => getId(id) === me._id
-        ) ? 1 : 0;
+    return !isMine && !alreadyRead;
+  }) ? 1 : 0;
 
-        if (aPinned !== bPinned) return bPinned - aPinned;
+  const bUnread = b.messages?.some((message) => {
+    const isMine = getId(message.from) === me._id;
+    const alreadyRead = message.readBy?.some(
+      (id) => getId(id) === me._id
+    );
 
-        return (
-          new Date(b.lastInteractionAt || 0).getTime() -
-          new Date(a.lastInteractionAt || 0).getTime()
-        );
-      });
+    return !isMine && !alreadyRead;
+  }) ? 1 : 0;
+
+  if (aUnread !== bUnread) return bUnread - aUnread;
+
+  // 2. Ensuite, les conversations épinglées
+  const aPinned = a.pinnedBy?.some(
+    (id) => getId(id) === me._id
+  ) ? 1 : 0;
+
+  const bPinned = b.pinnedBy?.some(
+    (id) => getId(id) === me._id
+  ) ? 1 : 0;
+
+  if (aPinned !== bPinned) return bPinned - aPinned;
+
+  // 3. Enfin, les plus récentes
+  return (
+    new Date(b.lastInteractionAt || 0).getTime() -
+    new Date(a.lastInteractionAt || 0).getTime()
+  );
+});
 
       setConversations(list);
     } catch (error) {
@@ -195,7 +218,8 @@ export default function MessagesPro() {
   }
 
   return (
-    <ImageBackground source={fond} style={styles.background}>
+    <View style={{ flex: 1 }}>
+      <Image source={fond} style={styles.backgroundImage} />
       <BackButton />
 
       <View style={styles.header}>
@@ -298,7 +322,7 @@ export default function MessagesPro() {
           })
         )}
       </ScrollView>
-    </ImageBackground>
+    </View>
   );
 }
 
@@ -306,6 +330,16 @@ const styles = StyleSheet.create({
   background: {
     flex: 1,
   },
+  backgroundImage: {
+  position: "absolute",
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  width: "100%",
+  height: "100%",
+  resizeMode: "cover",
+},
   header: {
     paddingHorizontal: 22,
     paddingTop: 75,
@@ -420,10 +454,10 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   requestContext: {
-  color: "#3db64b", // Bleu pour les demandes
+  color: "#3db64b",
 },
 
 directContext: {
-  color: "#4b66e1", // Orange pour les conversations directes
+  color: "#4b66e1",
 },
 });

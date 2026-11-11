@@ -365,7 +365,7 @@ useEffect(() => {
 
     // Navigation vers l'écran de conversation à adapter à ta route Expo Router.
     router.push({
-      pathname: "/conversation/[id]",
+      pathname: "/messagesClient",
       params: { id: conversation._id },
     } as any);
 

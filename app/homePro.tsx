@@ -7,7 +7,6 @@ import {
   ActivityIndicator,
   Animated,
   Image,
-  ImageBackground,
   PanResponder,
   RefreshControl,
   Share,
@@ -529,7 +528,8 @@ const visibleRequests = filteredRequests.slice(0, visibleCount);
 
 
   return (
-    <ImageBackground source={fond} style={{flex: 1}} >
+    <View style={{ flex: 1 }}>
+      <Image source={fond} style={styles.backgroundImage} />
   <Animated.View style={{opacity: headerOpacity,  flexDirection: "row", alignItems: "center", position: "relative", top: 30, paddingBottom: 15 }}>
     <Image source={logo} style={{height: 60, width: 60}}/>
     <Text style={{ fontFamily: "Montt" , fontSize: 16}}>Accueil</Text></Animated.View>
@@ -626,21 +626,6 @@ const visibleRequests = filteredRequests.slice(0, visibleCount);
     />
 )}
 
-<TouchableOpacity
-  style={styles.inboxButton}
-  onPress={() => router.push("/messagesPro")}
->
-  <View>
-    <Text style={styles.inboxTitle}>Mes messages</Text>
-    <Text style={styles.inboxSubtitle}>
-      Retrouvez vos conversations avec les clients
-    </Text>
-  </View>
-
-  
-
-  <Text style={styles.inboxArrow}>→</Text>
-</TouchableOpacity>
 
 </Animated.View>
 
@@ -1042,12 +1027,22 @@ const images = item.images ?? [];
         <Text style={{fontFamily: "Kanito", color: "red", fontSize: 15}}>Deconnexion</Text>
       </TouchableOpacity>
     </Animated.ScrollView>
-    </ImageBackground>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { paddingTop: 40, alignItems: "center", paddingBottom: 160},
+  backgroundImage: {
+  position: "absolute",
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  width: "100%",
+  height: "100%",
+  resizeMode: "cover",
+},
   center: { flex: 1, justifyContent: "center", alignItems: "center" },
   title: { fontSize: 24, fontFamily: "Montt", marginBottom: 8 },
   avatar: { height: 90, width: 90, resizeMode: "cover", borderRadius: 45, borderWidth: 2, borderColor: "#fcfcfc" },

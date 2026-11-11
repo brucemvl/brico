@@ -8,7 +8,6 @@ import {
   ActivityIndicator,
   Alert,
   Image,
-  ImageBackground,
   KeyboardAvoidingView,
   Linking,
   Modal,
@@ -115,7 +114,7 @@ const [sendingImages, setSendingImages] = useState(false);
 
 const reviewScale = useRef(new RNAnimated.Value(1)).current;
 
-  const scrollRef = useRef<ScrollView | null>(null);
+  const scrollRef = useRef<ScrollViewType>(null);
 
   const scaleAnim = useRef(new RNAnimated.Value(1)).current;
 
@@ -592,7 +591,11 @@ const sendImages = async () => {
   };
 
   if (loading) return <Text>Chargement...</Text>;
-  if (!conversation) return <Text>Conversation introuvable</Text>;
+  if (!conversation) return <View style={{flex: 1, alignItems: "center", justifyContent: "center"}}>
+    <BackButton />
+    <Text style={{fontFamily: "Montt", color: "#1a5b4f", fontSize: 16}}>Conversation introuvable</Text>
+    <Text style={{fontFamily: "Montt", color: "#1a5b4f", fontSize: 16}}>L'utilisateur a supprimé son compte</Text>
+    </View>;
 
 
 const dealProposedByMe = isProViewing
@@ -637,7 +640,8 @@ const missionCompleted = clientHasReviewed;
 
   return (
 
-    <ImageBackground source={fond} style={{ flex: 1 }}>
+    <View style={{ flex: 1 }}>
+      <Image source={fond} style={styles.backgroundImage} />
       <BackButton />
 
       <KeyboardAvoidingView
@@ -756,35 +760,44 @@ const missionCompleted = clientHasReviewed;
           {dealAccepted && <Text style={styles.dealAccepted}>Accord validé 🤝</Text>}
 
           {/* COORDONNÉES */}
+          
+
           {dealAccepted && contact && (
-            <View style={styles.contactBox}>
-              <View style={{ alignItems: "center", width: 70 }}>
-                <Image source={{ uri: conversation.pro?.profileImage?.url }} style={{ height: 35, width: 35, borderRadius: 18 }} />
-                <Text style={{ fontFamily: "Londrina", textAlign: "center" }}>{conversation.pro?.name}</Text>
-              </View>
-              <View>
-                {contact.phone && (
-                  <TouchableOpacity 
-                  onPress={() => Linking.openURL(`tel:${contact.phone}`)}
-                  accessible
-                  accessibilityLabel="Appeler l'artisan"
-                  accessibilityHint="Appeler l'artisan au telephone">
-                    <Text style={styles.contactText}>📞 {contact.phone}</Text>
-                  </TouchableOpacity>
-                )}
-                {contact.email && (
-                  <TouchableOpacity 
-                  onPress={() => Linking.openURL(`mailto:${contact.email}`)}
-                  accessible
-                  accessibilityLabel="Envoyer un mail à l'artisan"
-                  accessibilityHint="Envoyer un mail à l'artisan"
-                  >
-                    <Text style={[styles.contactText, contact.email.length > 30 && { fontSize: 12.5 }]}>✉️ {contact.email}</Text>
-                  </TouchableOpacity>
-                )}
-              </View>
-            </View>
-          )}
+                      <View style={styles.contactBox}>
+                        <Text style={{ textAlign: "center", fontFamily: "Montt", marginBottom: 10, color: "#1a5b4f" }}>Coordonnées</Text>
+                                        <View style={{ alignItems: "center", marginBottom: 10}} accessible accessibilityLabel={`Client ${conversation.pro?.name}`}>
+          
+                                                         <Image source={{ uri: conversation.pro?.profileImage?.url }} style={{ height: 70, width: 70, borderRadius: 35 }} />
+          
+          
+                            <Text style={{ fontFamily: "Londrina", fontSize: 15 }}>{conversation.pro?.name}</Text>
+                          </View>
+                          <View style={{gap: 10}}>
+                            {contact.phone && (
+                              <TouchableOpacity
+                                onPress={() => Linking.openURL(`tel:${contact.phone}`)}
+                                accessible
+                                accessibilityRole="button"
+                                accessibilityLabel={`Appeler ${conversation.pro?.name}`}
+                                accessibilityHint={`Lancer un appel au ${contact.phone}`}
+                                style={{backgroundColor: "#eeeeee", paddingBlock: 6, paddingInline: 12, borderRadius: 20, alignItems: "center", borderWidth: 1, borderColor: "#155d3b5d"}} >
+                                <Text style={[styles.contactText, {letterSpacing: 0.5}]}>📞 {contact.phone}</Text>
+                              </TouchableOpacity>
+                            )}
+                            {contact.email && (
+                              <TouchableOpacity
+                                onPress={() => Linking.openURL(`mailto:${contact.email}`)}
+                                accessible
+                                accessibilityRole="button"
+                                accessibilityLabel={`Envoyer un email à ${conversation.pro?.name}`}
+                                accessibilityHint={`Envoyer un email à ${contact.email}`}
+                                style={{backgroundColor: "#eeeeee", paddingBlock: 6, paddingInline: 12, borderRadius: 20, alignItems: "center", borderWidth: 1, borderColor: "#155d3b5d"}} >
+                                <Text style={styles.contactText}>✉️ {contact.email}</Text>
+                              </TouchableOpacity>
+                            )}
+                          </View>
+                      </View>
+                    )}
 
           
 
@@ -1114,17 +1127,35 @@ const missionCompleted = clientHasReviewed;
         </ScrollView>
       </KeyboardAvoidingView>
 
-    </ImageBackground>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  backgroundImage: {
+  position: "absolute",
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  width: "100%",
+  height: "100%",
+  resizeMode: "cover",
+},
   actions: { flexDirection: "row", justifyContent: "space-around", padding: 10 },
   button: { backgroundColor: "#007AFF", padding: 16, borderRadius: 22, flexDirection: "column", alignItems: "center" },
   buttonText: { color: "white", fontFamily: "Mont", fontSize: 13 },
   dealStatus: { textAlign: "center", color: "#1a5b4f", marginBottom: 5, fontFamily: "Mont" },
   dealAccepted: { textAlign: "center", color: "green", fontFamily: "Kanito", marginBottom: 5 },
-  contactBox: { padding: 10, backgroundColor: "#dfdfdf", margin: 6, borderRadius: 8, flexDirection: "row", alignItems: "center", gap: 16 },
+  contactBox: { padding: 16, backgroundColor: "#ffffff", borderRadius: 30, marginVertical: 10, width: "100%", shadowColor: "#000",shadowOpacity: 0.18,
+  shadowRadius: 10,
+  shadowOffset: {
+    width: 0,
+    height: 4,
+  },
+
+  elevation: 5,
+alignItems: "center"},
   contactText: { fontSize: 16, marginBottom: 5, fontFamily: "Kanito", color: "#007AFF" },
   messages: { padding: 15 },
 messageBubble:{

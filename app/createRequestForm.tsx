@@ -9,7 +9,6 @@ import {
   Alert,
   Animated,
   Image,
-  ImageBackground,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -374,8 +373,9 @@ export default function CreateRequestForm() {
 
   return (
 
-    <ImageBackground source={fond} style={{ flex: 1 }} accessible accessibilityLabel="Écran de création de demande">
-      <BackButton />
+<View style={{ flex: 1 }}>
+      <Image source={fond} style={styles.backgroundImage} />
+            <BackButton />
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -583,7 +583,7 @@ export default function CreateRequestForm() {
           </View>
         </TouchableWithoutFeedback>
       )}
-    </ImageBackground>
+    </View>
   );
 }
 
@@ -594,6 +594,16 @@ const styles = StyleSheet.create({
     marginTop: 6,
     color: "#1a5b4f",
   },
+  backgroundImage: {
+  position: "absolute",
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  width: "100%",
+  height: "100%",
+  resizeMode: "cover",
+},
   input: {
     backgroundColor: "#eff1f6",
 
@@ -706,14 +716,14 @@ const styles = StyleSheet.create({
     padding: 20,
 
     shadowColor: "#000",
-    shadowOpacity: 0.08,
-    shadowRadius: 15,
-    shadowOffset: {
-      width: 0,
-      height: 6
-    },
+    shadowOpacity: 0.18,
+    shadowRadius: 10,
+  shadowOffset: {
+    width: 0,
+    height: 4,
+  },
 
-    elevation: 5
+  elevation: 5,
   },
   pickerContainer: {
     backgroundColor: "#eff1f6",
