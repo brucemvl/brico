@@ -444,6 +444,10 @@ router.get("/pros", auth, async (req, res) => {
 
     const { skill, proBadge } = req.query;
 
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+const limit = 10;
+const startIndex = (page - 1) * limit;
+
 const proQuery = {
   role: "pro"
 };
@@ -525,9 +529,18 @@ const pros = await User.find(proQuery)
 });
 
 // On conserve uniquement les 10 professionnels les plus proches
-const limitedPros = filteredPros.slice(0, 10);
+const paginatedPros = filteredPros.slice(
+  startIndex,
+  startIndex + limit
+);
 
-res.json(limitedPros);
+const hasMore = filteredPros.length > startIndex + limit;
+
+res.json({
+  pros: paginatedPros,
+  hasMore,
+  page,
+});
 
   } catch (err) {
     console.error("Erreur récupération professionnels :", err);
