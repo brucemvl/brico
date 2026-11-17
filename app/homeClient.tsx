@@ -127,6 +127,10 @@ const [avatar, setAvatar] = useState("");
 const [pros, setPros] = useState<ProType[]>([]);
 const [prosLoading, setProsLoading] = useState(false);
 
+const [page, setPage] = useState(1);
+const [hasMore, setHasMore] = useState(false);
+const [loadingMore, setLoadingMore] = useState(false);
+
 const [radiusKm, setRadiusKm] = useState<number | null>(25);
 const [draftRadiusKm, setDraftRadiusKm] = useState(25);
 
@@ -154,51 +158,80 @@ const updateDraftRadius = (value: number) => {
   setDraftRadiusKm(newValue);
 };
 
-const fetchPros = useCallback(async () => {
-  if (!profileLoaded) return;
+const fetchPros = useCallback(
+  async (pageToLoad = 1, append = false) => {
+    if (!profileLoaded) return;
 
-  // Pas de recherche si aucune localisation n'est enregistrée
-  if (!profile?.location?.trim()) {
-    setPros([]);
-    setProsLoading(false);
-    return;
-  }
-
-  setProsLoading(true);
-
-  try {
-    const params = new URLSearchParams();
-
-    params.append(
-      "radiusKm",
-      radiusKm === null ? "all" : String(radiusKm)
-    );
-
-    // Limite demandée au serveur
-    params.append("limit", "10");
-
-    if (selectedSkill) {
-      params.append("skill", selectedSkill);
+    if (!profile?.location?.trim()) {
+      setPros([]);
+      setHasMore(false);
+      setProsLoading(false);
+      setLoadingMore(false);
+      return;
     }
 
-    if (proBadgeOnly) {
-      params.append("proBadge", "true");
+    if (append) {
+      setLoadingMore(true);
+    } else {
+      setProsLoading(true);
     }
 
-    const data = await apiFetch(
-      `/users/pros?${params.toString()}`
-    );
+    try {
+      const params = new URLSearchParams();
 
-    // Sécurité supplémentaire côté application
-    setPros(Array.isArray(data) ? data.slice(0, 10) : []);
+      params.append(
+        "radiusKm",
+        radiusKm === null ? "all" : String(radiusKm)
+      );
 
-  } catch (err) {
-    console.log("Erreur récupération professionnels :", err);
-    setPros([]);
-  } finally {
-    setProsLoading(false);
-  }
-}, [profileLoaded, profile?.location, radiusKm, selectedSkill, proBadgeOnly]);
+      params.append("page", String(pageToLoad));
+
+      if (selectedSkill) {
+        params.append("skill", selectedSkill);
+      }
+
+      if (proBadgeOnly) {
+        params.append("proBadge", "true");
+      }
+
+      const data = await apiFetch(
+        `/users/pros?${params.toString()}`
+      );
+
+      if (!data || !Array.isArray(data.pros)) {
+        throw new Error("Format de réponse invalide");
+      }
+
+      setPros((previous) =>
+        append
+          ? [...previous, ...data.pros]
+          : data.pros
+      );
+
+      setPage(data.page);
+      setHasMore(data.hasMore);
+
+    } catch (err) {
+      console.log("Erreur récupération professionnels :", err);
+
+      if (!append) {
+        setPros([]);
+        setHasMore(false);
+      }
+    } finally {
+      setProsLoading(false);
+      setLoadingMore(false);
+    }
+  },
+  [
+    profileLoaded,
+    profile?.location,
+    radiusKm,
+    selectedSkill,
+    proBadgeOnly,
+    apiFetch
+  ]
+);
 
 useFocusEffect(
   useCallback(() => {
@@ -963,8 +996,14 @@ const firstUnreadRequest = requestsWithUnread[0];
 
 ) : (
 
-  <ScrollView contentContainerStyle={styles.prosList} horizontal>
-    {pros.map((pro) => (
+  <>
+    <ScrollView
+      contentContainerStyle={styles.prosList}
+      horizontal
+      showsHorizontalScrollIndicator={false}
+    >
+      {pros.map((pro) => (
+
         <TouchableOpacity
           key={pro._id}
           activeOpacity={0.85}
@@ -1036,7 +1075,37 @@ const firstUnreadRequest = requestsWithUnread[0];
       ))}
 
     </ScrollView>
-  )}
+    {hasMore && (
+      <TouchableOpacity
+        style={{
+          backgroundColor: "#1a5b4f",
+          paddingVertical: 13,
+          paddingHorizontal: 22,
+          borderRadius: 25,
+          alignSelf: "center",
+          marginTop: 15,
+          marginBottom: 10,
+          opacity: loadingMore ? 0.6 : 1
+        }}
+        onPress={() => fetchPros(page + 1, true)}
+        disabled={loadingMore}
+      >
+        <Text
+          style={{
+            color: "#fff",
+            fontFamily: "Montt",
+            fontSize: 13
+          }}
+        >
+          {loadingMore
+            ? "Chargement..."
+            : "Charger 10 artisans de plus"}
+        </Text>
+      </TouchableOpacity>
+    )}
+  </>
+)}
+  
 
 </View>
 
