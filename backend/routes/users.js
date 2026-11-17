@@ -519,12 +519,15 @@ const pros = await User.find(proQuery)
         );
 
     filteredPros.sort((a, b) => {
-      if (a.distanceKm === null) return 1;
-      if (b.distanceKm === null) return -1;
-      return a.distanceKm - b.distanceKm;
-    });
+  if (a.distanceKm === null) return 1;
+  if (b.distanceKm === null) return -1;
+  return a.distanceKm - b.distanceKm;
+});
 
-    res.json(filteredPros);
+// On conserve uniquement les 10 professionnels les plus proches
+const limitedPros = filteredPros.slice(0, 10);
+
+res.json(limitedPros);
 
   } catch (err) {
     console.error("Erreur récupération professionnels :", err);

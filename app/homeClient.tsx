@@ -110,6 +110,7 @@ export default function HomeClient() {
   const { logout } = useContext(AuthContext)!;
   const { apiFetch } = useApi();
   const [profile, setProfile] = useState<ProfileType | null>(null);
+const [profileLoaded, setProfileLoaded] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [notifications, setNotifications] = useState<any[]>([]);
 
@@ -154,6 +155,15 @@ const updateDraftRadius = (value: number) => {
 };
 
 const fetchPros = useCallback(async () => {
+  if (!profileLoaded) return;
+
+  // Pas de recherche si aucune localisation n'est enregistrée
+  if (!profile?.location?.trim()) {
+    setPros([]);
+    setProsLoading(false);
+    return;
+  }
+
   setProsLoading(true);
 
   try {
@@ -163,6 +173,9 @@ const fetchPros = useCallback(async () => {
       "radiusKm",
       radiusKm === null ? "all" : String(radiusKm)
     );
+
+    // Limite demandée au serveur
+    params.append("limit", "10");
 
     if (selectedSkill) {
       params.append("skill", selectedSkill);
@@ -176,7 +189,8 @@ const fetchPros = useCallback(async () => {
       `/users/pros?${params.toString()}`
     );
 
-    setPros(Array.isArray(data) ? data : []);
+    // Sécurité supplémentaire côté application
+    setPros(Array.isArray(data) ? data.slice(0, 10) : []);
 
   } catch (err) {
     console.log("Erreur récupération professionnels :", err);
@@ -184,7 +198,7 @@ const fetchPros = useCallback(async () => {
   } finally {
     setProsLoading(false);
   }
-}, [radiusKm, selectedSkill, proBadgeOnly]);
+}, [profileLoaded, profile?.location, radiusKm, selectedSkill, proBadgeOnly]);
 
 useFocusEffect(
   useCallback(() => {
@@ -395,16 +409,19 @@ const shareApp = async () => {
 
 
   useEffect(() => {
-    const loadProfile = async () => {
-      try {
-        const data = await apiFetch("/users/me");
-        setProfile(data);
-      } catch (err) {
-        console.log("Erreur profil", err);
-      }
-    };
-    loadProfile();
-  }, []);
+  const loadProfile = async () => {
+    try {
+      const data = await apiFetch("/users/me");
+      setProfile(data);
+    } catch (err) {
+      console.log("Erreur profil", err);
+    } finally {
+      setProfileLoaded(true);
+    }
+  };
+
+  loadProfile();
+}, []);
 
   console.log("NOTIFICATIONS:", notifications);
   console.log(
@@ -899,20 +916,55 @@ const firstUnreadRequest = requestsWithUnread[0];
 </View>
 
   {/* LISTE DES PROFESSIONNELS */}
-  {prosLoading ? (
-    <ActivityIndicator
-      size="large"
-      color="#1a5b4f"
-      style={{ marginVertical: 25 }}
-    />
-  ) : pros.length === 0 ? (
-    <Text style={styles.noProsText}>
-      Aucun professionnel trouvé dans ce rayon.
-    </Text>
-  ) : (
-    <ScrollView contentContainerStyle={styles.prosList} horizontal>
+  {!profileLoaded ? (
+  <ActivityIndicator
+    size="large"
+    color="#1a5b4f"
+    style={{ marginVertical: 25 }}
+  />
+) : !profile?.location?.trim() ? (
 
-      {pros.map((pro) => (
+  <View style={styles.locationWarning}>
+    <Text style={styles.locationWarningIcon}>📍</Text>
+
+    <Text style={styles.locationWarningTitle}>
+      Où se trouve votre projet ?
+    </Text>
+
+    <Text style={styles.locationWarningText}>
+      Enregistrez votre localisation pour découvrir les artisans
+      autour de vous et trouver les professionnels proches de votre domicile.
+    </Text>
+
+    <TouchableOpacity
+      style={styles.locationButton}
+      onPress={() => router.push("/profileClient")}
+      activeOpacity={0.85}
+    >
+      <Text style={styles.locationButtonText}>
+        Enregistrer ma localisation
+      </Text>
+    </TouchableOpacity>
+  </View>
+
+) : prosLoading ? (
+
+  <ActivityIndicator
+    size="large"
+    color="#1a5b4f"
+    style={{ marginVertical: 25 }}
+  />
+
+) : pros.length === 0 ? (
+
+  <Text style={styles.noProsText}>
+    Aucun professionnel trouvé dans ce rayon.
+  </Text>
+
+) : (
+
+  <ScrollView contentContainerStyle={styles.prosList} horizontal>
+    {pros.map((pro) => (
         <TouchableOpacity
           key={pro._id}
           activeOpacity={0.85}
@@ -1478,7 +1530,7 @@ button: {
     borderRadius: 40,
      shadowColor: "#000000",
       shadowOpacity: 0.72,
-       shadowRadius: 3,
+       shadowRadius: 2,
         shadowOffset: { width: 0, height: 0,},
 
   elevation: 6,
@@ -1797,5 +1849,52 @@ resetFiltersText: {
   fontSize: 12,
   color: "#a34d35",
   textDecorationLine: "underline",
+},
+locationWarning: {
+  backgroundColor: "#fff",
+  borderRadius: 20,
+  padding: 22,
+  marginVertical: 20,
+  marginHorizontal: 5,
+  alignItems: "center",
+  shadowColor: "#000",
+  shadowOpacity: 0.08,
+  shadowRadius: 8,
+  elevation: 3,
+},
+
+locationWarningIcon: {
+  fontSize: 35,
+  marginBottom: 10,
+},
+
+locationWarningTitle: {
+  fontFamily: "Montt",
+  fontSize: 17,
+  color: "#1a5b4f",
+  textAlign: "center",
+},
+
+locationWarningText: {
+  fontFamily: "Mont",
+  fontSize: 13,
+  color: "#666",
+  textAlign: "center",
+  lineHeight: 21,
+  marginTop: 10,
+},
+
+locationButton: {
+  backgroundColor: "#1a5b4f",
+  paddingVertical: 13,
+  paddingHorizontal: 20,
+  borderRadius: 25,
+  marginTop: 18,
+},
+
+locationButtonText: {
+  color: "#fff",
+  fontFamily: "Montt",
+  fontSize: 13,
 }
 });
