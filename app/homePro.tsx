@@ -741,7 +741,7 @@ const visibleRequests = filteredRequests.slice(0, visibleCount);
 }}
 style={[{backgroundColor: "#fff", borderRadius: 8, paddingInline: 9, paddingBlock: 6, borderColor: "#F28C28", borderWidth: 1 }, radiusKm === null && {backgroundColor: "#F28C28"}]}
       >
-        <Text style={styles.radiusReset}>Toutes distances</Text>
+        <Text style={[styles.radiusReset, radiusKm === null && {color: "#fff"}]}>Toutes distances</Text>
       </TouchableOpacity>
 
       <Text style={styles.radiusLimit}>100 km</Text>
@@ -1345,8 +1345,8 @@ radiusLimit: {
 
 radiusReset: {
   fontSize: 12,
-  color: "#fff",
   fontFamily: "Montt",
+  color: "#F28C28"
 },
 customSlider: {
   height: 40,
