@@ -739,7 +739,7 @@ const visibleRequests = filteredRequests.slice(0, visibleCount);
   setRadiusKm(null);
   setDraftRadiusKm(25);
 }}
-style={{backgroundColor: "#F28C28", borderRadius: 8, paddingInline: 8, paddingBlock: 4 }}
+style={[{backgroundColor: "#fff", borderRadius: 8, paddingInline: 9, paddingBlock: 6, borderColor: "#F28C28", borderWidth: 1 }, radiusKm === null && {backgroundColor: "#F28C28"}]}
       >
         <Text style={styles.radiusReset}>Toutes distances</Text>
       </TouchableOpacity>

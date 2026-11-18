@@ -9,7 +9,6 @@ import {
     TouchableOpacity,
     View
 } from "react-native";
-import modifier from "../assets/icons/modifier.png";
 import ScoreRing from "./scoreRing";
 
 type CoachAction = {
@@ -176,6 +175,7 @@ const firstUnreadRequest = unreadRequests[0];
                 <Text style={styles.header}>
                     Bonjour {firstName}
                 </Text>
+                <View style={{alignItems: "center", gap: 5}}>
                 <Image source={{ uri: avatar }} style={{ width: 70, height: 70, borderRadius: 35, marginRight: 5 }} />
                 <TouchableOpacity
                     onPress={() => router.push({ pathname: "/profileClient" })}
@@ -185,8 +185,9 @@ const firstUnreadRequest = unreadRequests[0];
                     accessibilityLabel="Modifier profl"
                     accessibilityHint={`Modifier mon profil`}
                 >
-                    <Image source={modifier} style={{ width: 20, height: 20 }} />
+                    <Text style={{fontSize: 11, color: "#fff", fontFamily: "Mont"}}>Modifier profil</Text>
                 </TouchableOpacity>
+                </View>
             </View>
 
             {unreadRequests.length > 0 && (
@@ -481,7 +482,7 @@ const styles = StyleSheet.create({
         fontFamily: "Montt",
         fontSize: 15,
     },
-    profileButton: { padding: 4, borderRadius: 50, backgroundColor: "#999999", position: "absolute", bottom: -4, right: 1, borderColor: "#f5f5f5", borderWidth: 1 },
+    profileButton: { padding: 5, borderRadius: 50, backgroundColor: "#c9c9c96c", borderColor: "#f5f5f5cd", borderWidth: 1 },
 
     tipCard: {
         marginTop: 10,

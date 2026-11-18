@@ -1,3 +1,4 @@
+import { Ionicons } from "@expo/vector-icons";
 import { useFonts } from "expo-font";
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -194,13 +195,13 @@ const fetchPros = useCallback(
         params.append("proBadge", "true");
       }
 
-      const data = await apiFetch(
-        `/users/pros?${params.toString()}`
-      );
+      const data = await apiFetch(`/users/pros?${params.toString()}`);
 
-      if (!data || !Array.isArray(data.pros)) {
-        throw new Error("Format de réponse invalide");
-      }
+console.log("RÉPONSE API PROS :", JSON.stringify(data, null, 2));
+
+if (!data || !Array.isArray(data.pros)) {
+  throw new Error("Format de réponse invalide");
+}
 
       setPros((previous) =>
         append
@@ -1074,35 +1075,32 @@ const firstUnreadRequest = requestsWithUnread[0];
         </TouchableOpacity>
       ))}
 
-    </ScrollView>
     {hasMore && (
-      <TouchableOpacity
-        style={{
-          backgroundColor: "#1a5b4f",
-          paddingVertical: 13,
-          paddingHorizontal: 22,
-          borderRadius: 25,
-          alignSelf: "center",
-          marginTop: 15,
-          marginBottom: 10,
-          opacity: loadingMore ? 0.6 : 1
-        }}
-        onPress={() => fetchPros(page + 1, true)}
-        disabled={loadingMore}
-      >
-        <Text
-          style={{
-            color: "#fff",
-            fontFamily: "Montt",
-            fontSize: 13
-          }}
-        >
-          {loadingMore
-            ? "Chargement..."
-            : "Charger 10 artisans de plus"}
-        </Text>
-      </TouchableOpacity>
-    )}
+  <TouchableOpacity
+    style={styles.loadMoreCard}
+    onPress={() => fetchPros(page + 1, true)}
+    disabled={loadingMore}
+    activeOpacity={0.75}
+  >
+    <View style={styles.loadMoreIcon}>
+      {loadingMore ? (
+        <ActivityIndicator color="#2D6A4F" />
+      ) : (
+        <Ionicons name="arrow-forward" size={24} color="#2D6A4F" />
+      )}
+    </View>
+
+    <Text style={styles.loadMoreTitle}>
+      Voir plus
+    </Text>
+
+    <Text style={styles.loadMoreSubtitle}>
+      10 artisans supplémentaires
+    </Text>
+  </TouchableOpacity>
+)}
+</ScrollView>
+    
   </>
 )}
   
@@ -1965,5 +1963,43 @@ locationButtonText: {
   color: "#fff",
   fontFamily: "Montt",
   fontSize: 13,
-}
+},
+loadMoreCard: {
+  width: 155,
+  minHeight: 230,
+  marginRight: 12,
+  borderRadius: 18,
+  backgroundColor: "#F2F7F4",
+  borderWidth: 1,
+  borderColor: "#DCE9E0",
+  justifyContent: "center",
+  alignItems: "center",
+  padding: 16,
+},
+
+loadMoreIcon: {
+  width: 54,
+  height: 54,
+  borderRadius: 27,
+  backgroundColor: "#FFFFFF",
+  justifyContent: "center",
+  alignItems: "center",
+  marginBottom: 16,
+},
+
+loadMoreTitle: {
+  fontSize: 16,
+  fontWeight: "700",
+  color: "#244C38",
+  marginBottom: 6,
+  fontFamily: "Montt"
+},
+
+loadMoreSubtitle: {
+  fontSize: 12,
+  color: "#718579",
+  textAlign: "center",
+  lineHeight: 18,
+  fontFamily: "Mont"
+},
 });

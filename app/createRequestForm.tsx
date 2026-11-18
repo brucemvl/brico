@@ -406,7 +406,9 @@ export default function CreateRequestForm() {
               style={styles.input} accessible
               accessibilityLabel="Titre de la demande"
               accessibilityHint="Entrer le titre de votre demande"
-              placeholder="Ex : Réparer une fuite de lavabo" />
+              placeholder="Ex : Réparer une fuite de lavabo"
+                            placeholderTextColor={"#949494cf"}
+ />
 
 
             <Text style={styles.title}>📄 Description</Text>
@@ -415,6 +417,7 @@ export default function CreateRequestForm() {
               onChangeText={setDescription}
               multiline
               placeholder="Expliquez précisément votre besoin..."
+              placeholderTextColor={"#949494cf"}
               textAlignVertical="top"
               style={styles.descriptionInput}
               accessible
@@ -439,6 +442,7 @@ export default function CreateRequestForm() {
             <TextInput
               value={budget}
               placeholder="Ex : 150 €"
+                            placeholderTextColor={"#949494cf"}
               onChangeText={setBudget}
               keyboardType="numeric" style={styles.input}
               accessible
@@ -452,6 +456,7 @@ export default function CreateRequestForm() {
               value={locationQuery}
               onChangeText={searchCities}
               placeholder="Tapez une ville..."
+                            placeholderTextColor={"#949494cf"}
               style={styles.input}
               accessible
               accessibilityLabel="Rechercher une ville"
@@ -621,7 +626,7 @@ const styles = StyleSheet.create({
   },
   descriptionInput: {
     backgroundColor: "#F7F8FA",
-
+color: "#bf1414",
     minHeight: 140,
 
     borderRadius: 20,
@@ -712,7 +717,7 @@ const styles = StyleSheet.create({
 
     borderRadius: 30,
     gap: 10,
-    marginBottom: 100,
+    marginBottom: 150,
     padding: 20,
 
     shadowColor: "#000",
