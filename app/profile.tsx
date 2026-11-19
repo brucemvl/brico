@@ -1,27 +1,37 @@
 import BackButton from "@/components/BackButton";
 import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import {
   Alert,
-  Animated,
   Image,
   ImageBackground,
   Keyboard,
   Modal,
-  PanResponder,
   Pressable,
+  Animated as RNAnimated,
   StyleSheet,
   Text,
   TextInput,
   View
 } from "react-native";
+import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  withTiming
+} from "react-native-reanimated";
+import { scheduleOnRN } from 'react-native-worklets';
+
 import MapView, { Marker } from "react-native-maps";
 import logo from "../assets/briconnect33.png";
 import fond from "../assets/convert_1.png";
 import distance from "../assets/icons/distance.png";
 import { AuthContext } from "../context/AuthContext";
 import { useApi } from "../services/api";
+
+
 
 
 const calculateDistanceKm = (
@@ -79,8 +89,9 @@ const [sendingMessage, setSendingMessage] = useState(false);
 const isModalVisible = selectedImageIndex !== null;
 
 const [reviewImagesModal, setReviewImagesModal] = useState<any[]>([]);
+  const translateX = useSharedValue(0);
 
-const translateX = useState(new Animated.Value(0))[0];
+
 
 const openImageModal = (images: any[], index: number) => {
   setReviewImagesModal(images);
@@ -108,6 +119,38 @@ const showNextImage = () => {
     return prev === reviewImagesModal.length - 1 ? 0 : prev + 1;
   });
 };
+
+const animatedImageStyle = useAnimatedStyle(() => { 
+  const rotation = translateX.value / 20;
+   return { transform: [ { translateX: translateX.value },
+     { rotate: `${rotation}deg` },
+      { scale: 0.98 }, ],
+       opacity: 1 - Math.min(Math.abs(translateX.value) / 350, 0.4), };
+ });
+
+const panGesture = Gesture.Pan()
+  .onUpdate((event) => {
+    translateX.value = event.translationX;
+  })
+  .onEnd((event) => {
+    const dx = event.translationX;
+
+    if (dx > 80) {
+      translateX.value = withTiming(500, { duration: 200 }, () => {
+        scheduleOnRN(showPreviousImage);
+      });
+    } else if (dx < -80) {
+      translateX.value = withTiming(-500, { duration: 200 }, () => {
+        scheduleOnRN(showNextImage);
+      });
+    } else {
+      translateX.value = withSpring(0);
+    }
+  });
+
+  useEffect(() => {
+  translateX.value = 0;
+}, [selectedImageIndex]);
 
 const openProfileImage = () => {
   const profileImage = user?.profileImage?.url;
@@ -188,35 +231,9 @@ const skillIcons = {
          Demenagement: require("../assets/icons/demenagement.png"),
          };
 
-const panResponder = React.useRef(
-  PanResponder.create({
-    onMoveShouldSetPanResponder: (_, gestureState) => {
-      return Math.abs(gestureState.dx) > 20;
-    },
 
-    onPanResponderMove: (_, gestureState) => {
-      translateX.setValue(gestureState.dx);
-    },
 
-    onPanResponderRelease: (_, gestureState) => {
-      if (gestureState.dx > 120) {
-        // swipe droite → image précédente
-        showPreviousImage();
-      } else if (gestureState.dx < -120) {
-        // swipe gauche → image suivante
-        showNextImage();
-      }
-
-      // reset position
-      Animated.spring(translateX, {
-        toValue: 0,
-        useNativeDriver: true,
-      }).start();
-    },
-  })
-).current;
-
-  const scrollY = new Animated.Value(0);
+  const scrollY = new RNAnimated.Value(0);
 
   const formatRating = (value?: number) => {
   if (value == null) return "0";
@@ -382,20 +399,20 @@ useEffect(() => {
 
   return (
 <ImageBackground source={fond} style={{flex: 1}}>
-<Animated.View style={{opacity: headerOpacity,  flexDirection: "row", alignItems: "center", position: "relative", top: 30, paddingBottom: 15 }}>
+<RNAnimated.View style={{opacity: headerOpacity,  flexDirection: "row", alignItems: "center", position: "relative", top: 30, paddingBottom: 15 }}>
     <Image source={logo} style={{height: 60, width: 60}}/>
-    <Text style={{ fontFamily: "Montt" , fontSize: 16}}>Profil de {user?.name}</Text></Animated.View>
+    <Text style={{ fontFamily: "Montt" , fontSize: 16}}>Profil de {user?.name}</Text></RNAnimated.View>
     <BackButton />
-<Animated.ScrollView
+<RNAnimated.ScrollView
   contentContainerStyle={styles.container}
-  onScroll={Animated.event(
+  onScroll={RNAnimated.event(
     [{ nativeEvent: { contentOffset: { y: scrollY } } }],
     { useNativeDriver: false }
   )}
   scrollEventThrottle={6}
 > 
       {/* HEADER */}
-<Animated.View
+<RNAnimated.View
   style={{
     alignItems: "center",
     marginBlock: 10,
@@ -469,7 +486,7 @@ useEffect(() => {
         )}
 </LinearGradient>
        
-      </Animated.View>
+      </RNAnimated.View>
 
       {authUser?.role === "client" && user.role === "pro" && (
   <Pressable
@@ -622,49 +639,51 @@ title={user.name}
 </View>
 )}
 
-    </Animated.ScrollView>
+    </RNAnimated.ScrollView>
     <Modal
-  visible={isModalVisible}
-  transparent
-  animationType="fade"
-  onRequestClose={closeImageModal}
->
-  <Pressable style={styles.modalOverlay} onPress={closeImageModal}>
-    <Pressable style={styles.modalContent} onPress={(e) => e.stopPropagation()}>
-      {selectedImageIndex !== null &&
- reviewImagesModal[selectedImageIndex] && (
-  <>
-    <Animated.Image
-  {...panResponder.panHandlers}
-  source={{ uri: reviewImagesModal[selectedImageIndex].url }}
-  style={[
-    styles.modalImage,
-    {
-      transform: [{ translateX }],
-    },
-  ]}
-/>
-
-    {reviewImagesModal.length > 1 && (
-      <View style={styles.modalNav}>
-        <Pressable style={styles.navButton} onPress={showPreviousImage}>
-          <Text style={styles.navButtonText}>‹</Text>
-        </Pressable>
-
-        <Text style={styles.imageCounter}>
-          {selectedImageIndex + 1} / {reviewImagesModal.length}
-        </Text>
-
-        <Pressable style={styles.navButton} onPress={showNextImage}>
-          <Text style={styles.navButtonText}>›</Text>
-        </Pressable>
-      </View>
-    )}
-  </>
-)}
-    </Pressable>
-  </Pressable>
-</Modal>
+              visible={isModalVisible}
+              transparent
+              animationType="fade"
+              onRequestClose={closeImageModal}
+              presentationStyle="overFullScreen"
+            >
+              <GestureHandlerRootView style={{ flex: 1 }}>
+              <Pressable style={styles.modalOverlay} onPress={closeImageModal}>
+                  <Pressable style={styles.modalContent} onPress={(e) => e.stopPropagation()}>
+                {selectedImageIndex !== null &&
+                 reviewImagesModal[selectedImageIndex] && (
+                  <>
+                  {reviewImagesModal.length > 1 ? 
+                   <GestureDetector gesture={panGesture}>
+                     <Animated.Image source={{ uri: reviewImagesModal[selectedImageIndex].url }}
+                      style={[styles.modalImage, animatedImageStyle]} /> 
+                      </GestureDetector>  
+                      : 
+                       <Animated.Image source={{ uri: reviewImagesModal[selectedImageIndex].url }}
+                        style={styles.modalImage} />
+                         }
+    
+                    {reviewImagesModal.length > 1 && (
+                          <View style={styles.modalNav}>
+                            <Pressable style={styles.navButton} onPress={showPreviousImage}>
+                              <Text style={styles.navButtonText}>‹</Text>
+                            </Pressable>
+                    
+                            <Text style={styles.imageCounter}>
+                              {selectedImageIndex + 1} / {reviewImagesModal.length}
+                            </Text>
+                    
+                            <Pressable style={styles.navButton} onPress={showNextImage}>
+                              <Text style={styles.navButtonText}>›</Text>
+                            </Pressable>
+                          </View>
+                          )} 
+                          </>
+                        )}
+                      </Pressable> 
+                      </Pressable>
+                      </GestureHandlerRootView>
+            </Modal>
 
 <Modal
   visible={messageModalVisible}
