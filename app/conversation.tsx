@@ -608,7 +608,8 @@ const dealProposedByOther = isProViewing
 
 const displayedUser = isProViewing
   ? conversation.client
-  : conversation.pro;
+  : 
+  conversation.pro;
 
   const getProId = (pro: string | { _id: string } | undefined) => {
     if (!pro) return "";
@@ -901,9 +902,10 @@ const missionCompleted = clientHasReviewed;
   alignItems: "center",
   paddingBlock: 10,
   paddingInline: 10,
-  justifyContent: "space-between"
+  justifyContent: "space-between",
+  width: "100%"
 }}>
-  <View style={{ flexDirection: "row", alignItems: "center" }}>
+  <View style={{ flexDirection: "row", alignItems: "center", flex: 1, minWidth: 0 }}>
     {displayedUser?.profileImage?.url && (
       <Image
         source={{ uri: displayedUser.profileImage.url }}
@@ -911,15 +913,21 @@ const missionCompleted = clientHasReviewed;
           width: 50,
           height: 50,
           borderRadius: 25,
-          marginRight: 10
+          marginRight: 10,
+          flexShrink: 0
         }}
       />
     )}
 
-    <Text style={{
+    <Text
+      ellipsizeMode="tail"
+       style={{
       fontSize: 17.5,
       fontFamily: "Montt",
-      color: "#1a5b4f"
+      color: "#1a5b4f",
+      flex: 1,
+      flexShrink: 1
+      
     }}>
       {displayedUser?.name || "Utilisateur"}
     </Text>
@@ -929,7 +937,7 @@ const missionCompleted = clientHasReviewed;
     <View style={{
       alignItems: "center",
       justifyContent: "center",
-      marginTop: 20
+      marginTop: 20,
     }}>
       <TouchableWithoutFeedback
         accessible
@@ -942,7 +950,8 @@ const missionCompleted = clientHasReviewed;
         <RNAnimated.View style={{
           transform: [{ scale: scaleAnim }],
           alignItems: "center",
-          justifyContent: "center"
+          justifyContent: "center",
+          flexShrink: 0
         }}>
           <LinearGradient
             colors={["#30a590", "#1a5b4f"]}
