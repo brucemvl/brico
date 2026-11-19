@@ -468,7 +468,7 @@ useEffect(() => {
 </View>
         
 <View style={{alignItems: "center"}}>
-        <Text style={styles.name}>{user.name}</Text>
+        <Text ellipsizeMode="tail" numberOfLines={2} style={styles.name}>{user.name}</Text>
 
          {user.location && (
           <Text style={styles.location}>📍 {user.location}</Text>
@@ -800,7 +800,8 @@ avatarPressable: {
     fontFamily: "Londrinak",
     textShadowColor: "white",
     textShadowRadius: 3,
-    textShadowOffset: {width: 0, height: 1}
+    textShadowOffset: {width: 0, height: 1},
+    flexShrink: 1,
   },
 
   rating: {
@@ -855,14 +856,14 @@ margin:2
   skillsContainer: {
   flexDirection: "row",
   flexWrap: "wrap",
-  gap: 12,
+  gap: 10,
   marginTop: 14,
   alignItems: "center",
   justifyContent: "center"
 },
 
 skill: {
-  width: "30%",
+  width: "31%",
   minHeight: 105,
   alignItems: "center",
   justifyContent: "center",
@@ -879,8 +880,8 @@ skill: {
 },
 
 skillIconContainer: {
-  width: 43,
-  height: 43,
+  width: 46,
+  height: 46,
   borderRadius: 14,
   backgroundColor: "#FFFFFF",
   alignItems: "center",
@@ -897,7 +898,7 @@ skillIcon: {
 skillText: {
   fontFamily: "Montmed",
   color: "#1A5B4F",
-  fontSize: 12,
+  fontSize: 11.8,
   textAlign: "center",
 },
 
@@ -914,8 +915,8 @@ skillText: {
   },
 
   portfolioImage: {
-    width: 110,
-    height: 110,
+    width: 100,
+    height: 100,
     borderRadius: 12,
     borderColor: "#f3f3f3",
     borderWidth: 2
